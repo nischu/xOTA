@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Profile</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>#(user.callsign)</h1>
+    #if(count(activated) > 0):
+      <h3>Activated</h3>
+      <table class="table">
+        <tr><th>#(common.namingTheme.referenceSingular)</th><th>Mode</th><th>QSO Count</th></tr>
+    #for(stat in activated):
+        <tr><td><a href="/#(common.namingTheme.referenceSlug)/#(stat.title)/">#(stat.title)</a></td><td>#(stat.mode)</td><td>#(stat.count)</td></tr>
+    #endfor
+      </table>
+    #endif
+    #if(count(hunted) > 0):
+      <h3>Hunted</h3>
+      <table class="table">
+        <tr><th>#(common.namingTheme.referenceSingular)</th><th>Mode</th><th>QSO Count</th></tr>
+    #for(stat in hunted):
+        <tr><td><a href="/#(common.namingTheme.referenceSlug)/#(stat.title)/">#(stat.title)</a></td><td>#(stat.mode)</td><td>#(stat.count)</td></tr>
+    #endfor
+      </table>
+    #endif
+    </div>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  #extend("include_head")
+  <style>
+  .form-label {
+    margin-top: 4px;
+    margin-bottom: 0px;
+  }
+  </style>
+  <title>#(formTitle)</title>
+</head>
+
+<body>
+  #extend("include_navbar")
+  <div class="container">
+  <h1>#(formTitle)</h1>
+  <form style="max-width: 350px" action="#(formPath)" method="post">
+  #if(error):
+    <p>#(error)</p>
+  #endif
+
+  #if(editing):
+  <label class="form-label" for="reference">Activated #(common.namingTheme.referenceSingular):</label>
+  <input class="form-control" type="text" list="knownreferences" id="reference" name="reference" value="#(qso.reference)" >
+  #else:
+  <input class="form-control" type="hidden" name="reference" value="#(qso.reference)">
+  #endif
+
+  <label class="form-label" for="callsign">Callsign</label>
+  <input class="form-control" type="text" list="knowncallsigns" id="callsign" name="callsign" value="#(qso.callsign)" minlength=3 maxlength=10 required>
+  <datalist id="knowncallsigns">
+  #for(knownCallsign in knownCallsigns):
+    <option value="#(knownCallsign)"></option>
+  #endfor
+  </datalist>
+
+
+  <label class="form-label" for="manualDate">Date/Time (UTC)</label><br>
+
+  #if(editing):
+  <input class="form-control" type="hidden" name="dateTimeSource" value="#(qso.dateTimeSource)">
+  #else:
+  <label class="form-check-label" for="radioButtonAuto">Automatic</label>
+  <input class="form-check-input" type="radio" id="radioButtonAuto" name="dateTimeSource" value="auto" #if(qso.dateTimeSource == "auto"): checked #endif>
+  <label class="form-check-label" for="radioButtonManual">Manual</label>
+  <input class="form-check-input" type="radio" id="radioButtonManual" name="dateTimeSource" value="manual" #if(qso.dateTimeSource == "manual"): checked #endif> 
+  #endif
+
+  <input class="form-control" type="datetime-local" id="manualDate" name="manualDate" step=1 min="2023-12-25T00:00:00" #if(qso.dateTimeSource == "manual"): value="#(qso.manualDate)" #endif max="2023-12-31T00:00:00" > 
+
+  <label class="form-label" for="freq">Frequency (kHz)</label>
+  <input class="form-control" type="number" id="freq" name="freq" value="#(qso.freq)" inputmode="numeric" required>
+
+  <label class="form-label" for="mode">Mode</label>
+  <select class="form-select" id="mode" name="mode">
+    #for(mode in modes):
+    <option value="#(mode)" #if(mode == qso.mode): selected #endif>#(mode)</option>
+    #endfor
+  </select>
+
+  <label class="form-label" for="rst_sent"><a href="https://en.wikipedia.org/wiki/R-S-T_system" target="_blank">RST</a> sent</label>
+  <input class="form-control" type="number" id="rst_sent" name="rst_sent" value="#(qso.rst_sent)" inputmode="numeric" min=11 max=599 required>
+  <label class="form-label" for="rst_rcvd"><a href="https://en.wikipedia.org/wiki/R-S-T_system" target="_blank">RST</a> received</label>
+  <input class="form-control" type="number" id="rst_rcvd" name="rst_rcvd" value="#(qso.rst_rcvd)" inputmode="numeric" min=11 max=599 required>
+
+  <label class="form-label" for="huntedReference">Hunted #(common.namingTheme.referenceSingular) (optional):</label>
+  <input class="form-control" type="text" list="knownreferences" id="huntedReference" name="huntedReference" value="#(qso.huntedReference)" >
+  <datalist id="knownreferences">
+  #for(knownReference in knownReferences):
+    <option value="#(knownReference)"></option>
+  #endfor
+  </datalist>
+  <br>
+  #if(editing):
+  <input class="form-control btn btn-primary" type="submit" value="Update" >
+  #else:
+  <input class="form-control btn btn-primary" type="submit" value="Log" >
+  #endif
+  </form>
+  </div>
+
+</body>
+</html>

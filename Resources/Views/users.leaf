@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Users</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>Userlist</h1>
+    #for(user in userlist):
+      <p>
+         <a href="#urlEncode(user.callsign)/">#(user.callsign)</a>
+      </p>
+    #endfor
+    </div>
+  </body>
+</html>

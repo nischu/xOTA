@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Profile</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>Profile</h1>
+    <a class="btn btn-primary" href="/logout">Logout</a>
+      <table class="table">
+        <tr><th>Callsign</th><td>#(user.callsign)</td></tr>
+        #if(user.ccchubUser):
+        <tr><th>Hub username:</th><td>#(user.ccchubUser)</td></tr>
+        #endif
+        #if(user.hashedPassword):
+        <tr><th>Change Password:</th><td><a class="btn btn-primary" href="/credentials/change">Change Password</a></td></tr>
+        #endif
+      </table>
+      <h3>Account deletion</h3>
+      <form action="/profile/delete/" method="post">
+         <input class="form-check-input" type="checkbox" id="confirm" name="confirm" required> <label class="form-check-label" for="confirm">I want to delete my account and all uploaded QSO data.</label><br>
+         <input class="btn btn-danger" type="submit" value="Delete Account">
+      </form>
+      <h3>QSOs #count(qsos)</h3>
+       <form action="/profile/adif" method="get">
+       <div class="row g-3">
+       <div class="col-auto">
+       <select class="form-select" name="adif-mode" id="adif-mode">
+         <option value="activator">Activator</option>
+         <option value="hunter">Hunter</option>
+         <option value="hunter-no-r2r">Hunter (no #(common.namingTheme.referenceSingular)2#(common.namingTheme.referenceSingular))</option>
+       </select>
+       </div>
+       <div class="col">
+       <input class="btn btn-primary" type="submit" value="Download ADIF">
+       </div>
+       </div>
+       </form>
+
+      <form action="" method="get">
+      <table class="table">
+        <tr><th>Date</th><th>Own call</th><th>Call</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
+    #for(qso in qsos):
+        <tr><td>#date(qso.date)</td><td>#(qso.stationCallSign)</td><td>#(qso.call)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><th><input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)"></th></tr>
+    #endfor
+      </table>
+      </form>
+    </div>
+  </body>
+</html>

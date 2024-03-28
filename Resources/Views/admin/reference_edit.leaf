@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  #extend("include_head")
+  <title>Admin</title>
+</head>
+
+<body>
+  #extend("include_navbar")
+  #extend("admin/include_admin_navbar")
+  #if(error):
+  <div class="alert alert-warning" role="alert">
+    #(error)
+  </div>
+  #endif
+  #if(success):
+  <div class="alert alert-success" role="alert">
+    #(success)
+  </div>
+  #endif
+
+
+  <form action="#(actionPath)" method="POST">
+    <label class="form-label" for="title">Title:</label>
+    <input class="form-control" type="text" id="title" name="title" value="#(reference.title)">
+    <label class="form-label" for="website">Website:</label>
+    <input class="form-control" type="text" id="website" name="website" value="#(reference.website)">
+    <input class="form-control btn btn-primary" type="submit" value="#(actionName)" >
+  </form>
+
+  #if(deletePath):
+  <form action="#(deletePath)" method="post">
+     <input class="form-check-input" type="checkbox" id="confirm" name="confirm" required> <label class="form-check-label" for="confirm">I want to delete this #(common.namingTheme.referenceSingular). This only works if there are no QSOs associated yet.</label><br>
+     <input class="btn btn-danger" type="submit" value="Delete #(common.namingTheme.referenceSingular)">
+  </form>
+  #endif
+</body>
+</html>

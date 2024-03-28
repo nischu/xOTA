@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>QSOs Graph</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <div>
+        <canvas id="myChart"></canvas>
+    </div>
+
+<script src="
+https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js
+"></script>
+<script src="
+https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js
+"></script>
+<script>
+  const ctx = document.getElementById('myChart');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: '# of QSOs',
+        data: [#for(qso in qsos):{y: #(qso.count), x: "#(qso.date)"}#if(!isLast):,#endif#endfor],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        x: {
+            adapters: {
+                date: {
+
+            }
+          },
+          type: 'time',
+          time: {
+            unit: 'hour',
+            displayFormats: {
+                hour: 'HH:mm'
+            }
+          },
+        ticks: {
+        major: {
+           enabled: true, // <-- This is the key line
+           fontStyle: 'bold', //You can also style these values differently
+           fontSize: 14, //You can also style these values differently
+        },
+    },
+
+        }
+      }
+    }
+  });
+</script>
+    </div>
+  </body>
+</html>

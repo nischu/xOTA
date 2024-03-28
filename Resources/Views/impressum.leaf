@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>About</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>Impressum</h1>
+    <p>
+        TODO
+
+    </p>
+    </div><!-- /.container -->
+  </body>
+</html>

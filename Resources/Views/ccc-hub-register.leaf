@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  #extend("include_head")
+  <title>Register with CCC Hub SSO</title>
+</head>
+
+<body>
+  #extend("include_navbar")
+  <div class="container">
+  <h1>Register with CCC Hub SSO</h1>
+  <form action="/ccc-hub/register" method="post">
+  #if(error):
+  <div class="alert alert-warning" role="alert">
+    #(error)
+  </div>
+  #endif
+  <label class="form-label" for="callsign">Callsign:</label><br>
+  <input class="form-control" type="text" id="callsign" name="callsign" value=#(callsign)><br>
+  <input class="form-check-input" type="checkbox" id="acceptTerms" name="acceptTerms" required> <label class="form-check-label" for="accept">I accept the rules layed out in <a href="/rules/">rules</a> and <a href=/impressum/>privacy terms</a>.</label><br>
+  <input class="btn btn-primary" type="submit" value="Register">
+  </form>
+  </div>
+</body>
+</html>

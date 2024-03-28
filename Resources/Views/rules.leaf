@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Rules</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    #if(common.loggingDisabled):
+    <div class="alert alert-success" role="alert">
+    Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. All data will be deleted in early January 2024. Please download your QSO data as ADIF files from your profile page.
+    </div>
+    #endif
+    <h1>Rules</h1>
+    <p>
+    Toilets on the Air (TOTA) is intended as an amateur radio activity during 37C3.<br>Use amateur radio to activate "references" just like you would for other xOTA programs like Parks on the Air (POTA), Summits on the Air (SOTA), Island on the Air (IOTA), …
+    In this case, the references are just toilets.<br>
+    </p>
+    <h3>Activity centers:</h3>
+    <ul>
+      <li>FM: 430.200MHz</li>
+      <li>DMR: Brandmeister TG26223</li>
+    </ul>
+    <h3>Ground rules:</h3>
+    <ul>
+      <li>Only operate on frequencies you are licensed to operate on.</li>
+      <li>Always respect the band plans.</li>
+      <li>Within those rules, all bands and modes are acceptable.</li>
+      <li>Don't be rude, don't unncessarily block restrooms when others need to use them and always respect the privacy of other restroom users.</li>
+      <li>It's not required to activate from within a restroom. A radius of a few meters from the doors (in either direction) is fine.</li>
+    </ul>
+    <h3>Terminology:</h3>
+    <dl class="row">
+       <dt>Activator</dt>
+       <dd>Person who activates a reference (in this case toilet). Only the activator needs to log QSOs in this system.</dd>
+       <dt>Chaser</dt>
+       <dd>See hunter.</dd>
+       <dt>Hunter</dt>
+       <dd>QSO partner of the activator. A hunter is not required to be at a reference. Hunters don't need to log hunter QSOs unless they are also an activator (see T2T). They receive hunter credit automatically, if they have an account and the activator logs their QSO.</dd>
+       <dt>RST</dt>
+       <dd>System used by amateur radio operators to exchange information about the quality of their signal. See <a href="https://en.wikipedia.org/wiki/R-S-T_system" target="_blank">Wikipedia R-S-T System</a>.</dd>
+       <dt>Toilet to Toilet (T2T)</dt>
+       <dd>When two activators have a QSOs from reference locations, both are activators and hunters at the same time. They receive both activator and hunter credit and they can log the hunted reference.</dd>
+    </dl>
+    <h3>Additional asks:</h3>
+    <ul>
+      <li>Please don't spam the system, it was thrown together in a very short time.</li>
+      <li>If there are any problems, please <a href="/impressum">contact me</a>.
+    </ul>
+    </div>
+  </body>
+</html>

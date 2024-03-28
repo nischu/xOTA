@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Deleted Profile</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <p>Successfully deleted profile for #(callsign).</p>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>#(common.namingTheme.referencePlural)</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>#(common.namingTheme.referencePlural)</h1>
+    #for(reference in references):
+      <p>
+        <a href="#(reference.title)/" >#(reference.title)</a>
+      </p>
+    #endfor
+    </div>
+  </body>
+</html>

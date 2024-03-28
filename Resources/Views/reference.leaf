@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>#(common.namingTheme.referenceSingular) #(reference.title)</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>#(common.namingTheme.referenceSingular) #(reference.title)</h1>
+      <p>
+      <table class="table">
+        <tr><th>Name</th><td>#(reference.title)</td></tr>
+        <tr><th>Location</th><td><a href=#(reference.website) target="_blank">#(reference.website)</a></td></tr>
+      </table>
+      </p>
+    #if(common.hasUser):
+      <p><a class="btn btn-primary" href="/t/#(reference.title)/log">Log your QSOs!</a></p>
+    #endif
+    #if(count(activators) > 0):
+      <h3>Activators:</h3>
+      <table class="table">
+        <tr><th>Callsign</th><th>QSOs</th></tr>
+      #for(activator in activators):
+        <tr><td><a href="/user/#(activator.callsign)">#(activator.callsign)</a></td><td>#(activator.count)</td></tr>
+      #endfor
+      </table>
+    #endif
+    #if(count(hunters) > 0):
+      <h3>Hunters:</h3>
+      <table class="table">
+        <tr><th>Callsign</th><th>QSOs</th></tr>
+      #for(hunter in hunters):
+        <tr><td><a href="/user/#(hunter.callsign)">#(hunter.callsign)</a></td><td>#(hunter.count)</td></tr>
+      #endfor
+      </table>
+    #endif
+      </p>
+    </div>
+  </body>
+</html>

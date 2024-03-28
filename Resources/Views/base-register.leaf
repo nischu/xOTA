@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  #extend("include_head")
+  <title>Register with CCC Hub SSO</title>
+</head>
+
+<body>
+  #extend("include_navbar")
+  <div class="container">
+  <h1>Login</h1>
+  <p>How would you like to log in?</p>
+  #if(configuration.cccHUBEnabled):
+  <a class="btn btn-primary" type="button" href="/ccc-hub/register">CCC Hub</a>
+  #endif
+  #if(configuration.userPassEnabled):
+  <a class="btn btn-primary" type="button" href="/credentials/register">Username/Password</a>
+  #endif
+  </div>
+</body>
+</html>

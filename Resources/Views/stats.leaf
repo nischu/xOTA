@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Stats</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>#(common.namingTheme.referencePlural) (#count(references.htmlRows))</h1>
+    <table class="table table-striped">
+    <thead class="sticky-top">
+    <tr>
+    #for(column in references.columnNames):
+    <th>#(column)</th>
+    #endfor
+    </tr>
+    </thead>
+    <tbody>
+    #for(row in references.htmlRows):
+    <tr>
+    #unsafeHTML(row)
+    </tr>
+    #endfor
+    </tbody>
+    </table>
+
+    <h1>#(common.namingTheme.referenceSingular)2#(common.namingTheme.referenceSingular)</h1>
+    <table class="table table-striped">
+    <thead class="sticky-top">
+    <tr>
+    #for(column in ref2ref.columnNames):
+    <th>#(column)</th>
+    #endfor
+    </tr>
+    </thead>
+    <tbody>
+    #for(row in ref2ref.htmlRows):
+    <tr>
+    #unsafeHTML(row)
+    </tr>
+    #endfor
+    </tbody>
+    </table>
+    <p>#(common.namingTheme.referenceSingular)2#(common.namingTheme.referenceSingular) numbers are not deduplicated/paired.
+
+    <h1>Activators (#count(activators.htmlRows))</h1>
+    <table class="table table-striped">
+    <thead class="sticky-top">
+    <tr>
+    #for(column in activators.columnNames):
+    <th>#(column)</th>
+    #endfor
+    </tr>
+    </thead>
+    <tbody>
+    #for(row in activators.htmlRows):
+    <tr>
+    #unsafeHTML(row)
+    </tr>
+    #endfor
+    </tbody>
+    </table>
+
+    <h1>Hunters (#count(hunters.htmlRows))</h1>
+    <table class="table table-striped">
+    <thead class="sticky-top">
+    <tr>
+    #for(column in hunters.columnNames):
+    <th>#(column)</th>
+    #endfor
+    </tr>
+    </thead>
+    <tbody>
+    #for(row in hunters.htmlRows):
+    <tr>
+    #unsafeHTML(row)
+    </tr>
+    #endfor
+    </tbody>
+    </table>
+
+    </div>
+  </body>
+</html>
