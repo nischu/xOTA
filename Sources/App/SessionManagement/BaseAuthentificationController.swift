@@ -22,6 +22,11 @@ extension Application {
 }
 
 
+protocol RegisterContent: Content {
+    var callsign: String { get }
+    var acceptTerms: String { get }
+}
+
 struct BaseAuthentificationController: RouteCollection {
 
 
@@ -35,11 +40,6 @@ struct BaseAuthentificationController: RouteCollection {
 	enum ValidationResponse {
 		case success(normalizedCall: String)
 		case error(_ error: String)
-	}
-
-	protocol RegisterContent: Content {
-		var callsign: String { get }
-		var acceptTerms: String { get }
 	}
 
 	static func commonRegistrationValidation(req: Request) async throws -> ValidationResponse {

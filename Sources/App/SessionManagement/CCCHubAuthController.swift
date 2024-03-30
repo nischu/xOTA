@@ -66,7 +66,7 @@ struct CCCHubAuthController: RouteCollection {
 		}
 		
 		grouped.post("register") { req async throws -> Response in
-			struct CCCRegisterContent: BaseAuthentificationController.RegisterContent {
+			struct CCCRegisterContent: RegisterContent {
 				var callsign: String
 				var acceptTerms: String
 			}
