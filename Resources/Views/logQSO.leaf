@@ -47,7 +47,7 @@
   <input class="form-check-input" type="radio" id="radioButtonManual" name="dateTimeSource" value="manual" #if(qso.dateTimeSource == "manual"): checked #endif> 
   #endif
 
-  <input class="form-control" type="datetime-local" id="manualDate" name="manualDate" step=1 min="2023-12-25T00:00:00" #if(qso.dateTimeSource == "manual"): value="#(qso.manualDate)" #endif max="2023-12-31T00:00:00" > 
+  <input class="form-control" type="datetime-local" id="manualDate" name="manualDate" step=1 #if(qso.dateTimeSource == "manual"): value="#(qso.manualDate)" #endif > 
 
   <label class="form-label" for="freq">Frequency (kHz)</label>
   <input class="form-control" type="number" id="freq" name="freq" value="#(qso.freq)" inputmode="numeric" required>
