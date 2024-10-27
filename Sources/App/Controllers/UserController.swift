@@ -71,8 +71,8 @@ struct UserController: RouteCollection {
 		if let sql = req.db as? SQLDatabase {
 			// The underlying database driver is SQL.
 			let limit = 20
-			activated = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.activator_id = '\(raw: try reference.requireID().uuidString)' GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
-			hunted = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.hunter_id = '\(raw: try reference.requireID().uuidString)' GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
+			activated = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.activator_id = \(literal: try reference.requireID().uuidString) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
+			hunted = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.hunter_id = \(literal: try reference.requireID().uuidString) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
 		} else {
 			activated = []
 			hunted = []
@@ -119,17 +119,17 @@ struct UserController: RouteCollection {
 		let adifMode: String = try req.query.get(at: "adif-mode")
 		switch adifMode {
 		case "hunter":
-			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo', h.title AS 'mySigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.hunter_id = '\(raw: try user.requireID().uuidString)';"
+			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo', h.title AS 'mySigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString);"
 			headerComment =  "Hunter QSOs for \(user.callsign) based on activator logs."
 			fileNamePart = "hunted"
 		case "hunter-no-r2r":
-			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id WHERE qsos.hunter_id = '\(raw: try user.requireID().uuidString)' AND qsos.hunted_reference_id IS NULL;"
+			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString) AND qsos.hunted_reference_id IS NULL;"
 			headerComment =  "Hunter QSOs for \(user.callsign) based on activator logs excluding \(req.commonContent.namingTheme.referenceSingular)2\(req.commonContent.namingTheme.referenceSingular)."
 			fileNamePart = "hunted-no-r2r"
 		case "activator":
 			fallthrough
 		default:
-			sqlQuery = "SELECT date, call, station_callsign AS 'stationCallsign', freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_id = '\(raw: try user.requireID().uuidString)';"
+			sqlQuery = "SELECT date, call, station_callsign AS 'stationCallsign', freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_id = \(literal: try user.requireID().uuidString);"
 			headerComment =  "Activator QSOs for \(user.callsign)."
 			fileNamePart = "activated"
 		}

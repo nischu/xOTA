@@ -56,8 +56,8 @@ struct ReferenceController: RouteCollection {
 		if let sql = req.db as? SQLDatabase {
 			// The underlying database driver is SQL.
 			let limit = 20
-			activatorRank = try await sql.raw("SELECT station_callsign as callsign, COUNT(*) as count FROM qsos WHERE reference_id == '\(raw: try reference.requireID().uuidString)' GROUP BY callsign ORDER BY count DESC LIMIT \(literal: limit);").all(decoding: ReferenceQSOUserRankEntry.self)
-			hunterRank = try await sql.raw("SELECT call as callsign, COUNT(*) as count FROM qsos WHERE reference_id == '\(raw: try reference.requireID().uuidString)' AND hunter_id NOT NULL GROUP BY callsign ORDER BY count DESC LIMIT \(literal: limit);").all(decoding: ReferenceQSOUserRankEntry.self)
+			activatorRank = try await sql.raw("SELECT station_callsign as callsign, COUNT(*) as count FROM qsos WHERE reference_id == \(literal: try reference.requireID().uuidString) GROUP BY callsign ORDER BY count DESC LIMIT \(literal: limit);").all(decoding: ReferenceQSOUserRankEntry.self)
+			hunterRank = try await sql.raw("SELECT call as callsign, COUNT(*) as count FROM qsos WHERE reference_id == \(literal: try reference.requireID().uuidString) AND hunter_id NOT NULL GROUP BY callsign ORDER BY count DESC LIMIT \(literal: limit);").all(decoding: ReferenceQSOUserRankEntry.self)
 		} else {
 			activatorRank = []
 			hunterRank = []
