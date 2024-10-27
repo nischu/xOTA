@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class QSO: Model, Content {
+final class QSO: Model, Content, @unchecked Sendable {
 
 	enum Mode : String, RawRepresentable, CaseIterable, Encodable, Decodable {
 		case AM

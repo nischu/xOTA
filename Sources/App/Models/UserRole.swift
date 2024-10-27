@@ -2,7 +2,7 @@
 import Fluent
 import Vapor
 
-final class UserRoleModel: Model, Content {
+final class UserRoleModel: Model, Content, @unchecked Sendable {
 	static let schema = "user_roles"
 
 	enum SpecialRole: String, RawRepresentable, Content {

@@ -1,7 +1,7 @@
 import Fluent
 import Vapor
 
-final class Reference: Model, Content {
+final class Reference: Model, Content, @unchecked Sendable {
 	static let schema = "references"
 
 	@ID(key: .id)
