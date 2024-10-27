@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Recent QSOs</title>
+    #if(autorefresh):
+    <meta http-equiv="refresh" content="#if(interval):#(interval)#else:60#endif" >
+    #endif
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    <h1>Recent QSOs</h1>
+      <form action="" method="get" action="#(formPath)">
+      #if(count):
+      <input type="hidden" name="count" value="#(count)" />
+      #endif
+      <input type="checkbox" id="refresh" name="refresh" onChange="this.form.submit()" #if(autorefresh): checked #endif/>
+      <label for="refresh">Automatic Refresh</label>
+      </form>
+      <p>
+      <table class="table">
+        <tr><th>Date/Time(UTC)</th><th>Activator</th><th>Hunter</th><th>QRG</th><th>Mode</th><th>#(common.namingTheme.referenceSingular)</th><th>Hunted #(common.namingTheme.referenceSingular)</tr>
+    #for(qso in qsos):
+        <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm")</td><td>#(qso.stationCallSign)</td><td>#(qso.call)</td><td>#(qso.freq)kHz</td><td>#(qso.mode)</td><td>#(qso.reference.title)</td><td>#(qso.huntedReference.title)</td></tr>
+    #endfor
+      </table>
+      </p>
+    </div>
+  </body>
+</html>

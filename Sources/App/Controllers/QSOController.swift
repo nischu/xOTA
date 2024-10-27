@@ -15,6 +15,8 @@ struct QSOController: RouteCollection {
 			qso.delete(use: delete)
 		}
 
+		routes.get("qsos", use: qsosDashboard)
+
 		let qsoForReference = routes.grouped(namingTheme.referenceSlugPathComponent, ":referenceId", "qso")
 		qsoForReference.get(use:qsosForReference)
 
@@ -310,6 +312,32 @@ struct QSOController: RouteCollection {
 
 	func loggingDisabled(req: Request) async throws -> Response {
 		return req.redirect(to: "/rules")
+	}
+
+	func qsosDashboard(req: Request) async throws -> View {
+		let queryCount = try? req.query.get(Int.self, at: "count")
+		let count = min(queryCount ?? 25, 100)
+		let autorefresh = (try? req.query.get(Bool.self, at: "refresh")) ?? false
+		var queryInterval = try? req.query.get(Int.self, at: "interval")
+		if let interval = queryInterval {
+			queryInterval = max(interval, 5)
+		}
+		struct QSOsContext: Encodable, CommonContentProviding {
+			let autorefresh: Bool
+			let interval: Int?
+			let count: Int?
+			let qsos: [QSO]
+			let formPath: String
+			let common: CommonContent
+		}
+		let qsos = try await QSO.query(on: req.db)
+			.sort(\.$date, .descending)
+			.limit(count)
+			.with(\.$reference)
+			.with(\.$huntedReference)
+			.all()
+		let context = QSOsContext(autorefresh: autorefresh, interval:queryInterval, count: queryCount, qsos: qsos, formPath: req.url.path, common: req.commonContent)
+		return try await req.view.render("recentQsos", context)
 	}
 
 	// MARK: – API
