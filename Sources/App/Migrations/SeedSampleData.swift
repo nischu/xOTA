@@ -1,4 +1,5 @@
 import Fluent
+import Foundation
 
 struct SeedSampleData: AsyncMigration {
 	func prepare(on database: Database) async throws {
