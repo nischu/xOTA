@@ -26,6 +26,7 @@ func routes(_ app: Application) throws {
 	try app.register(collection: QSOController(authMiddleware: authMiddleware, namingTheme:namingTheme))
 	try app.register(collection: StatsController(namingTheme: namingTheme))
 	try app.register(collection: AdminController(authMiddleware: adminAuthMiddleware, namingTheme: namingTheme))
+	try app.register(collection: APIController(namingTheme: namingTheme))
 	if app.environment != .configure {
 		try app.register(collection: BaseAuthentificationController(configuration: app.authentificationConfiguration))
 	}

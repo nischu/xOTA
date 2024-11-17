@@ -15,6 +15,8 @@ struct QSOController: RouteCollection {
 			qso.delete(use: delete)
 		}
 
+		api.get("", use: apiQsos(req:))
+
 		routes.get("qsos", use: qsosDashboard)
 
 		let qsoForReference = routes.grouped(namingTheme.referenceSlugPathComponent, ":referenceId", "qso")
@@ -358,5 +360,50 @@ struct QSOController: RouteCollection {
 		}
 		try await qso.delete(on: req.db)
 		return .noContent
+	}
+
+	func apiQsos(req: Request) async throws -> Page<some Content> {
+
+		struct QSOContent: Content {
+			var id: UUID?
+			var reference: String
+			var hunted_reference: String?
+			var date: Date
+			var call: String
+			var station_callsign: String
+			var freq: Int
+			var mode: QSO.Mode
+			var rstSent: String?
+			var rstRcvt: String?
+
+			init(with qso:QSO) {
+				self.id = qso.id
+				self.reference = qso.reference.title
+				self.hunted_reference = qso.huntedReference?.title
+				self.date = qso.date
+				self.call = qso.call
+				self.station_callsign = qso.stationCallSign
+				self.freq = qso.freq
+				self.mode = qso.mode
+				self.rstSent = qso.rstSent
+				self.rstRcvt = qso.rstRcvt
+			}
+		}
+
+		return try await QSO.query(on: req.db)
+			.field(\.$id)
+			.field(\.$date)
+			.field(\.$stationCallSign)
+			.field(\.$call)
+			.field(\.$freq)
+			.field(\.$mode)
+			.field(\.$rstSent)
+			.field(\.$rstRcvt)
+			.field(.path([.string("hunted_reference_id")], schema: "qsos"))
+			.with(\.$huntedReference)
+			.field(.path([.string("reference_id")], schema: "qsos"))
+			.with(\.$reference)
+			.sort(\.$date, .descending)
+			.paginate(for: req).map { QSOContent(with: $0) }
 	}
 }

@@ -7,9 +7,9 @@ struct UserController: RouteCollection {
 	let authMiddleware: [Middleware]
 
 	func boot(routes: RoutesBuilder) throws {
+		/*
 		let userAPI = routes.grouped("api","user")
 		userAPI.get(use: index)
-		/*
 		user.post(use: create)
 		user.group(":userID") { user in
 			user.delete(use: delete)
