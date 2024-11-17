@@ -55,6 +55,8 @@ public func configure(_ app: Application) async throws {
 
 	app.asyncCommands.use(MakeAdminCommand(), as: MakeAdminCommand.name)
 
+	app.asyncCommands.use(ResetPasswordCommand(), as: ResetPasswordCommand.name)
+
 	// register routes
 	try routes(app)
 }
