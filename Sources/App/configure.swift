@@ -27,7 +27,7 @@ public func configure(_ app: Application) async throws {
 #if DEBUG
 	app.migrations.add(SeedSampleData())
 #else
-	app.migrations.add(Seed37C3Data())
+	app.migrations.add(Seed38C3Data())
 #endif
 
 	// Session handling
