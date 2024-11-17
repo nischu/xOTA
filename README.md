@@ -51,7 +51,7 @@ swift build --configuration release -Xcc -I../Swift/fixincludes/
 
 ### Migrate DB
 ```
-.build/release/App --env configure  migrate
+.build/release/xOTA_App --env configure  migrate
 ```
 
 ### Configure supervisord
@@ -59,7 +59,7 @@ swift build --configuration release -Xcc -I../Swift/fixincludes/
 Create `~/etc/services.d/tota-prod.ini` with entried adjusted for your setup:
 ```
 [program:tota-prod]
-command=/home/tota2023/xOTA-prod/.build/release/App serve --env production -p 8081 -H 0.0.0.0
+command=/home/tota2023/xOTA-prod/.build/release/xOTA_App serve --env production -p 8081 -H 0.0.0.0
 directory=/home/tota2023/xOTA-prod/
 startsecs=10
 environment=CCCHUB_DOMAIN="events.ccc.de/congress/2023/hub/sso/",CCCHUB_CLIENT_ID="<redacted>",CCCHUB_CLIENT_SECRET="<redacted>",CCCHUB_AUTH_CALLBACK="https://2023.totawatch.de/ccc-hub-auth-complete",

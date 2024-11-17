@@ -21,21 +21,22 @@ let package = Package(
 	],
 	targets: [
 		.executableTarget(
-			name: "App",
+			name: "xOTA_App",
 			dependencies: [
 				.product(name: "Vapor", package: "vapor"),
 				.product(name: "Fluent", package: "fluent"),
 				.product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
 				.product(name: "Leaf", package: "leaf"),
 				.target(name: "ImperialCCCHub"),
-			]
+			],
+			path: "Sources/App"
 		),
 		.target(name: "ImperialCCCHub", dependencies: [
 			.product(name: "ImperialCore", package: "Imperial"),
 			.product(name: "Crypto", package: "swift-crypto"),
 		]),
 		.testTarget(name: "AppTests", dependencies: [
-			.target(name: "App"),
+			.target(name: "xOTA_App"),
 			.product(name: "XCTVapor", package: "vapor"),
 
 			// Workaround for https://github.com/apple/swift-package-manager/issues/6940
