@@ -23,9 +23,9 @@ struct AdminController: RouteCollection {
 		authedAdmin.post(namingTheme.referenceSlugPathComponent, "delete", ":referenceId", use: deleteReference)
 
 		// Users
-		authedAdmin.get("user", use: users)
-		authedAdmin.get("user", "edit", ":userId", use: editUser)
-		authedAdmin.post("user", "edit", ":userId", use: updateUser)
+		authedAdmin.get("user", use: users).description("admin only")
+		authedAdmin.get("user", "edit", ":userId", use: editUser).description("admin only")
+		authedAdmin.post("user", "edit", ":userId", use: updateUser).description("admin only")
 
 	}
 

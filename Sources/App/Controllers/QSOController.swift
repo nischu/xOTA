@@ -10,12 +10,12 @@ struct QSOController: RouteCollection {
 		let api = routes.grouped("api", "qso")
 
 		let apiAuthed = api.grouped(authMiddleware)
-		apiAuthed.post(use: create)
+		apiAuthed.get("me", use: apiQsosUser(req:)).description("Get qsos of the current user. User auth required.")
 		apiAuthed.group(":qsoId") { qso in
-			qso.delete(use: delete)
+			qso.delete(use: delete).description("Delete a specific QSO. User auth required.")
 		}
 
-		api.get("", use: apiQsos(req:))
+		api.get("", use: apiQsos(req:)).description("All qsos, no auth required. Please don't overwhelm the server with requests.")
 
 		routes.get("qsos", use: qsosDashboard)
 
@@ -344,11 +344,6 @@ struct QSOController: RouteCollection {
 
 	// MARK: – API
 
-	func create(req: Request) async throws -> Reference {
-		let reference = try req.content.decode(Reference.self)
-		try await reference.save(on: req.db)
-		return reference
-	}
 
 	func delete(req: Request) async throws -> HTTPStatus {
 		guard let qso = try await QSO.find(req.parameters.get("qsoId"), on: req.db) else {
@@ -362,7 +357,7 @@ struct QSOController: RouteCollection {
 		return .noContent
 	}
 
-	func apiQsos(req: Request) async throws -> Page<some Content> {
+	func apiQsos(req: Request, queryBuilder: QueryBuilder<QSO>) async throws -> Page<some Content> {
 
 		struct QSOContent: Content {
 			var id: UUID?
@@ -390,7 +385,7 @@ struct QSOController: RouteCollection {
 			}
 		}
 
-		return try await QSO.query(on: req.db)
+		return try await queryBuilder
 			.field(\.$id)
 			.field(\.$date)
 			.field(\.$stationCallSign)
@@ -406,4 +401,14 @@ struct QSOController: RouteCollection {
 			.sort(\.$date, .descending)
 			.paginate(for: req).map { QSOContent(with: $0) }
 	}
+
+	func apiQsos(req: Request) async throws -> Page<some Content> {
+		try await apiQsos(req: req, queryBuilder: QSO.query(on: req.db))
+	}
+
+	func apiQsosUser(req: Request) async throws -> Page<some Content> {
+		let authedUser = try req.auth.require(UserModel.self)
+		return try await apiQsos(req: req, queryBuilder: authedUser.$activatorQsos.query(on: req.db))
+	}
+
 }

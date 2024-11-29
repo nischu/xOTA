@@ -6,7 +6,7 @@ struct ReferenceController: RouteCollection {
 	let namingTheme: NamingTheme
 	func boot(routes: RoutesBuilder) throws {
 		let api = routes.grouped("api", "reference")
-		api.get(use: index)
+		api.get(use: index).description("List all references. No Auth required. Since this rarely changes, you shouldn't need to call this API very often.")
 //		api.post(use: create)
 //		api.group(":referenceId") { todo in
 //			todo.delete(use: delete)
