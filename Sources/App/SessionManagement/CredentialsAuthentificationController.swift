@@ -101,7 +101,6 @@ struct CredentialsAuthentificationController: RouteCollection {
 		guard let user = try await UserModel.query(on: req.db)
 			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
 			.filter(Callsign.self, \.$callsign == callsign)
-			.field(\.$id).field(\.$hashedPassword)
 			.with(\.$callsign)
 			.first() else {
 			let viewResponse: Response = try await req.view.render(Self.loginTemplate, CredentialView(error: "Unknown callsign.", callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
