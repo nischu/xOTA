@@ -19,7 +19,8 @@ final class MakeAdminCommand: AsyncCommand {
 
 		let db = context.application.db
 		guard let user = try await UserModel.query(on: db)
-			.filter(\.$callsign, .equal, callsign)
+			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
+			.filter(Callsign.self, \.$callsign == callsign)
 			.first()
 			.get()
 		else {

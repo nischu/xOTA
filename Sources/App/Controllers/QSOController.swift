@@ -112,7 +112,7 @@ struct QSOController: RouteCollection {
 	}
 
 	func knownCallsigns(req: Request) async throws -> [String] {
-		try await UserModel.query(on: req.db).field(\.$callsign).sort(\.$callsign).all().map(\.callsign)
+		try await Callsign.query(on: req.db).field(\.$callsign).sort(\.$callsign).all().map(\.callsign)
 	}
 
 	func knownReferences(req: Request) async throws -> [String] {
@@ -247,7 +247,7 @@ struct QSOController: RouteCollection {
 			} catch {
 				errorMessage = "Unknown error"
 			}
-			if errorMessage == nil, authedUser.callsign == form.callsign {
+			if errorMessage == nil, authedUser.callsign.callsign == form.callsign {
 				errorMessage = "You can't log a QSO with yourself"
 			}
 		}
@@ -295,13 +295,14 @@ struct QSOController: RouteCollection {
 			var hunter: UserModel? = nil
 			if let hunterCall = form.callsign {
 				hunter = try await UserModel.query(on: req.db)
-					.filter(\.$callsign, .equal, normalizedCallsign(hunterCall))
+					.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
+					.filter(Callsign.self, \.$callsign == hunterCall)
 					.field(\.$id)
 					.first()
 					.get()
 			}
 			if let hunterCall = form.callsign, let rstSent = form.rst_sent, let rstRcvd = form.rst_rcvd, let date {
-				try await save(CreateUpdateQSOModel(activator: authedUser, hunter: hunter, reference: reference!, huntedReference: huntedReference, date: date, call: normalizedCallsign(hunterCall), stationCallSign: normalizedCallsign(authedUser.callsign), freq: form.freq, mode: form.mode, rstSent: rstSent, rstRcvt: rstRcvd))
+				try await save(CreateUpdateQSOModel(activator: authedUser, hunter: hunter, reference: reference!, huntedReference: huntedReference, date: date, call: normalizedCallsign(hunterCall), stationCallSign: normalizedCallsign(authedUser.callsign.callsign), freq: form.freq, mode: form.mode, rstSent: rstSent, rstRcvt: rstRcvd))
 				if !editing {
 					nextForm.resetForNextQSO()
 				}

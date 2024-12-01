@@ -10,7 +10,7 @@
     <h1>Userlist</h1>
     #for(user in userlist):
       <p>
-         <a href="#urlEncode(user.callsign)/">#(user.callsign)</a>
+         <a href="#urlEncode(user.callsign.callsign)/">#(user.callsign.callsign)</a>
       </p>
     #endfor
     </div>

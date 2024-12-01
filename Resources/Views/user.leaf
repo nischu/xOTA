@@ -7,7 +7,7 @@
   <body>
     #extend("include_navbar")
     <div class="container">
-    <h1>#(user.callsign)</h1>
+    <h1>#(user.callsign.callsign)</h1>
     #if(count(activated) > 0):
       <h3>Activated</h3>
       <table class="table">

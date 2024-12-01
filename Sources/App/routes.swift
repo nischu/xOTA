@@ -17,7 +17,7 @@ func routes(_ app: Application) throws {
 	let protected = app.grouped(authMiddleware)
 
 	protected.get("me") { req async throws -> String in
-		try req.auth.require(UserModel.self).callsign
+		try req.auth.require(UserModel.self).callsign.callsign
 	}
 
 	let namingTheme = app.namingTheme

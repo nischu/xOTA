@@ -13,7 +13,7 @@
       <table class="table">
         <tr><th>Callsign</th><th></th></tr>
     #for(user in users):
-        <tr><td>#(user.callsign)</td><td><input class="btn btn-primary" type="submit" value="Edit" formaction="/admin/user/edit/#(user.id)"></td></tr>
+        <tr><td>#(user.callsign.callsign)</td><td><input class="btn btn-primary" type="submit" value="Edit" formaction="/admin/user/edit/#(user.id)"></td></tr>
     #endfor
       </table>
       </form>

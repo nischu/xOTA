@@ -22,7 +22,7 @@
 
   <form action="#(actionPath)" method="POST">
     <label class="form-label" for="callsign">Callsign:</label>
-    <input class="form-control" type="text" id="callsign" name="callsign" value="#(user.callsign)">
+    <input class="form-control" type="text" id="callsign" name="callsign" value="#(user.callsign.callsign)">
     <label class="form-label" for="ccchubUser">CCC Hub Username:</label>
     <input class="form-control" type="text" id="ccchubUser" name="ccchubUser" value="#(user.ccchubUser)">
     <label class="form-label" for="website">Password (enter to reset):</label>

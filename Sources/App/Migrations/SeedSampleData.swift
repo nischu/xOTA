@@ -27,10 +27,27 @@ struct SeedSampleData: AsyncMigration {
 			try await reference.save(on: database)
 		}
 
-		let userN0CALL = UserModel(callsign: "N0CALL")
-		try await userN0CALL.save(on: database)
-		let userN0CALA = UserModel(callsign: "N0CALA")
-		try await userN0CALA.save(on: database)
+
+		let userN0CALL = try await database.transaction { database in
+			let callsign = Callsign(callsign: "N0CALL", kind: .licensed)
+			try await callsign.save(on: database)
+			let userN0CALL = UserModel(callsignId:try callsign.requireID())
+			try await userN0CALL.save(on: database)
+			callsign.$user.id = try userN0CALL.requireID()
+			try await callsign.update(on: database)
+			return userN0CALL
+		}
+
+		let userN0CALA = try await database.transaction { database in
+			let callsign = Callsign(callsign: "N0CALA", kind: .licensed)
+			try await callsign.save(on: database)
+			let userN0CALA = UserModel(callsignId:try callsign.requireID())
+			try await userN0CALA.save(on: database)
+			callsign.$user.id = try userN0CALA.requireID()
+			try await callsign.update(on: database)
+			return userN0CALA
+		}
+
 
 		let qsos = [
 			try QSO(activator:userN0CALL, hunter: userN0CALA, reference: references[0], date: Date(timeIntervalSinceNow: -15), call: "N0CALA", stationCallSign: "N0CALL", freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),

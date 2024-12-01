@@ -31,7 +31,7 @@ private let callsignRegexString = "(^([A-Z0-9]{2,3}\\/)?([A-Z0-9]{1,2}[0-9]{1}[A
 
 
 extension Validator where T == String {
-	/// Validates whether a `String` is a valid zip code.
+	/// Validates whether a `String` is a valid callsign.
 	public static var callsign: Validator<T> {
 		.init { input in
 			let input = normalizedCallsign(input)

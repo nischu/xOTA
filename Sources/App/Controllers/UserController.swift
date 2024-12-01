@@ -54,7 +54,9 @@ struct UserController: RouteCollection {
 	func specificUser(req: Request) async throws -> View {
 		guard let callsign = req.parameters.get("callsign"),
 			  let reference = try await UserModel.query(on: req.db)
-			.filter(\.$callsign, .equal, callsign)
+			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
+			.filter(Callsign.self, \.$callsign == callsign)
+			.with(\.$callsign)
 			.first()
 			.get() else {
 			throw Abort(.notFound)
@@ -100,7 +102,11 @@ struct UserController: RouteCollection {
 			for role in try await user.$specialRoles.query(on: database).field(\.$id).all() {
 				try await role.delete(force: true, on: database)
 			}
+			let callsigns = try await user.$callsigns.query(on: database).field(\.$id).all()
 			try await user.delete(force: true, on: database)
+			for callsign in callsigns {
+				try await callsign.delete(force:true, on: database)
+			}
 		}
 		
 		req.auth.logout(UserModel.self)
@@ -120,17 +126,17 @@ struct UserController: RouteCollection {
 		switch adifMode {
 		case "hunter":
 			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo', h.title AS 'mySigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString);"
-			headerComment =  "Hunter QSOs for \(user.callsign) based on activator logs."
+			headerComment =  "Hunter QSOs for \(user.callsign.callsign) based on activator logs."
 			fileNamePart = "hunted"
 		case "hunter-no-r2r":
 			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString) AND qsos.hunted_reference_id IS NULL;"
-			headerComment =  "Hunter QSOs for \(user.callsign) based on activator logs excluding \(req.commonContent.namingTheme.referenceSingular)2\(req.commonContent.namingTheme.referenceSingular)."
+			headerComment =  "Hunter QSOs for \(user.callsign.callsign) based on activator logs excluding \(req.commonContent.namingTheme.referenceSingular)2\(req.commonContent.namingTheme.referenceSingular)."
 			fileNamePart = "hunted-no-r2r"
 		case "activator":
 			fallthrough
 		default:
 			sqlQuery = "SELECT date, call, station_callsign AS 'stationCallsign', freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_id = \(literal: try user.requireID().uuidString);"
-			headerComment =  "Activator QSOs for \(user.callsign)."
+			headerComment =  "Activator QSOs for \(user.callsign.callsign)."
 			fileNamePart = "activated"
 		}
 
@@ -178,7 +184,7 @@ struct UserController: RouteCollection {
 	// MARK: – API
 
 	func index(req: Request) async throws -> [UserModel] {
-		try await UserModel.query(on: req.db).all()
+		try await UserModel.query(on: req.db).with(\.$callsign).all()
 	}
 
 

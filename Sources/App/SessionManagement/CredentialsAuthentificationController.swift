@@ -1,5 +1,6 @@
 import Vapor
 import Leaf
+import Fluent
 
 struct CredentialsAuthentificationController: RouteCollection {
 
@@ -13,6 +14,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 
 	struct CredentialView: Content, CommonContentProviding {
 		var error: String?
+		var accountType: BaseAuthentificationController.RegisterAccountType?
 		var callsign: String?
 		let common: CommonContent
 	}
@@ -39,6 +41,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 
 	func registerPost(req: Request) async throws -> Response {
 		struct CredentialsRegisterContent: Content {
+			var accountType: BaseAuthentificationController.RegisterAccountType?
 			var callsign: String
 			var acceptTerms: String
 			var password: String
@@ -52,7 +55,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 		let normalizedCallSign: String
 		switch baseValidationResult {
 		case .error(let error):
-			let viewResponse: Response = try await req.view.render(Self.registerTemplate, CredentialView(error: error, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			let viewResponse: Response = try await req.view.render(Self.registerTemplate, CredentialView(error: error, accountType: registerContent.accountType, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		case .success(normalizedCall: let call):
 			normalizedCallSign = call
@@ -61,16 +64,23 @@ struct CredentialsAuthentificationController: RouteCollection {
 		let passwordLength = registerContent.password.count
 		if passwordLength < Self.minimumPasswordLength || passwordLength > Self.maxPasswordLength {
 			let error = passwordLength < Self.minimumPasswordLength ? "Password must be at least \(Self.minimumPasswordLength) characters long." : "Password is too long, what are you trying to do?"
-			return try await req.view.render(Self.registerTemplate, CredentialView(error:error, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			return try await req.view.render(Self.registerTemplate, CredentialView(error:error, accountType: registerContent.accountType, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			
 		}
 
 		if registerContent.password != registerContent.password_repeat {
-			let viewResponse: Response = try await req.view.render(Self.registerTemplate, CredentialView(error: "Passwords do not match.", callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			let viewResponse: Response = try await req.view.render(Self.registerTemplate, CredentialView(error: "Passwords do not match.", accountType: registerContent.accountType, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		}
 
-		return try await BaseAuthentificationController.createUser(on: req, callsign: normalizedCallSign) { newUserModel in
+		guard let accountType = registerContent.accountType else {
+			let viewResponse: Response = try await req.view.render(Self.registerTemplate, CredentialView(error: "Account type needs to be selected.", accountType: registerContent.accountType, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			return viewResponse
+		}
+
+		return try await BaseAuthentificationController.createUser(on: req, callsign: normalizedCallSign, accountType: accountType) { newUserModel in
 			newUserModel.hashedPassword = try Bcrypt.hash(registerContent.password)
+
 		}
 	}
 
@@ -80,6 +90,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 
 	func loginPost(req: Request) async throws -> Response {
 		struct CredentialsLoginContent: Content {
+			var accountType: BaseAuthentificationController.RegisterAccountType?
 			var callsign: String
 			var password: String
 		}
@@ -87,7 +98,12 @@ struct CredentialsAuthentificationController: RouteCollection {
 		let credentials = try req.content.decode(CredentialsLoginContent.self)
 
 		let callsign = normalizedCallsign(credentials.callsign)
-		guard let user = try await UserModel.query(on: req.db).field(\.$id).field(\.$hashedPassword).filter(\.$callsign, .equal, callsign).first() else {
+		guard let user = try await UserModel.query(on: req.db)
+			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
+			.filter(Callsign.self, \.$callsign == callsign)
+			.field(\.$id).field(\.$hashedPassword)
+			.with(\.$callsign)
+			.first() else {
 			let viewResponse: Response = try await req.view.render(Self.loginTemplate, CredentialView(error: "Unknown callsign.", callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		}

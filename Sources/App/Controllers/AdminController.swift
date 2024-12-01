@@ -126,7 +126,7 @@ struct AdminController: RouteCollection {
 			let users: [UserModel]
 			let common: CommonContent
 		}
-		let users = try await UserModel.query(on: req.db).all()
+		let users = try await UserModel.query(on: req.db).with(\.$callsign).all()
 
 		return try await req.view.render("admin/users", UsersContent(users: users, common: req.commonContent))
 	}
@@ -144,14 +144,19 @@ struct AdminController: RouteCollection {
 	}
 
 	func editUser(req: Request) async throws -> View {
-		guard let user = try await UserModel.find(req.parameters.get("userId"), on: req.db) else {
+
+		guard let userID = req.parameters.get("userId"),
+			  let userUUID = UUID(uuidString:userID),
+			  let user = try await UserModel.query(on:req.db).filter(\.$id == userUUID).with(\.$callsign).first() else {
 			throw Abort(.notFound)
 		}
 		return try await req.view.render("admin/user_edit", UserContent(user: user, error: nil, success: nil, actionPath: actionPath(for: user), common: req.commonContent))
 	}
 
 	func updateUser(req: Request) async throws -> View {
-		guard let user = try await UserModel.find(req.parameters.get("userId"), on: req.db) else {
+		guard let userID = req.parameters.get("userId"),
+			  let userUUID = UUID(uuidString:userID),
+			  let user = try await UserModel.query(on:req.db).filter(\.$id == userUUID).with(\.$callsign).first() else {
 			throw Abort(.notFound)
 		}
 
@@ -162,15 +167,18 @@ struct AdminController: RouteCollection {
 		}
 
 		let formContent = try req.content.decode(FormContent.self)
-
-		user.callsign = formContent.callsign
+		user.callsign.callsign = formContent.callsign
 		user.ccchubUser = formContent.ccchubUser.isEmpty ? nil : formContent.ccchubUser
 		var success = "Successfully updated user."
 		if !formContent.password.isEmpty {
 			user.hashedPassword = try Bcrypt.hash(formContent.password)
 			success = "Successfully updated user and password."
 		}
-		try await user.save(on: req.db)
+
+		try await req.db.transaction { db in
+			try await user.save(on: db)
+			try await user.callsign.save(on: db)
+		}
 
 		return try await req.view.render("admin/user_edit", UserContent(user: user, error: nil, success: success, actionPath: actionPath(for: user), common: req.commonContent))
 	}

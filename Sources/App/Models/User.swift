@@ -8,14 +8,17 @@ final class UserModel: Model, Content, @unchecked Sendable {
 	@ID(key: .id)
 	var id: UUID?
 
-	@Field(key: "callsign")
-	var callsign: String
+	@Parent(key: "primary-callsign")
+	var callsign: Callsign
 
 	@Field(key: "ccchub-user")
 	var ccchubUser: String?
 
 	@Field(key: "hashed-password")
 	var hashedPassword: String?
+
+	@Children(for: \.$user)
+	var callsigns: [Callsign]
 
 	@Children(for: \.$activator)
 	var activatorQsos: [QSO]
@@ -29,14 +32,27 @@ final class UserModel: Model, Content, @unchecked Sendable {
 	init() { }
 
 	init(id: UserModel.IDValue? = nil,
-		 callsign: String) {
+		 callsignId: Callsign.IDValue) {
 		self.id = id
-		self.callsign = callsign
+		self.$callsign.id = callsignId
 	}
 }
 
 extension UserModel: SessionAuthenticatable {
 	var sessionID: UUID {
 		self.id ?? UUID()
+	}
+
+	static func find(
+		_ id: UserModel.IDValue?,
+		on database: any Database
+	) -> EventLoopFuture<UserModel?> {
+		guard let id = id else {
+			return database.eventLoop.makeSucceededFuture(nil)
+		}
+		return UserModel.query(on: database)
+			.filter(\.$id == id)
+			.with(\.$callsign)
+			.first()
 	}
 }

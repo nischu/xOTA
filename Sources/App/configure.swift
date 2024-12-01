@@ -22,6 +22,7 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(CreateReference())
 	app.migrations.add(CreateUser())
 	app.migrations.add(CreateUserRole())
+	app.migrations.add(CreateCallsign())
 	app.migrations.add(CreateQso())
 
 #if DEBUG
@@ -51,7 +52,7 @@ public func configure(_ app: Application) async throws {
 
 
 	app.middleware.use(app.sessions.middleware)
-	app.middleware.use(UserModel.sessionAuthenticator())
+	app.middleware.use(CustomDatabaseSessionAuthenticator(databaseID: .sqlite))
 
 	app.asyncCommands.use(MakeAdminCommand(), as: MakeAdminCommand.name)
 

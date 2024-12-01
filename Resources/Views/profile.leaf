@@ -10,7 +10,7 @@
     <h1>Profile</h1>
     <a class="btn btn-primary" href="/logout">Logout</a>
       <table class="table">
-        <tr><th>Callsign</th><td>#(user.callsign)</td></tr>
+        <tr><th>Callsign</th><td>#(user.callsign.callsign)</td></tr>
         #if(user.ccchubUser):
         <tr><th>Hub username:</th><td>#(user.ccchubUser)</td></tr>
         #endif
