@@ -36,7 +36,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 	}
 
 	func register(req: Request) async throws -> View {
-		return try await req.view.render(Self.registerTemplate, req.commonContent)
+		return try await req.view.render(Self.registerTemplate, ["common":req.commonContent])
 	}
 
 	func registerPost(req: Request) async throws -> Response {
