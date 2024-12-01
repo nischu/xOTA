@@ -15,12 +15,16 @@
     #(error)
   </div>
   #endif
-  <input type="radio" id="licensed" name="accountType" value="licensed" required#if(accountType == "licensed"): checked="checked"#endif />
-  <label for="licensed">Licensed Amateur</label><br>
-  <input type="radio" id="unlicensed" name="accountType" value="unlicensed"#if(accountType == "unlicensed"): checked="checked"#endif />
-  <label for="unlicensed">Not licensed</label><br>
   <label class="form-label" for="callsign">Callsign:</label><br>
-  <input class="form-control" type="text" id="callsign" name="callsign" value="#(callsign)" /><br>
+  <input class="form-control" type="text" id="callsign" name="callsign" value="#(callsign)" />
+  <fieldset>
+    <label>Account type:</label><br>
+    <input type="radio" id="licensed" name="accountType" value="licensed" required#if(accountType == "licensed"): checked="checked"#endif />
+    <label for="licensed">Licensed Amateur</label><br>
+    <input type="radio" id="unlicensed" name="accountType" value="unlicensed"#if(accountType == "unlicensed"): checked="checked"#endif />
+    <label for="unlicensed">Not licensed</label>
+  </fieldset>
+  <br>
   <input class="form-check-input" type="checkbox" id="acceptTerms" name="acceptTerms" required /> <label class="form-check-label" for="accept">I accept the rules layed out in <a href="/rules/">rules</a> and <a href=/impressum/>privacy terms</a>.</label><br>
   <input class="btn btn-primary" type="submit" value="Register" />
   </form>
