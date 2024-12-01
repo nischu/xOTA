@@ -10,8 +10,13 @@ public func configure(_ app: Application) async throws {
 	app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
 	
 	// TODO: read from config
-	app.namingTheme = NamingTheme(referenceSlug: "t", referenceSingular: "Toilet", referencePlural: "Toilets")
-	app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, userPassEnabled: false)
+	app.namingTheme = NamingTheme(
+		activityName: "38C3 TOTA",
+		adifSIG: "TOTA",
+		referenceSlug: "t",
+		referenceSingular: "Toilet",
+		referencePlural: "Toilets")
+	app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, userPassEnabled: true)
 
 
 	app.views.use(.leaf)

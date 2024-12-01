@@ -52,8 +52,9 @@ struct ADIFGenerator: CustomStringConvertible {
 
 	var qsos: [ADIFGeneratorQSO]
 
-	init(headerComment: String? = nil, specialInterestGroup: String, qsos: [ADIFGeneratorQSO]) {
+	init(headerComment: String? = nil, programVersion: String, specialInterestGroup: String, qsos: [ADIFGeneratorQSO]) {
 		self.headerComment = headerComment
+		self.programVersion = programVersion
 		self.specialInterestGroup = specialInterestGroup
 		self.qsos = qsos
 	}

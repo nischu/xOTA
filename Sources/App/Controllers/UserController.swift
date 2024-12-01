@@ -119,6 +119,8 @@ struct UserController: RouteCollection {
 			throw Abort(.unauthorized)
 		}
 
+		let primaryCallsign = user.callsign.callsign
+
 		let sqlQuery: SQLQueryString
 		let headerComment: String
 		let fileNamePart: String
@@ -126,21 +128,22 @@ struct UserController: RouteCollection {
 		switch adifMode {
 		case "hunter":
 			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo', h.title AS 'mySigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString);"
-			headerComment =  "Hunter QSOs for \(user.callsign.callsign) based on activator logs."
+			headerComment =  "Hunter QSOs for \(primaryCallsign) based on activator logs."
 			fileNamePart = "hunted"
 		case "hunter-no-r2r":
 			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString) AND qsos.hunted_reference_id IS NULL;"
-			headerComment =  "Hunter QSOs for \(user.callsign.callsign) based on activator logs excluding \(req.commonContent.namingTheme.referenceSingular)2\(req.commonContent.namingTheme.referenceSingular)."
+			headerComment =  "Hunter QSOs for \(primaryCallsign) based on activator logs excluding \(req.commonContent.namingTheme.referenceSingular)2\(req.commonContent.namingTheme.referenceSingular)."
 			fileNamePart = "hunted-no-r2r"
 		case "activator":
 			fallthrough
 		default:
 			sqlQuery = "SELECT date, call, station_callsign AS 'stationCallsign', freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_id = \(literal: try user.requireID().uuidString);"
-			headerComment =  "Activator QSOs for \(user.callsign.callsign)."
+			headerComment =  "Activator QSOs for \(primaryCallsign)."
 			fileNamePart = "activated"
 		}
 
-		return try await adif(req: req, query:sqlQuery , headerComment:headerComment, filename: "\(user.callsign)_37C3_TOTA_\(fileNamePart).adif")
+		let activityNameForFile = req.application.namingTheme.activityName.replacingOccurrences(of: " ", with: "_")
+		return try await adif(req: req, query:sqlQuery , headerComment:headerComment, filename: "\(primaryCallsign)_\(activityNameForFile)_\(fileNamePart).adif")
 	}
 
 	func adif(req: Request, query: SQLQueryString, headerComment: String, filename: String) async throws -> Response {
@@ -173,7 +176,8 @@ struct UserController: RouteCollection {
 		} else {
 			qsos = []
 		}
-		let adifGenerator = ADIFGenerator(headerComment: headerComment, specialInterestGroup: "TOTA", qsos: qsos)
+		let namingTheme = req.application.namingTheme
+		let adifGenerator = ADIFGenerator(headerComment: headerComment, programVersion: namingTheme.activityName, specialInterestGroup: namingTheme.adifSIG, qsos: qsos)
 
 		var headers = HTTPHeaders()
 		headers.contentDisposition = HTTPHeaders.ContentDisposition(.attachment, filename: filename)

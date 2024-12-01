@@ -22,12 +22,14 @@ protocol CommonContentProviding {
 
 
 struct NamingTheme: Codable {
+	let activityName: String
+	let adifSIG: String
 	let referenceSlug: String
 	let referenceSingular: String
 	let referencePlural: String
 
 	static var `default`: NamingTheme {
-		return NamingTheme(referenceSlug: "reference", referenceSingular: "Reference", referencePlural: "References")
+		return NamingTheme(activityName:"xOTA", adifSIG: "xOTA", referenceSlug: "reference", referenceSingular: "Reference", referencePlural: "References")
 	}
 	var referenceSlugPathComponent: PathComponent {
 		PathComponent(stringLiteral: referenceSlug)
