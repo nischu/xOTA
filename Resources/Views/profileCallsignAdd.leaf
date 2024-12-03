@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Add Callsign</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+     <h1>Add Training Callsign</h1>
+     <form style="max-width: 350px" action="#(formPath)" method="post">
+     #if(error):
+       <p>#(error)</p>
+     #endif
+     <label class="form-label" for="trainingCallsign">Training Callsign:</label>
+     <input class="form-control" type="text" id="trainingCallsign" name="trainingCallsign" value="#(form.trainingCallsign)" minlength=3 maxlength=20>
+     <br/>
+     <input class="form-control btn btn-primary" type="submit" value="Add" >
+     </form>
+    </div>
+  </body>
+</html>

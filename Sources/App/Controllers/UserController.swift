@@ -30,9 +30,16 @@ struct UserController: RouteCollection {
 		user.get(":callsign", use: specificUser)
 
 		let authed = routes.grouped(authMiddleware)
-		authed.get("profile", use: profile)
-		authed.post("profile", "delete", use: deleteProfile)
-		authed.get("profile", "adif", use: adif)
+		let profile = authed.grouped("profile")
+		profile.get(use: profile(req:))
+		profile.post("delete", use: deleteProfile)
+		profile.get("adif", use: adif)
+
+		let callsignGroup = profile.grouped("callsign")
+		let addCallsign = callsignGroup.grouped("add")
+		addCallsign.get(use: addCallsign(req:))
+		addCallsign.post(use: addCallsign(req:))
+		callsignGroup.post(":callId", "delete", use: deleteCallsign(req:))
 	}
 
 
@@ -43,12 +50,18 @@ struct UserController: RouteCollection {
 
 		struct UserContent: Content, CommonContentProviding {
 			let user: UserModel
+			let trainingCallsigns: [Callsign]
 			let qsos: [QSO]
 			let common: CommonContent
 		}
 
+		// TODO: adding/removing training callsign
+		// TODO: trainings QSOs + editing
+		// TODO: hunter QSOs
+
+		let trainingCalls = try await user.$callsigns.query(on: req.db).filter(\.$kind == .training).all()
 		let qso = try await user.$activatorQsos.query(on: req.db).all()
-		return try await req.view.render("profile", UserContent(user: user, qsos: qso, common: req.commonContent))
+		return try await req.view.render("profile", UserContent(user: user, trainingCallsigns: trainingCalls, qsos: qso, common: req.commonContent))
 	}
 
 	func specificUser(req: Request) async throws -> View {
@@ -112,6 +125,110 @@ struct UserController: RouteCollection {
 		req.auth.logout(UserModel.self)
 		req.session.destroy()
 		return try await req.view.render("profileDelete", ["callsign" : callsign])
+	}
+
+	func addCallsign(req: Request) async throws -> Response {
+		guard let user = req.auth.get(UserModel.self) else {
+			throw Abort(.unauthorized)
+		}
+		
+		struct CallsignForm: Content, Validatable {
+			var trainingCallsign: String?
+			static func validations(_ validations: inout Validations) {
+				validations.add("trainingCallsign", as: String.self, is: .callsign)
+			}
+		}
+
+		struct AddCallsignContext: Content, CommonContentProviding {
+			var form: CallsignForm
+			var formPath: String
+			var error: String? = nil
+			var common: CommonContent
+		}
+
+		if req.method == .GET {
+			let form = CallsignForm()
+			return try await req.view.render("profileCallsignAdd", AddCallsignContext(form: form, formPath: req.url.path, common: req.commonContent)).encodeResponse(for: req)
+		}
+
+		let form = try req.content.decode(CallsignForm.self)
+		var errorMessage: String? = nil
+		do {
+			try CallsignForm.validate(content: req)
+		} catch let validationError as ValidationsError {
+			errorMessage = validationError.description
+		} catch {
+			errorMessage = "Unknown error"
+		}
+
+		if errorMessage == nil && user.callsign.kind != .licensed {
+			errorMessage = "You need to be a licensed amateur to add a training callsign."
+		}
+
+		if errorMessage == nil {
+			let count = try await user.$callsigns.get(on: req.db).count
+			if count > 4 {
+				errorMessage = "You already have \(count) callsigns associated to this account. Don't overdo it."
+			}
+		}
+
+		let dedicatedTrainingCallsRegex = "(^(DN[0-8][A-Z]{1,4})$)"
+		if errorMessage == nil {
+			if let trainingCallString = normalizedCallsignOptional(form.trainingCallsign), !trainingCallString.isEmpty {
+				let validTrainingCallSign: Bool
+				if let range = trainingCallString.range(of: dedicatedTrainingCallsRegex, options: [.regularExpression]),
+				   range.lowerBound == trainingCallString.startIndex && range.upperBound == trainingCallString.endIndex {
+					validTrainingCallSign = true
+				} else if trainingCallString.hasSuffix("/T") {
+					validTrainingCallSign = true
+				} else {
+					validTrainingCallSign = false
+				}
+
+				if !validTrainingCallSign {
+					errorMessage = "Callsign does not look like a valid German training callsign."
+				}
+				if try await Callsign.query(on: req.db).filter(\.$callsign == trainingCallString).field(\.$id).count() != 0 {
+					errorMessage = "Training callsign \(trainingCallString) already exists."
+				}
+				if errorMessage == nil {
+					let callsign = Callsign(callsign: trainingCallString, kind: .training)
+					callsign.$user.id = try user.requireID()
+					try await callsign.save(on: req.db)
+				}
+			} else {
+				errorMessage = "Please enter a training callsign."
+			}
+		}
+
+		if errorMessage != nil {
+			return try await req.view.render("profileCallsignAdd", AddCallsignContext(form: form, formPath: req.url.path, error: errorMessage, common: req.commonContent)).encodeResponse(for: req)
+		} else {
+			return req.redirect(to: "/profile", redirectType: .normal)
+		}
+	}
+
+	func deleteCallsign(req: Request) async throws -> Response {
+		guard let user = req.auth.get(UserModel.self) else {
+			throw Abort(.unauthorized)
+		}
+
+		guard let callIdString = req.parameters.get("callId"), let callId = UUID(callIdString) else {
+			throw Abort(.badRequest)
+		}
+		guard let callsign = try await Callsign.find(callId, on: req.db) else {
+			throw Abort(.notFound)
+		}
+		guard callsign.kind == .training else {
+			// Only training calls can be deleted.
+			throw Abort(.badRequest)
+		}
+		guard try callsign.$user.id == user.requireID() else {
+			// Only callsigns of the signed-in user can be deleted.
+			throw Abort(.unauthorized)
+		}
+		try await callsign.delete(on: req.db)
+		return req.redirect(to: "/profile", redirectType: .normal)
 	}
 
 	func adif(req: Request) async throws -> Response {

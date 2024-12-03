@@ -11,6 +11,24 @@
     <a class="btn btn-primary" href="/logout">Logout</a>
       <table class="table">
         <tr><th>Callsign</th><td>#(user.callsign.callsign)</td></tr>
+        #if(user.callsign.kind == "licensed"):
+        <tr><th>Training Callsigns:</th>
+        <td>
+        <table class="table">
+        #for(callsign in trainingCallsigns):
+        <tr><td>#(callsign.callsign)</td><td>
+         <form action="" method="post">
+         <input class="form-check-input" type="checkbox" id="confirm-#(callsign.callsign)" name="confirm" required>
+         <label class="form-check-label" for="confirm-#(callsign.callsign)">Confirm Deletion</label><br>
+         <input class="btn btn-primary" type="submit" value="Delete Callsign" formaction="/profile/callsign/#(callsign.id)/delete">
+         </form>
+        </td></tr>
+        #endfor
+        </table>
+        <a class="btn btn-primary" href="/profile/callsign/add">Add Callsign</a>
+        </td>
+        </tr>
+        #endif
         #if(user.ccchubUser):
         <tr><th>Hub username:</th><td>#(user.ccchubUser)</td></tr>
         #endif
