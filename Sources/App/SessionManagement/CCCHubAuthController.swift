@@ -17,8 +17,8 @@ struct CCCHubAuthController: RouteCollection {
 		let grouped = routes.grouped(Self.basePath)
 
 		// Setup OAuth with CCC Hub
-		try routes.oAuth(from: CCCHub.self, authenticate: Self.authStartSSOPath, callback: authCallbackPath, scope: [ "37c3_attendee" ]) { (request, token) in
-			return request.client.get(URI(stringLiteral: "https://api.events.ccc.de/congress/2023/me"), headers: HTTPHeaders([("Authorization", "Bearer \(token)")])).flatMap { response in
+		try routes.oAuth(from: CCCHub.self, authenticate: Self.authStartSSOPath, callback: authCallbackPath, scope: [ "38c3_attendee" ]) { (request, token) in
+			return request.client.get(URI(stringLiteral: "https://api.events.ccc.de/congress/2024/me"), headers: HTTPHeaders([("Authorization", "Bearer \(token)")])).flatMap { response in
 				// Manually remove OAuth access token we only need it for one request and don't want to hang onto it.
 				request.session.data["access_token"] = nil
 
