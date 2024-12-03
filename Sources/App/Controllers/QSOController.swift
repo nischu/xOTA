@@ -535,6 +535,8 @@ struct QSOController: RouteCollection {
 				self.date = qso.date
 				self.call = qso.call
 				self.station_callsign = qso.stationCallSign
+				self.operator = qso.operator
+				self.contactedOperator = qso.contactedOperator
 				self.freq = qso.freq
 				self.mode = qso.mode
 				self.rstSent = qso.rstSent
