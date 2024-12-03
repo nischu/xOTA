@@ -27,7 +27,7 @@ internal func normalizedCallsign(_ string: String) -> String {
 	string.uppercased()
 }
 internal func normalizedCallsignOptional(_ string: String?) -> String? {
-	guard let string else { return nil }
+	guard let string, !string.isEmpty else { return nil }
 	return normalizedCallsign(string)
 }
 
