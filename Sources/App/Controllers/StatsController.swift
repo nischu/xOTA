@@ -32,9 +32,9 @@ struct StatsController: RouteCollection {
 
 			let queryStart = "select ref.title AS title,"
 			let queryModes = modes.reduce("") { previous, mode in
-				previous + "count(case when qsos.mode = '\(mode)' then qsos.mode end) AS \(mode),"
+				previous + " count(case when qsos.mode = '\(mode)' then qsos.mode end) AS \(mode),"
 			}
-			let queryEnd = "count(*) AS sum FROM qsos RIGHT JOIN 'references' AS ref ON qsos.reference_id = ref.id GROUP BY qsos.reference_id ORDER BY ref.title;"
+			let queryEnd = " count(*) AS sum FROM qsos LEFT JOIN 'references' AS ref ON qsos.reference_id = ref.id GROUP BY qsos.reference_id ORDER BY ref.title;"
 
 			referenceRow = try await sql.raw(SQLQueryString(queryStart + queryModes + queryEnd)).all()
 		} else {
@@ -56,10 +56,10 @@ struct StatsController: RouteCollection {
 		if let sql = req.db as? SQLDatabase {
 
 			let queryStart = "select ref.title AS title,"
-			let queryReferences = referenceNames.reduce("") { previous, referenceName in
-				previous + "count(case when hunted_ref.title = '\(referenceName)' then hunted_ref.title end) AS '\(referenceName)',"
-			}
-			let queryEnd = "count(*) AS sum FROM qsos RIGHT JOIN 'references' AS ref ON qsos.reference_id = ref.id RIGHT JOIN 'references' AS hunted_ref ON qsos.hunted_reference_id = hunted_ref.id WHERE ref.title != NULL GROUP BY qsos.reference_id ORDER BY ref.title;"
+			let queryReferences = referenceNames.map { referenceName in
+				"count(case when hunted_ref.title = '\(referenceName)' then hunted_ref.title end) AS '\(referenceName)'"
+			}.joined(separator: ", ")
+			let queryEnd = "FROM qsos INNER JOIN 'references' AS ref ON qsos.reference_id = ref.id INNER JOIN 'references' AS hunted_ref ON qsos.hunted_reference_id = hunted_ref.id GROUP BY qsos.reference_id ORDER BY ref.title;"
 
 			reference2ReferenceRow = try await sql.raw(SQLQueryString(queryStart + queryReferences + queryEnd)).all()
 		} else {
