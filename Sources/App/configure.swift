@@ -16,8 +16,10 @@ public func configure(_ app: Application) async throws {
 		referenceSlug: "t",
 		referenceSingular: "Toilet",
 		referencePlural: "Toilets")
-	app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, userPassEnabled: true)
 
+
+	let userPassEnabled = (Environment.get("USER_PASS_ENABLED") as? NSString)?.boolValue ?? false
+	app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, userPassEnabled: userPassEnabled)
 
 	app.views.use(.leaf)
 	app.leaf.tags["urlEncode"] = URLEncodeHostAllowedTag()
