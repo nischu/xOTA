@@ -19,6 +19,9 @@
   #if(error):
     <p>#(error)</p>
   #endif
+  #if(user.callsign.kind == "unlicensed" && !editing && loggingMode == "training"):
+  <p>Using training callsign #(trainingCallsign).</p>
+  #endif
 
   #if(editing):
   <label class="form-label" for="reference">Activated #(common.namingTheme.referenceSingular):</label>
@@ -29,6 +32,12 @@
 
   <label class="form-label" for="callsign">Callsign</label>
   <input class="form-control" type="text" list="knowncallsigns" id="callsign" name="callsign" value="#(qso.callsign)" minlength=3 maxlength=20 required>
+
+  #if(user.callsign.kind == "licensed" || loggingMode == "training"):
+  <label class="form-label" for="contactedOperator">Contacted Operator</label>
+  <input class="form-control" type="text" list="knowncallsigns" id="contactedOperator" name="contactedOperator" value="#(qso.contactedOperator)" minlength=3 maxlength=20>
+  #endif
+
   <datalist id="knowncallsigns">
   #for(knownCallsign in knownCallsigns):
     <option value="#(knownCallsign)"></option>
@@ -49,7 +58,7 @@
 
   <input class="form-control" type="datetime-local" id="manualDate" name="manualDate" step=1 min="2023-12-25T00:00:00" #if(qso.dateTimeSource == "manual"): value="#(qso.manualDate)" #endif max="2023-12-31T00:00:00" > 
 
-  #if(user.callsign.kind == "licensed"):
+  #if(user.callsign.kind == "licensed" || loggingMode == "training"):
   <label class="form-label" for="freq">Frequency (kHz)</label>
   <input class="form-control" type="number" list="channels" id="freq" name="freq" value="#(qso.freq)" inputmode="numeric" required>
   <datalist id="channels">
@@ -97,7 +106,20 @@
   <input class="form-control btn btn-primary" type="submit" value="Log" >
   #endif
   </form>
-  </div>
+  <br>
+  #if(user.callsign.kind == "unlicensed" && !editing):
 
+  #if(loggingMode == "training"):
+  <p>In Amateur Radio Training Mode</p>
+  #endif
+  #if(loggingMode == "normal"):
+  <p>Unlicensed Operator Logging</p>
+  #endif
+  <form style="max-width: 350px" action="#(formPath)/loggingMode">
+  <input class="form-control btn btn-secondary" type="submit" value="Change Logging Mode" >
+  </form>
+  #endif
+
+  </div>
 </body>
 </html>

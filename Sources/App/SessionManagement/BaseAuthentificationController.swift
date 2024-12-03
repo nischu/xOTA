@@ -130,6 +130,7 @@ struct BaseAuthentificationController: RouteCollection {
 
 		routes.get("logout") { req async throws in
 			req.auth.logout(UserModel.self)
+			req.session.destroy()
 			return req.redirect(to: "/")
 		}
 		

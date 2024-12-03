@@ -5,6 +5,7 @@ struct CreateCallsign: AsyncMigration {
 		let kind = try await database.enum("callsign_kind_enum")
 			.case("licensed")
 			.case("unlicensed")
+			.case("training")
 			.create()
 
 		try await database.schema("callsigns")

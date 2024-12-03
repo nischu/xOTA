@@ -6,6 +6,16 @@ struct QSOController: RouteCollection {
 	let authMiddleware: [Middleware]
 	let namingTheme: NamingTheme
 
+	enum SessionDataKeys: String, RawRepresentable {
+		case loggingMode
+		case trainingCallsign
+	}
+
+	enum LoggingMode: String, RawRepresentable, Codable {
+		case normal
+		case training
+	}
+
 	func boot(routes: RoutesBuilder) throws {
 		let api = routes.grouped("api", "qso")
 
@@ -35,6 +45,10 @@ struct QSOController: RouteCollection {
 			log.post(use: postLog)
 		}
 
+		let loggingMode = log.grouped("loggingMode")
+		loggingMode.get(use:updateLoggingMode(req:))
+		loggingMode.post(use:updateLoggingMode(req:))
+
 		let editQSO = authed.grouped("qso", "edit", ":qsoId")
 		if isLoggingDisabled {
 			editQSO.get(use: loggingDisabled)
@@ -62,6 +76,7 @@ struct QSOController: RouteCollection {
 		return try await req.view.render("qsos", context)
 	}
 
+	// Used for html rendering and form contents
 	struct QSOContext : Codable, Validatable {
 		enum DateTimeSource: String, RawRepresentable, Codable {
 			case auto
@@ -69,6 +84,7 @@ struct QSOController: RouteCollection {
 		}
 		var reference: String
 		var callsign: String?
+		var contactedOperator: String?
 		var huntedReference: String?
 		var dateTimeSource: DateTimeSource = .auto
 		var manualDate: String?
@@ -78,6 +94,7 @@ struct QSOController: RouteCollection {
 		var rst_rcvd: String?
 		static func validations(_ validations: inout Validations) {
 			validations.add("callsign", as: String.self, is:.relaxedCallsign)
+			validations.add("contactedOperator", as: String?.self, is: .nil || .empty || .relaxedCallsign, required: false)
 			let rstPattern = "[0-5][0-9][0-9]?"
 			validations.add("rst_sent", as: String.self, is:.pattern(rstPattern), customFailureDescription: "is not a valid RST sent value.")
 			validations.add("rst_rcvd", as: String.self, is:.pattern(rstPattern), customFailureDescription: "is not a valid RST received value.")
@@ -86,17 +103,22 @@ struct QSOController: RouteCollection {
 
 		mutating func resetForNextQSO() {
 			callsign = nil
+			contactedOperator = nil
 			huntedReference = nil
 			dateTimeSource = .auto
 			manualDate = nil
 		}
 	}
+
+	// Root html context.
 	struct LogQSOContext: Codable, CommonContentProviding {
 		var editing: Bool
 		var formTitle: String
 		var user: UserModel
 		var error: String?
 		var formPath: String
+		var loggingMode: LoggingMode
+		var trainingCallsign: String?
 		var qso: QSOContext?
 		var modes: [QSO.Mode] = QSO.Mode.allCases
 		var knownCallsigns: [String]
@@ -109,7 +131,10 @@ struct QSOController: RouteCollection {
 		let authedUser = try req.auth.require(UserModel.self)
 
 		let reference = try await ReferenceController(namingTheme: namingTheme).specific(req:req)
-		return try await req.view.render("logQSO", LogQSOContext(editing:false, formTitle:"Log QSO at \(reference.title)", user:authedUser, formPath:req.url.path, qso:QSOContext(reference: reference.title), knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent))
+		let loggingMode: LoggingMode = .init(rawValue: req.session.data[SessionDataKeys.loggingMode.rawValue] ?? "") ?? .normal
+		let trainingCallsign = req.session.data[SessionDataKeys.trainingCallsign.rawValue]
+
+		return try await req.view.render("logQSO", LogQSOContext(editing:false, formTitle:"Log QSO at \(reference.title)", user:authedUser, formPath:req.url.path, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:QSOContext(reference: reference.title), knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent))
 	}
 
 	func knownCallsigns(req: Request) async throws -> [String] {
@@ -118,6 +143,11 @@ struct QSOController: RouteCollection {
 
 	func knownReferences(req: Request) async throws -> [String] {
 		try await Reference.query(on: req.db).field(\.$title).sort(\.$title).all().map(\.title)
+	}
+
+	func trainingCallsigns(req: Request, mode: LoggingMode) async throws -> [String] {
+		guard mode == .training else { return [] }
+		return try await Callsign.query(on: req.db).filter(\.$kind == .training).field(\.$callsign).sort(\.$callsign).all().map(\.callsign)
 	}
 
 	let isoDateFormatter = {
@@ -130,7 +160,7 @@ struct QSOController: RouteCollection {
 	func postLog(req: Request) async throws -> View {
 		let reference = try await ReferenceController(namingTheme: namingTheme).specific(req: req)
 		return try await createOrUpdateLog(req: req, title:"Log QSO at \(reference.title)") { qsoInfo in
-			try await QSO(activator: qsoInfo.activator, hunter: qsoInfo.hunter, reference: qsoInfo.reference, huntedReference: qsoInfo.huntedReference, date: qsoInfo.date, call:qsoInfo.call, stationCallSign: qsoInfo.stationCallSign, freq: qsoInfo.freq, mode: qsoInfo.mode, rstSent: qsoInfo.rstSent, rstRcvt: qsoInfo.rstRcvt)
+			try await QSO(activator: qsoInfo.activator, activatorTrainer:qsoInfo.activatorTrainer, hunter: qsoInfo.hunter, reference: qsoInfo.reference, huntedReference: qsoInfo.huntedReference, date: qsoInfo.date, call:qsoInfo.call, stationCallSign: qsoInfo.stationCallSign, operator: qsoInfo.operator, contactedOperator: qsoInfo.contactedOperator, contactedOperatorUser: qsoInfo.contactedOperatorUser, freq: qsoInfo.freq, mode: qsoInfo.mode, rstSent: qsoInfo.rstSent, rstRcvt: qsoInfo.rstRcvt)
 				.save(on: req.db)
 		}
 	}
@@ -144,8 +174,10 @@ struct QSOController: RouteCollection {
 
 		try await qso.$reference.load(on: req.db)
 		try await qso.$huntedReference.load(on: req.db)
-		let qsoContext = QSOContext(reference: qso.reference.title, callsign: qso.call, huntedReference: qso.huntedReference?.title, dateTimeSource: .manual, manualDate: isoDateFormatter.string(from: qso.date), freq: qso.freq, mode: qso.mode, rst_sent: qso.rstSent, rst_rcvd: qso.rstRcvt)
-		return try await req.view.render("logQSO", LogQSOContext(editing:true, formTitle: "Edit QSO", user: authedUser, formPath: req.url.path, qso:qsoContext, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent))
+		let loggingMode: LoggingMode = qso.$activatorTrainer.id != nil ? .training : .normal
+		let trainingCallsign = loggingMode == .training ? qso.stationCallSign : nil
+		let qsoContext = QSOContext(reference: qso.reference.title, callsign: qso.call, contactedOperator: qso.contactedOperator, huntedReference: qso.huntedReference?.title, dateTimeSource: .manual, manualDate: isoDateFormatter.string(from: qso.date), freq: qso.freq, mode: qso.mode, rst_sent: qso.rstSent, rst_rcvd: qso.rstRcvt)
+		return try await req.view.render("logQSO", LogQSOContext(editing:true, formTitle: "Edit QSO", user: authedUser, formPath: req.url.path, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:qsoContext, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent))
 
 	}
 
@@ -163,12 +195,17 @@ struct QSOController: RouteCollection {
 
 		return try await createOrUpdateLog(req: req, title:"Update QSO", editing: true) { qsoInfo in
 			qso.$activator.id = try qsoInfo.activator.requireID()
+			// Do not update activator trainer, stationCallsign or operator info for editing since we don't keep the info in the form.
+//			qso.$activatorTrainer.id = try qsoInfo.activatorTrainer?.requireID()
+//			qso.stationCallSign = qsoInfo.stationCallSign
+//			qso.operator = qsoInfo.operator
 			qso.$hunter.id = try qsoInfo.hunter?.requireID()
 			qso.$reference.id = try qsoInfo.reference.requireID()
 			qso.$huntedReference.id = try qsoInfo.huntedReference?.requireID()
 			qso.date = qsoInfo.date
 			qso.call = qsoInfo.call
-			qso.stationCallSign = qsoInfo.stationCallSign
+			qso.contactedOperator = qsoInfo.contactedOperator
+			qso.$contactedOperatorUser.id = try qsoInfo.contactedOperatorUser?.requireID()
 			qso.freq = qsoInfo.freq
 			qso.mode = qsoInfo.mode
 			qso.rstSent = qsoInfo.rstSent
@@ -179,27 +216,35 @@ struct QSOController: RouteCollection {
 
 	}
 
+	// Model filled with form contents in createOrUpdateLog(), callers use this model to copy values over to the QSO database model.
 	struct CreateUpdateQSOModel {
-
 		var activator: UserModel
+		var activatorTrainer: UserModel?
 		var hunter: UserModel?
 		var reference: Reference
 		var huntedReference: Reference?
 		var date: Date
 		var call: String
+		var contactedOperator: String?
+		var contactedOperatorUser: UserModel?
 		var stationCallSign: String
+		var `operator`: String?
 		var freq: Int
 		var mode: QSO.Mode
 		var rstSent: String
 		var rstRcvt: String
 
-		init(activator: UserModel, hunter: UserModel? = nil, reference: Reference, huntedReference: Reference? = nil, date: Date, call: String, stationCallSign: String, freq: Int, mode: QSO.Mode, rstSent: String, rstRcvt: String) {
+		init(activator: UserModel, activatorTrainer: UserModel?, hunter: UserModel? = nil, reference: Reference, huntedReference: Reference? = nil, date: Date, call: String, contactedOperator: String?, contactedOperatorUser: UserModel?, stationCallSign: String, operator operatorCall: String?, freq: Int, mode: QSO.Mode, rstSent: String, rstRcvt: String) {
 			self.activator = activator
+			self.activatorTrainer = activatorTrainer
 			self.hunter = hunter
 			self.reference = reference
 			self.huntedReference = huntedReference
 			self.date = date
 			self.call = call
+			self.operator = operatorCall
+			self.contactedOperator = contactedOperator
+			self.contactedOperatorUser = contactedOperatorUser
 			self.stationCallSign = stationCallSign
 			self.freq = freq
 			self.mode = mode
@@ -228,6 +273,9 @@ struct QSOController: RouteCollection {
 
 		let form = try req.content.decode(QSOContext.self)
 
+		let loggingMode: LoggingMode = .init(rawValue: req.session.data[SessionDataKeys.loggingMode.rawValue] ?? "") ?? .normal
+		let trainingCallsign = req.session.data[SessionDataKeys.trainingCallsign.rawValue]
+
 		let reference = try await Reference.query(on: req.db)
 			.filter(\.$title, .equal, form.reference)
 			.first()
@@ -247,7 +295,7 @@ struct QSOController: RouteCollection {
 			} catch {
 				errorMessage = "Unknown error"
 			}
-			if errorMessage == nil, authedUser.callsign.callsign == form.callsign {
+			if errorMessage == nil, normalizedCallsignOptional(authedUser.callsign.callsign) == normalizedCallsignOptional(form.callsign) {
 				errorMessage = "You can't log a QSO with yourself"
 			}
 		}
@@ -276,6 +324,8 @@ struct QSOController: RouteCollection {
 		} else {
 			date = nil
 		}
+
+
 		let huntedReference: Reference?
 		if errorMessage == nil, let huntedRefTitle = form.huntedReference, !huntedRefTitle.isEmpty {
 			huntedReference = try await Reference.query(on: req.db)
@@ -290,31 +340,135 @@ struct QSOController: RouteCollection {
 			huntedReference = nil
 		}
 
-		var nextForm = form
-		if errorMessage == nil {
-			var hunter: UserModel? = nil
-			if let hunterCall = form.callsign {
-				hunter = try await UserModel.query(on: req.db)
-					.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
-					.filter(Callsign.self, \.$callsign == hunterCall)
-					.field(\.$id)
-					.first()
-					.get()
-			}
-			if let hunterCall = form.callsign, let rstSent = form.rst_sent, let rstRcvd = form.rst_rcvd, let date {
-				try await save(CreateUpdateQSOModel(activator: authedUser, hunter: hunter, reference: reference!, huntedReference: huntedReference, date: date, call: normalizedCallsign(hunterCall), stationCallSign: normalizedCallsign(authedUser.callsign.callsign), freq: form.freq, mode: form.mode, rstSent: rstSent, rstRcvt: rstRcvd))
-				if !editing {
-					nextForm.resetForNextQSO()
+		var operatorCall: String?
+		var stationCallsign = normalizedCallsign(authedUser.callsign.callsign)
+		var activatorTrainer: UserModel? = nil
+
+		// When in training mode, correct the use of operatorCall and stationCallsign
+		if errorMessage == nil && loggingMode == .training {
+			if let trainingCallString = normalizedCallsignOptional(trainingCallsign), !trainingCallString.isEmpty {
+				let trainingCallsign = try await Callsign.query(on: req.db).filter(\.$callsign == trainingCallString).with(\.$user).first()
+				if let trainingCallsign, trainingCallsign.kind == .training {
+					operatorCall = stationCallsign
+					stationCallsign = trainingCallString
+					activatorTrainer = trainingCallsign.user
+				} else {
+					errorMessage = "No training callsign found for \(trainingCallString). The trainer needs to add it as an additional callsign in their profile."
 				}
-				errorMessage = "Successfully saved your QSO with \(hunterCall)."
+			} else {
+				errorMessage = "Training callsign needs to be set and not empty."
 			}
 		}
 
-		return try await req.view.render("logQSO", LogQSOContext(editing:editing, formTitle:title, user:authedUser, error:errorMessage, formPath:req.url.path, qso:nextForm, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent))
+		let hunterCall = normalizedCallsignOptional(form.callsign)
+		let contactedOperator = normalizedCallsignOptional(form.contactedOperator)
+
+		var contactedOperatorUser: UserModel? = nil
+		var hunter: UserModel? = nil
+
+		if hunterCall == contactedOperator {
+			errorMessage = "Callsign and contacted operator are not expected not be equal."
+		}
+
+		if errorMessage == nil {
+
+			if let hunterCall = hunterCall {
+				let callsign = try await Callsign.callsign(hunterCall, on: req.db).with(\.$user).first()
+				hunter = callsign?.user
+
+				if callsign?.kind == .training && (contactedOperator?.isEmpty ?? true) {
+					errorMessage = "Expected a contacted operator since \(hunterCall) is a training callsign."
+				}
+			}
+
+			if let contactedOperator {
+				contactedOperatorUser = try await UserModel.userFor(callsign: contactedOperator, on: req.db).get()
+			}
+		}
+
+		if errorMessage == nil && contactedOperatorUser?.id == hunter?.id {
+			errorMessage = "Callsign and contacted operator callsign belong to the same user. This is not unexpected."
+		}
+
+		var nextForm = form
+		if errorMessage == nil {
+			if let hunterCall = hunterCall, let rstSent = form.rst_sent, let rstRcvd = form.rst_rcvd, let date {
+				try await save(CreateUpdateQSOModel(activator: authedUser, activatorTrainer: activatorTrainer, hunter: hunter, reference: reference!, huntedReference: huntedReference, date: date, call: hunterCall, contactedOperator:contactedOperator, contactedOperatorUser: contactedOperatorUser, stationCallSign: stationCallsign, operator:operatorCall, freq: form.freq, mode: form.mode, rstSent: rstSent, rstRcvt: rstRcvd))
+				if !editing {
+					nextForm.resetForNextQSO()
+				}
+				let operatorAddition = (contactedOperator?.isEmpty == false) ? " operator \(contactedOperator!)" : ""
+				errorMessage = "Successfully saved your QSO with \(hunterCall)\(operatorAddition)."
+			}
+		}
+
+		return try await req.view.render("logQSO", LogQSOContext(editing:editing, formTitle:title, user:authedUser, error:errorMessage, formPath:req.url.path, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:nextForm, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent))
 	}
 
 	func loggingDisabled(req: Request) async throws -> Response {
 		return req.redirect(to: "/rules")
+	}
+
+
+	func updateLoggingMode(req: Request) async throws -> Response {
+
+		struct LoggingModeForm: Content, Validatable {
+			var loggingMode: LoggingMode
+			var trainingCallsign: String?
+			static func validations(_ validations: inout Validations) {
+				validations.add("loggingMode", as: LoggingMode.self)
+				validations.add("trainingCallsign", as: String?.self, is: .nil || .relaxedCallsign)
+			}
+		}
+
+		struct LoggingModeContext: Content, CommonContentProviding {
+			var form: LoggingModeForm
+			var trainingCallsigns: [String]
+			var formPath: String
+			var error: String? = nil
+			var common: CommonContent
+		}
+
+		if req.method == .GET {
+			let form = LoggingModeForm(loggingMode: .init(rawValue: req.session.data[SessionDataKeys.loggingMode.rawValue] ?? "") ?? .normal,
+									   trainingCallsign: req.session.data[SessionDataKeys.trainingCallsign.rawValue])
+			return try await req.view.render("loggingMode", LoggingModeContext(form: form, trainingCallsigns: try await trainingCallsigns(req: req, mode: .training), formPath:req.url.path, common: req.commonContent)).encodeResponse(for: req)
+		}
+
+		let form = try req.content.decode(LoggingModeForm.self)
+		var errorMessage: String? = nil
+		do {
+			try LoggingModeForm.validate(content: req)
+		} catch let validationError as ValidationsError {
+			errorMessage = validationError.description
+		} catch {
+			errorMessage = "Unknown error"
+		}
+
+		if errorMessage == nil && form.loggingMode == .training {
+			if let trainingCallString = normalizedCallsignOptional(form.trainingCallsign), !trainingCallString.isEmpty {
+				let trainingCallsign = try await Callsign.query(on: req.db).filter(\.$callsign == trainingCallString).with(\.$user).first()
+				if let trainingCallsign, trainingCallsign.kind == .training {
+					req.session.data[SessionDataKeys.trainingCallsign.rawValue] = trainingCallsign.callsign
+					req.session.data[SessionDataKeys.loggingMode.rawValue] = LoggingMode.training.rawValue
+				} else {
+					errorMessage = "No training callsign found for \(trainingCallString). The trainer needs to add it as an additional callsign in their profile."
+				}
+			} else {
+				errorMessage = "No training callsign required. The trainer needs to add it as an additional callsign in their profile."
+			}
+		}
+
+		if errorMessage == nil, form.loggingMode == .normal {
+			req.session.data[SessionDataKeys.trainingCallsign.rawValue] = nil
+			req.session.data[SessionDataKeys.loggingMode.rawValue] = nil
+		}
+
+		if errorMessage != nil {
+			return try await req.view.render("loggingMode", LoggingModeContext(form: form, trainingCallsigns: try await trainingCallsigns(req: req, mode: .training), formPath:req.url.path, error: errorMessage, common: req.commonContent)).encodeResponse(for: req)
+		} else {
+			return req.redirect(to: req.url.path.replacingOccurrences(of: "/loggingMode", with: ""), redirectType: .normal)
+		}
 	}
 
 	func qsosDashboard(req: Request) async throws -> View {
@@ -367,6 +521,8 @@ struct QSOController: RouteCollection {
 			var date: Date
 			var call: String
 			var station_callsign: String
+			var `operator`: String?
+			var contactedOperator: String?
 			var freq: Int
 			var mode: QSO.Mode
 			var rstSent: String?
@@ -391,6 +547,8 @@ struct QSOController: RouteCollection {
 			.field(\.$date)
 			.field(\.$stationCallSign)
 			.field(\.$call)
+			.field(\.$operator)
+			.field(\.$contactedOperator)
 			.field(\.$freq)
 			.field(\.$mode)
 			.field(\.$rstSent)

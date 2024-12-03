@@ -35,6 +35,10 @@ struct SeedSampleData: AsyncMigration {
 			try await userN0CALL.save(on: database)
 			callsign.$user.id = try userN0CALL.requireID()
 			try await callsign.update(on: database)
+			// Add training callsign
+			let trainingCall = Callsign(callsign: "N0CALL/T", kind: .training)
+			trainingCall.$user.id = try userN0CALL.requireID()
+			try await trainingCall.save(on: database)
 			return userN0CALL
 		}
 
@@ -48,14 +52,13 @@ struct SeedSampleData: AsyncMigration {
 			return userN0CALA
 		}
 
-
 		let qsos = [
-			try QSO(activator:userN0CALL, hunter: userN0CALA, reference: references[0], date: Date(timeIntervalSinceNow: -15), call: "N0CALA", stationCallSign: "N0CALL", freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
-			try QSO(activator:userN0CALL, hunter: nil, reference: references[0], date: Date(timeIntervalSinceNow: -10), call: "N0CALB", stationCallSign: "N0CALL", freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
-			try QSO(activator:userN0CALL, hunter: nil, reference: references[0], date: Date(timeIntervalSinceNow: -5), call: "N0CALC", stationCallSign: "N0CALL", freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
-			try QSO(activator:userN0CALL, hunter: nil, reference: references[0], date: Date(timeIntervalSinceNow: -0), call: "N0CALD", stationCallSign: "N0CALL", freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
+			try QSO(activator:userN0CALL, activatorTrainer: nil, hunter: userN0CALA, reference: references[0], date: Date(timeIntervalSinceNow: -15), call: "N0CALA", stationCallSign: "N0CALL", operator:nil, contactedOperator: nil, contactedOperatorUser: nil, freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
+			try QSO(activator:userN0CALL, activatorTrainer: nil, hunter: nil, reference: references[0], date: Date(timeIntervalSinceNow: -10), call: "N0CALB", stationCallSign: "N0CALL", operator:nil, contactedOperator: nil, contactedOperatorUser: nil, freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
+			try QSO(activator:userN0CALL, activatorTrainer: nil, hunter: nil, reference: references[0], date: Date(timeIntervalSinceNow: -5), call: "N0CALC", stationCallSign: "N0CALL", operator:nil, contactedOperator: nil, contactedOperatorUser: nil, freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
+			try QSO(activator:userN0CALL, activatorTrainer: nil, hunter: nil, reference: references[0], date: Date(timeIntervalSinceNow: -0), call: "N0CALD", stationCallSign: "N0CALL", operator:nil, contactedOperator: nil, contactedOperatorUser: nil, freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
 
-			try QSO(activator:userN0CALA, hunter: userN0CALA, reference: references[0], date: Date(timeIntervalSinceNow: -10), call: "N0CALL", stationCallSign: "N0CALA", freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
+			try QSO(activator:userN0CALA, activatorTrainer: nil, hunter: userN0CALA, reference: references[0], date: Date(timeIntervalSinceNow: -10), call: "N0CALL", stationCallSign: "N0CALA", operator: nil, contactedOperator: nil, contactedOperatorUser: nil, freq: 145000, mode: .FM, rstSent: "59", rstRcvt: "59"),
 		]
 
 		for qso in qsos {

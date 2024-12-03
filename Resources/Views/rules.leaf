@@ -34,6 +34,8 @@
     <dl class="row">
        <dt>Activator</dt>
        <dd>Person who activates a reference (in this case toilet). Only the activator needs to log QSOs in this system.</dd>
+       <dt>Contacted Operator</dt>
+       <dd>When somebody uses a training callsign you should log both the training callsign as 'callsign' and their 'unlicesed call' as 'operator callsign' to give them hunter and T2T credits.</dd>
        <dt>Chaser</dt>
        <dd>See hunter.</dd>
        <dt>Hunter</dt>
@@ -43,6 +45,14 @@
        <dt>Toilet to Toilet (T2T)</dt>
        <dd>When two activators have a QSOs from reference locations, both are activators and hunters at the same time. They receive both activator and hunter credit and they can log the hunted reference.</dd>
     </dl>
+    <h3>Training:</h3>
+    <ul>
+      <li>Licensed operators with class E or A are permitted to train future amateur radio operators. Please adhere to the <a href="https://www.gesetze-im-internet.de/afuv_2005/__12.html" target="_blank">official legal rules</a>.</li>
+      <li>Operators who whish to train can to add their training call (separate DN callsign or personal callsign with /T suffix which is spoken as /Trainee in voice modes) to their <a href="/profile/">profile</a>.</li>
+      <li>This system supports the training future amateur radio operator with training callsigns. The QSOs can be logged by trainees in a special training mode using a training callsign and their 'unlicensed callsign' as 'operator callsign' to associate hunter QSOs with your account.</li>
+      <li>Unlicensed operators can change the logging mode and enter a training callsign on the logging page.</li>
+      <li>Reminder: It's illegal to use callsigns without permission. Please stay with your trainer.</li>
+    </ul>
     <h3>Additional asks:</h3>
     <ul>
       <li>Please don't spam the system, it was thrown together in a very short time.</li>

@@ -55,4 +55,12 @@ extension UserModel: SessionAuthenticatable {
 			.with(\.$callsign)
 			.first()
 	}
+
+	static func userFor(callsign: String, on database: any Database) -> EventLoopFuture<UserModel?> {
+		return UserModel.query(on: database)
+			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
+			.filter(Callsign.self, \.$callsign == normalizedCallsign(callsign))
+			.field(\.$id)
+			.first()
+	}
 }

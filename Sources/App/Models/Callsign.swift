@@ -7,6 +7,7 @@ final class Callsign: Model, Content, @unchecked Sendable {
 	enum CallsignKind: String, RawRepresentable, Content {
 		case licensed = "licensed"
 		case unlicensed = "unlicensed"
+		case training = "training"
 	}
 
 	@ID(key: .id)
@@ -29,5 +30,10 @@ final class Callsign: Model, Content, @unchecked Sendable {
 		self.id = id
 		self.callsign = callsign
 		self.kind = kind
+	}
+
+	static func callsign(_ callsign: String, on database: any Database) -> QueryBuilder<Callsign> {
+		return Callsign.query(on: database)
+			.filter(\.$callsign == normalizedCallsign(callsign))
 	}
 }

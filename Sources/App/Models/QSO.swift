@@ -60,6 +60,10 @@ final class QSO: Model, Content, @unchecked Sendable {
 	@Parent(key: "activator_id")
 	var activator: UserModel
 
+	// User Model of person lending the training callsign used
+	@OptionalParent(key: "activator_trainer_id")
+	var activatorTrainer: UserModel?
+
 	@OptionalParent(key: "hunter_id")
 	var hunter: UserModel?
 
@@ -80,6 +84,17 @@ final class QSO: Model, Content, @unchecked Sendable {
 	@Field(key: "station_callsign")
 	var stationCallSign: String
 
+	// Name of the logging operator (used for trainee contacts)
+	@Field(key: "operator")
+	var `operator`: String?
+
+	// Name of the contacted operator (used for trainee on other side of contact)
+	@Field(key: "contacted_operator")
+	var contactedOperator: String?
+
+	@OptionalParent(key: "contacted_operator_user_id")
+	var contactedOperatorUser: UserModel?
+
 	@Field(key: "freq")
 	var freq: Int
 
@@ -94,15 +109,19 @@ final class QSO: Model, Content, @unchecked Sendable {
 
 	init() { }
 
-	init(id: UUID? = nil, activator: UserModel, hunter: UserModel?, reference: Reference, huntedReference: Reference? = nil, date: Date, call: String, stationCallSign: String, freq: Int, mode: Mode, rstSent: String, rstRcvt: String) throws {
+	init(id: UUID? = nil, activator: UserModel, activatorTrainer: UserModel?, hunter: UserModel?, reference: Reference, huntedReference: Reference? = nil, date: Date, call: String, stationCallSign: String, operator: String?, contactedOperator: String?, contactedOperatorUser: UserModel?, freq: Int, mode: Mode, rstSent: String, rstRcvt: String) throws {
 		self.id = id
 		self.$activator.id = try activator.requireID()
+		self.$activatorTrainer.id = try activatorTrainer?.requireID()
 		self.$hunter.id = try hunter?.requireID()
 		self.$reference.id = try reference.requireID()
 		self.$huntedReference.id = try huntedReference?.requireID()
 		self.date = date
 		self.call = call
 		self.stationCallSign = stationCallSign
+		self.operator = `operator`
+		self.contactedOperator = contactedOperator
+		self.$contactedOperatorUser.id = try contactedOperatorUser?.requireID()
 		self.freq = freq
 		self.mode = mode
 		self.rstSent = rstSent

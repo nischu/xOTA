@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  #extend("include_head")
+  <style>
+  .form-label {
+    margin-top: 4px;
+    margin-bottom: 0px;
+  }
+  </style>
+  <title>Change Logging Mode</title>
+</head>
+
+<body>
+  #extend("include_navbar")
+  <div class="container">
+  <h1>#(formTitle)</h1>
+  <form style="max-width: 350px" action="#(formPath)" method="post">
+  #if(error):
+    <p>#(error)</p>
+  #endif
+  <label class="form-label" for="loggingMode">Logging Mode:</label><br>
+  <label class="form-check-label" for="radioButtonAuto">Normal</label>
+  <input class="form-check-input" type="radio" id="radioButtonAuto" name="loggingMode" value="normal" required #if(form.loggingMode == "normal"): checked #endif>
+  <label class="form-check-label" for="radioButtonManual">Training</label>
+  <input class="form-check-input" type="radio" id="radioButtonManual" name="loggingMode" value="training" #if(form.loggingMode == "training"): checked #endif>
+  <br/>
+  <label class="form-label" for="trainingCallsign">Training Callsign:</label>
+  <input class="form-control" type="text" list="trainingcallsigns" id="trainingCallsign" name="trainingCallsign" value="#(form.trainingCallsign)" minlength=3 maxlength=20>
+  <datalist id="trainingcallsigns">
+  #for(callsign in trainingCallsigns):
+    <option value="#(callsign)"></option>
+  #endfor
+  </datalist>
+  <br/>
+  <input class="form-control btn btn-primary" type="submit" value="Update" >
+  </form>
+  </div>
+
+</body>
+</html>

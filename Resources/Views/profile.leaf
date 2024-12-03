@@ -41,9 +41,9 @@
 
       <form action="" method="get">
       <table class="table">
-        <tr><th>Date</th><th>Own call</th><th>Call</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
+        <tr><th>Date</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
     #for(qso in qsos):
-        <tr><td>#date(qso.date)</td><td>#(qso.stationCallSign)</td><td>#(qso.call)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><th><input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)"></th></tr>
+        <tr><td>#date(qso.date)</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><th><input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)"></th></tr>
     #endfor
       </table>
       </form>
