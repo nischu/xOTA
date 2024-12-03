@@ -12,11 +12,11 @@ Create an uberspace account and follow the [manual](https://manual.uberspace.de)
 
 ### Install Swift
 ```
-wget https://download.swift.org/swift-5.9.2-release/centos7/swift-5.9.2-RELEASE/swift-5.9.2-RELEASE-centos7.tar.gz
+wget https://download.swift.org/swift-5.10.1-release/centos7/swift-5.10.1-RELEASE/swift-5.10.1-RELEASE-centos7.tar.gz
 mkdir Swift
 cd Swift/
-tar xzf ../swift-5.9.2-RELEASE-centos7.tar.gz
-ln -s ~/Swift/swift-5.9.2-RELEASE-centos7/usr/bin/swift ~/bin/swift
+tar xzf ../swift-5.10.1-RELEASE-centos7.tar.gz
+ln -s ~/Swift/swift-5.10.1-RELEASE-centos7/usr/bin/swift ~/bin/swift
 ```
 
 Create a file at `~/Swift/fixincludes/unistd.h` with the following contents:
@@ -51,7 +51,7 @@ swift build --configuration release -Xcc -I../Swift/fixincludes/
 
 ### Migrate DB
 ```
-.build/release/xOTA_App --env configure  migrate
+.build/release/xOTA_App --env configure migrate
 ```
 
 ### Configure supervisord
@@ -62,7 +62,7 @@ Create `~/etc/services.d/tota-prod.ini` with entried adjusted for your setup:
 command=/home/tota2023/xOTA-prod/.build/release/xOTA_App serve --env production -p 8081 -H 0.0.0.0
 directory=/home/tota2023/xOTA-prod/
 startsecs=10
-environment=CCCHUB_DOMAIN="events.ccc.de/congress/2023/hub/sso/",CCCHUB_CLIENT_ID="<redacted>",CCCHUB_CLIENT_SECRET="<redacted>",CCCHUB_AUTH_CALLBACK="https://2023.totawatch.de/ccc-hub-auth-complete",
+environment=CCCHUB_DOMAIN="events.ccc.de/congress/2024/hub/sso/",CCCHUB_CLIENT_ID="<redacted>",CCCHUB_CLIENT_SECRET="<redacted>",CCCHUB_AUTH_CALLBACK="https://2023.totawatch.de/ccc-hub-auth-complete",
 stdout_logfile=/home/tota2023/logs/tota-prod/stdout.log
 stderr_logfile=/home/tota2023/logs/tota-prod/stderr.log
 ```
@@ -86,7 +86,7 @@ The naming theme of programs can be changed in `configure.swift`.
 The [Leaf](https://docs.vapor.codes/leaf/overview/) templates are in `Resources/Views/` and need to be adjusted for your needs.
 
 There is an admin interface available at /admin to create and update references and reset user passwords.
-To make a user admin use `.build/release/App --env configure admin -c <CALLSIGN>`, then user can then access the admin interface.
+To make a user admin use `.build/release/xOTA_App --env configure admin -c <CALLSIGN>`, then user can then access the admin interface.
 
 
 ### Authentification option
