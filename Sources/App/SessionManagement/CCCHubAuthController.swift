@@ -6,7 +6,7 @@ struct CCCHubAuthController: RouteCollection {
 
 	static let registerCallSignKey = "ccc-hub-register-callsign"
 	static let registerAccountType = "ccc-hub-register-account-type"
-	static let authStartSSOPath = "ccc-hub/ccc-hub-auth"
+	static let authStartSSOPath = "/ccc-hub/ccc-hub-auth"
 	static let basePath: PathComponent = "ccc-hub"
 
 	static let registerTemplate = "ccc-hub-register"

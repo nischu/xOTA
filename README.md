@@ -96,4 +96,5 @@ Which authentification options are enabled can be configured in `configure.swift
 
 Authentification is tied to the hub SSO endpoint that was reachable at `events.ccc.de/congress/2023/hub/sso/`. For future CCC events, the SSO endpoint needs to be adjusted in the environment and `CCCHubAuthController.swift`.
 
+Create an OAuth app in the CCC Hub Backoffice with Client type = Confidential, Authorization grant type = Authorization Code.
 
