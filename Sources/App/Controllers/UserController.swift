@@ -49,25 +49,36 @@ struct UserController: RouteCollection {
 		}
 
 		struct UserContent: Content, CommonContentProviding {
+			struct QSOGoup: Content {
+				let title: String
+				let qsos: [QSO]
+				let editable: Bool
+				let visible: Bool
+			}
 			let formPath: String
 			let user: UserModel
+			let qsoGroups: [QSOGoup]
+			let hasTrainingQSOs: Bool
 			let trainingCallsigns: [Callsign]
-			let qsos: [QSO]
-			let trainingQSOs: [QSO]
 			let common: CommonContent
 		}
 
-		// TODO: hunter QSOs
-
+		let userId = try user.requireID()
 		let trainingCalls = try await user.$callsigns.query(on: req.db).filter(\.$kind == .training).all()
 		let activatorQSOs = try await user.$activatorQsos.query(on: req.db).sort(\.$date, .descending).all()
-		let trainingQSOs = try await QSO.query(on: req.db).filter(\.$activatorTrainer.$id == user.requireID()).sort(\.$date, .descending).all()
-		return try await req.view.render("profile", UserContent(formPath: req.url.path, user: user, trainingCallsigns: trainingCalls, qsos: activatorQSOs, trainingQSOs: trainingQSOs, common: req.commonContent))
+		let hunterQSOs = try await QSO.query(on: req.db).group(.or, { $0.filter(\.$hunter.$id == userId).filter(\.$contactedOperatorUser.$id == userId) }).sort(\.$date, .descending).all()
+		let trainingQSOs = try await QSO.query(on: req.db).filter(\.$activatorTrainer.$id == userId).sort(\.$date, .descending).all()
+		let qsoGroups: [UserContent.QSOGoup] = [
+			.init(title: "Activator QSOs", qsos: activatorQSOs, editable: true, visible: true),
+			.init(title: "Hunter QSOs", qsos: hunterQSOs, editable: false, visible: true),
+			.init(title: "Training QSOs", qsos: trainingQSOs, editable: true, visible: !trainingQSOs.isEmpty),
+		]
+		return try await req.view.render("profile", UserContent(formPath: req.url.path, user: user, qsoGroups: qsoGroups, hasTrainingQSOs:!trainingQSOs.isEmpty, trainingCallsigns: trainingCalls, common: req.commonContent))
 	}
 
 	func specificUser(req: Request) async throws -> View {
 		guard let callsign = req.parameters.get("callsign"),
-			  let reference = try await UserModel.query(on: req.db)
+			  let user = try await UserModel.query(on: req.db)
 			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
 			.filter(Callsign.self, \.$callsign == callsign)
 			.with(\.$callsign)
@@ -86,9 +97,10 @@ struct UserController: RouteCollection {
 
 		if let sql = req.db as? SQLDatabase {
 			// The underlying database driver is SQL.
+			let userId = try user.requireID().uuidString
 			let limit = 20
-			activated = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.activator_id = \(literal: try reference.requireID().uuidString) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
-			hunted = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.hunter_id = \(literal: try reference.requireID().uuidString) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
+			activated = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.activator_id = \(literal: userId) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
+			hunted = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.hunter_id = \(literal: userId) OR 'qsos'.contacted_operator_user_id = \(literal: userId) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
 		} else {
 			activated = []
 			hunted = []
@@ -101,7 +113,7 @@ struct UserController: RouteCollection {
 			let common: CommonContent
 		}
 
-		return try await req.view.render("user", UserContent(user: reference, activated: activated, hunted: hunted, common: req.commonContent))
+		return try await req.view.render("user", UserContent(user: user, activated: activated, hunted: hunted, common: req.commonContent))
 	}
 
 	func deleteProfile(req: Request) async throws -> View {
@@ -243,23 +255,24 @@ struct UserController: RouteCollection {
 		let headerComment: String
 		let fileNamePart: String
 		let adifMode: String = try req.query.get(at: "adif-mode")
+		let userId = try user.requireID().uuidString
 		switch adifMode {
 		case "hunter":
-			sqlQuery = "SELECT date, station_callsign AS 'call', operator AS contactedOperator, call AS 'stationCallsign', contacted_operator AS 'operator', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo', h.title AS 'mySigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString);"
+			sqlQuery = "SELECT date, station_callsign AS 'call', operator AS contactedOperator, call AS 'stationCallsign', contacted_operator AS 'operator', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo', h.title AS 'mySigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.hunter_id = \(literal: userId) OR qsos.contacted_operator_user_id = \(literal: userId);"
 			headerComment =  "Hunter QSOs for \(primaryCallsign) based on activator logs."
 			fileNamePart = "hunted"
 		case "hunter-no-r2r":
-			sqlQuery = "SELECT date, station_callsign AS 'call', operator AS contactedOperator, call AS 'stationCallsign', contacted_operator AS 'operator', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString) AND qsos.hunted_reference_id IS NULL;"
+			sqlQuery = "SELECT date, station_callsign AS 'call', operator AS contactedOperator, call AS 'stationCallsign', contacted_operator AS 'operator', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id WHERE (qsos.hunter_id = \(literal: userId) OR qsos.contacted_operator_user_id = \(literal: userId)) AND qsos.hunted_reference_id IS NULL;"
 			headerComment =  "Hunter QSOs for \(primaryCallsign) based on activator logs excluding \(req.commonContent.namingTheme.referenceSingular)2\(req.commonContent.namingTheme.referenceSingular)."
 			fileNamePart = "hunted-no-r2r"
 		case "trainer":
-			sqlQuery = "SELECT date, call, contacted_operator AS 'contactedOperator', station_callsign AS 'stationCallsign', operator, freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_trainer_id = \(literal: try user.requireID().uuidString);"
+			sqlQuery = "SELECT date, call, contacted_operator AS 'contactedOperator', station_callsign AS 'stationCallsign', operator, freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_trainer_id = \(literal: userId);"
 			headerComment =  "Trainer QSOs for \(primaryCallsign)."
 			fileNamePart = "trainer"
 		case "activator":
 			fallthrough
 		default:
-			sqlQuery = "SELECT date, call, contacted_operator AS 'contactedOperator', station_callsign AS 'stationCallsign', operator, freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_id = \(literal: try user.requireID().uuidString);"
+			sqlQuery = "SELECT date, call, contacted_operator AS 'contactedOperator', station_callsign AS 'stationCallsign', operator, freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_id = \(literal: userId);"
 			headerComment =  "Activator QSOs for \(primaryCallsign)."
 			fileNamePart = "activated"
 		}

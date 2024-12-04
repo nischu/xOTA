@@ -52,7 +52,7 @@
          <option value="activator">Activator</option>
          <option value="hunter">Hunter</option>
          <option value="hunter-no-r2r">Hunter (no #(common.namingTheme.referenceSingular)2#(common.namingTheme.referenceSingular))</option>
-         #if(count(trainingQSOs)>0):
+         #if(hasTrainingQSOs):
          <option value="trainer">Trainer</option>
          #endif
        </select>
@@ -64,29 +64,20 @@
        </form>
        <br>
 
-      <h3>QSOs #count(qsos)</h3>
+    #for(qsoGroup in qsoGroups):
+    #if(qsoGroup.visible):
+      <h3>#(qsoGroup.title) #count(qsoGroup.qsos)</h3>
       <form action="" method="get">
       <input type="hidden" name="callback" value="#(formPath)">
       <table class="table">
         <tr><th>Date/Time (UTC)</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
-    #for(qso in qsos):
-        <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><th><input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)"></th></tr>
+    #for(qso in qsoGroup.qsos):
+        <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><td>#if(qsoGroup.editable):<input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)">#endif</td></tr>
     #endfor
       </table>
       </form>
-     #if(count(trainingQSOs)>0):
-      <h3>Training QSOs #count(trainingQSOs)</h3>
-      <form action="" method="get">
-      <input type="hidden" name="callback" value="#(formPath)">
-      <table class="table">
-        <tr><th>Date/Time (UTC)</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
-    #for(qso in trainingQSOs):
-        <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><th><input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)"></th></tr>
+    #endif
     #endfor
-      </table>
-
-      </form>
-      #endif
     </div>
   </body>
 </html>
