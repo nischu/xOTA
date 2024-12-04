@@ -22,7 +22,7 @@ struct QSOController: RouteCollection {
 		let apiAuthed = api.grouped(authMiddleware)
 		apiAuthed.get("me", use: apiQsosUser(req:)).description("Get qsos of the current user. User auth required.")
 		apiAuthed.group(":qsoId") { qso in
-			qso.delete(use: delete).description("Delete a specific QSO. User auth required.")
+			qso.delete(use: delete(req:)).description("Delete a specific QSO. User auth required.")
 		}
 
 		api.get("", use: apiQsos(req:)).description("All qsos, no auth required. Please don't overwhelm the server with requests.")
@@ -53,9 +53,11 @@ struct QSOController: RouteCollection {
 		if isLoggingDisabled {
 			editQSO.get(use: loggingDisabled)
 			editQSO.post(use: loggingDisabled)
+			editQSO.post("delete", use: loggingDisabled)
 		} else {
 			editQSO.get(use: getEditQSO)
 			editQSO.post(use: postEditQSO)
+			editQSO.post("delete", use: postDelete(req:))
 		}
 	}
 
@@ -409,6 +411,12 @@ struct QSOController: RouteCollection {
 		return try await req.view.render("logQSO", LogQSOContext(editing:editing, formTitle:title, user:authedUser, error:errorMessage, formPath:req.url.path, urlQuery: req.url.query, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:nextForm, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent)).encodeResponse(for: req)
 	}
 
+	func postDelete(req: Request) async throws -> Response {
+		_ = try await delete(req: req)
+		let callback = try req.query.get(String?.self, at: "callback") ?? "/"
+		return req.redirect(to: callback)
+	}
+
 	func loggingDisabled(req: Request) async throws -> Response {
 		return req.redirect(to: "/rules")
 	}
@@ -509,7 +517,7 @@ struct QSOController: RouteCollection {
 			throw Abort(.notFound)
 		}
 		let authedUser = try req.auth.require(UserModel.self)
-		guard qso.activator.id == authedUser.id else {
+		guard let userId = authedUser.id, (qso.$activator.id == userId || qso.$activatorTrainer.id == userId) else {
 			throw Abort(.forbidden)
 		}
 		try await qso.delete(on: req.db)

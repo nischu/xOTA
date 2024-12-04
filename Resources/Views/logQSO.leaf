@@ -105,8 +105,16 @@
   #endif
   </form>
   <br>
-  #if(user.callsign.kind == "unlicensed" && !editing):
 
+  #if(editing):
+  <form style="max-width: 350px" action="#(formPath)/delete?#(urlQuery)" method="post">
+  <input class="form-check-input" type="checkbox" id="confirm-deletion" name="confirm" required> <label class="form-check-label" for="confirm-deletion">Delete this QSO.</label><br>
+  <input class="form-control btn btn-danger" type="submit" value="Delete QSO">
+  </form>
+  <br>
+  #endif
+
+  #if(user.callsign.kind == "unlicensed" && !editing):
   #if(loggingMode == "training"):
   <p>In Amateur Radio Training Mode</p>
   #endif
@@ -116,6 +124,7 @@
   <form style="max-width: 350px" action="#(formPath)/loggingMode">
   <input class="form-control btn btn-secondary" type="submit" value="Change Logging Mode" >
   </form>
+  <br>
   #endif
 
   </div>
