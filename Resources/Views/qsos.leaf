@@ -10,9 +10,9 @@
     <h1>QSOs at #(title)</h1>
       <p>
       <table class="table">
-        <tr><th>Date</th><th>Activator</th><th>Hunter</th><th>QRG</th><th>Mode</th></tr>
+        <tr><th>Date/Time (UTC)</th><th>Activator</th><th>Hunter</th><th>QRG</th><th>Mode</th></tr>
     #for(qso in qsos):
-        <tr><td>#date(qso.date, "yyyy-MM-dd HH-mm")</td><td>#(qso.stationCallSign)</td><td>#(qso.call)</td><td>#(qso.freq)kHz</td><td>#(qso.mode)</td></tr>
+        <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(qso.stationCallSign)</td><td>#(qso.call)</td><td>#(qso.freq)kHz</td><td>#(qso.mode)</td></tr>
     #endfor
       </table>
       </p>
