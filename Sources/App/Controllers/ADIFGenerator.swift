@@ -3,7 +3,9 @@ import Foundation
 protocol ADIFGeneratorQSO {
 	var date: Date { get }
 	var call: String { get }
+	var contactedOperator: String? { get }
 	var stationCallsign: String { get }
+	var `operator`: String? { get }
 	var freq: Int { get } // in kHz
 	var mode: String { get }
 	var rstSent: String? { get }
@@ -14,20 +16,19 @@ protocol ADIFGeneratorQSO {
 
 extension ADIFGeneratorQSO {
 	func records(with SIG: String) -> [ADIFGenerator.Record] {
-		var records: [ADIFGenerator.Record] = [
+		var records: [ADIFGenerator.Record?] = [
 			.init(name: .stationCallsign, value: stationCallsign),
+			.init(name: .operator, value: `operator`, nilOnEmpty: true),
 			.init(name: .call, value: call),
+			.init(name: .contactedOp, value: contactedOperator, nilOnEmpty: true),
 			.init(date: date),
 			.init(time: date),
 			.init(freq: freq),
 			.init(name: .mode, value: mode),
+			.init(name: .rstRcvd, value: rstRcvt),
+			.init(name: .rstSent, value: rstSent),
 		]
-		if let rstRcvt {
-			records.append(.init(name: .rstRcvd, value: rstRcvt))
-		}
-		if let rstSent {
-			records.append(.init(name: .rstSent, value: rstSent))
-		}
+		
 		if let sigInfo {
 			records.append(.init(name: .sig, value: SIG))
 			records.append(.init(name: .sigInfo, value: sigInfo))
@@ -36,7 +37,7 @@ extension ADIFGeneratorQSO {
 			records.append(.init(name: .mySig, value: SIG))
 			records.append(.init(name: .mySigInfo, value: mySigInfo))
 		}
-		return records
+		return records.compactMap { $0 }
 	}
 }
 
@@ -99,6 +100,13 @@ struct ADIFGenerator: CustomStringConvertible {
 			}
 		}
 
+		init?(name: Field, value: String?, nilOnEmpty: Bool = false) {
+			guard let value, (!value.isEmpty || !nilOnEmpty)  else {
+				return nil
+			}
+			self.init(name: name, value: value)
+		}
+
 		init(name: Field, value: String) {
 			self.name = name
 			self.value = value
@@ -153,8 +161,14 @@ struct ADIFGenerator: CustomStringConvertible {
 		case eoh = "EOH"
 		case eor = "EOR"
 
+		// the logging station's callsign (the callsign used over the air)
 		case stationCallsign = "STATION_CALLSIGN"
+		// the logging operator's callsign
+		case `operator` = "OPERATOR"
+		/// the contacted station's callsign
 		case call = "CALL"
+		/// the callsign of the individual operating the contacted station
+		case contactedOp = "CONTACTED_OP"
 		case mySig = "MY_SIG"
 		case mySigInfo = "MY_SIG_INFO"
 		case sig = "SIG"

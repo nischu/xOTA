@@ -80,6 +80,10 @@ final class QSO: Model, Content, @unchecked Sendable {
 	@Field(key: "call")
 	var call: String
 
+	// Name of the contacted operator (used for trainee on other side of contact)
+	@Field(key: "contacted_operator")
+	var contactedOperator: String?
+
 	// Activator
 	@Field(key: "station_callsign")
 	var stationCallSign: String
@@ -87,10 +91,6 @@ final class QSO: Model, Content, @unchecked Sendable {
 	// Name of the logging operator (used for trainee contacts)
 	@Field(key: "operator")
 	var `operator`: String?
-
-	// Name of the contacted operator (used for trainee on other side of contact)
-	@Field(key: "contacted_operator")
-	var contactedOperator: String?
 
 	@OptionalParent(key: "contacted_operator_user_id")
 	var contactedOperatorUser: UserModel?

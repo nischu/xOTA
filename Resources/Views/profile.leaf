@@ -44,10 +44,7 @@
         </td></tr>
         </form>
       </table>
-      <h3>Account deletion</h3>
-
-      <h4>Adif</h3>
-
+      <h3>Adif</h3>
        <form action="/profile/adif" method="get">
        <div class="row g-3">
        <div class="col-auto">
@@ -55,6 +52,9 @@
          <option value="activator">Activator</option>
          <option value="hunter">Hunter</option>
          <option value="hunter-no-r2r">Hunter (no #(common.namingTheme.referenceSingular)2#(common.namingTheme.referenceSingular))</option>
+         #if(count(trainingQSOs)>0):
+         <option value="trainer">Trainer</option>
+         #endif
        </select>
        </div>
        <div class="col">
@@ -62,6 +62,7 @@
        </div>
        </div>
        </form>
+       <br>
 
       <h3>QSOs #count(qsos)</h3>
       <form action="" method="get">
