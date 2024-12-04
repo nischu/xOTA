@@ -63,15 +63,15 @@ struct QSOController: RouteCollection {
 
 	func qsosForReference(req: Request) async throws -> View {
 		let reference = try await ReferenceController(namingTheme: namingTheme).specific(req: req)
-		let referenceId = try reference.requireID()
 
 		struct QSOsContext: Encodable, CommonContentProviding {
 			let title: String
 			let qsos: [QSO]
 			let common: CommonContent
 		}
-		let qsos = try await QSO.query(on: req.db)
-			.filter(\.$reference.$id == referenceId)
+		let qsos = try await reference.$qsos.query(on: req.db)
+			.with(\.$huntedReference)
+			.sort(\.$date, .descending)
 			.limit(100)
 			.all()
 		let context = QSOsContext(title: reference.title, qsos: qsos, common: req.commonContent)
