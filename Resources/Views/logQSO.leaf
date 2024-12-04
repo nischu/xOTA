@@ -15,7 +15,7 @@
   #extend("include_navbar")
   <div class="container">
   <h1>#(formTitle)</h1>
-  <form style="max-width: 350px" action="#(formPath)" method="post">
+  <form style="max-width: 350px" action="#(formPath)?#(urlQuery)" method="post">
   #if(error):
     <p>#(error)</p>
   #endif

@@ -49,19 +49,20 @@ struct UserController: RouteCollection {
 		}
 
 		struct UserContent: Content, CommonContentProviding {
+			let formPath: String
 			let user: UserModel
 			let trainingCallsigns: [Callsign]
 			let qsos: [QSO]
+			let trainingQSOs: [QSO]
 			let common: CommonContent
 		}
 
-		// TODO: adding/removing training callsign
-		// TODO: trainings QSOs + editing
 		// TODO: hunter QSOs
 
 		let trainingCalls = try await user.$callsigns.query(on: req.db).filter(\.$kind == .training).all()
-		let qso = try await user.$activatorQsos.query(on: req.db).all()
-		return try await req.view.render("profile", UserContent(user: user, trainingCallsigns: trainingCalls, qsos: qso, common: req.commonContent))
+		let activatorQSOs = try await user.$activatorQsos.query(on: req.db).sort(\.$date, .descending).all()
+		let trainingQSOs = try await QSO.query(on: req.db).filter(\.$activatorTrainer.$id == user.requireID()).sort(\.$date, .descending).all()
+		return try await req.view.render("profile", UserContent(formPath: req.url.path, user: user, trainingCallsigns: trainingCalls, qsos: activatorQSOs, trainingQSOs: trainingQSOs, common: req.commonContent))
 	}
 
 	func specificUser(req: Request) async throws -> View {
@@ -251,6 +252,10 @@ struct UserController: RouteCollection {
 			sqlQuery = "SELECT date, call AS 'stationCallsign', station_callsign AS 'call', freq, mode, rst_sent AS 'rstRcvt', rst_rcvd AS 'rstSent', a.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id WHERE qsos.hunter_id = \(literal: try user.requireID().uuidString) AND qsos.hunted_reference_id IS NULL;"
 			headerComment =  "Hunter QSOs for \(primaryCallsign) based on activator logs excluding \(req.commonContent.namingTheme.referenceSingular)2\(req.commonContent.namingTheme.referenceSingular)."
 			fileNamePart = "hunted-no-r2r"
+		case "trainer":
+			sqlQuery = "SELECT date, call, station_callsign AS 'stationCallsign', freq, mode, rst_sent AS 'rstSent', rst_rcvd AS 'rstRcvt', a.title AS 'mySigInfo', h.title AS 'sigInfo' FROM qsos LEFT JOIN 'references' AS a ON qsos.reference_id = a.id LEFT JOIN 'references' AS h ON qsos.hunted_reference_id = h.id WHERE qsos.activator_trainer_id = \(literal: try user.requireID().uuidString);"
+			headerComment =  "Trainer QSOs for \(primaryCallsign)."
+			fileNamePart = "trainer"
 		case "activator":
 			fallthrough
 		default:

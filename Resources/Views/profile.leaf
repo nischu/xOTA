@@ -35,13 +35,19 @@
         #if(user.hashedPassword):
         <tr><th>Change Password:</th><td><a class="btn btn-primary" href="/credentials/change">Change Password</a></td></tr>
         #endif
+        <form action="/profile/delete/" method="post">
+        <tr><th>Account deletion:<br>
+        <input class="form-check-input" type="checkbox" id="confirm-deletion" name="confirm" required> <label class="form-check-label" for="confirm-deletion">I want to delete my account and all uploaded QSO data.</label>
+        </th><td>
+         <br>
+         <input class="btn btn-danger" type="submit" value="Delete Account">
+        </td></tr>
+        </form>
       </table>
       <h3>Account deletion</h3>
-      <form action="/profile/delete/" method="post">
-         <input class="form-check-input" type="checkbox" id="confirm" name="confirm" required> <label class="form-check-label" for="confirm">I want to delete my account and all uploaded QSO data.</label><br>
-         <input class="btn btn-danger" type="submit" value="Delete Account">
-      </form>
-      <h3>QSOs #count(qsos)</h3>
+
+      <h4>Adif</h3>
+
        <form action="/profile/adif" method="get">
        <div class="row g-3">
        <div class="col-auto">
@@ -57,7 +63,9 @@
        </div>
        </form>
 
+      <h3>QSOs #count(qsos)</h3>
       <form action="" method="get">
+      <input type="hidden" name="callback" value="#(formPath)">
       <table class="table">
         <tr><th>Date</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
     #for(qso in qsos):
@@ -65,6 +73,19 @@
     #endfor
       </table>
       </form>
+     #if(count(trainingQSOs)>0):
+      <h3>Training QSOs #count(trainingQSOs)</h3>
+      <form action="" method="get">
+      <input type="hidden" name="callback" value="#(formPath)">
+      <table class="table">
+        <tr><th>Date</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
+    #for(qso in trainingQSOs):
+        <tr><td>#date(qso.date)</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><th><input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)"></th></tr>
+    #endfor
+      </table>
+
+      </form>
+      #endif
     </div>
   </body>
 </html>
