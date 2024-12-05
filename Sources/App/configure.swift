@@ -18,13 +18,21 @@ public func configure(_ app: Application) async throws {
 		referencePlural: "Toilets")
 
 
-	let userPassEnabled = (Environment.get("USER_PASS_ENABLED") as? NSString)?.boolValue ?? false
-	app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, userPassEnabled: userPassEnabled)
+	if app.environment == .testing {
+		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: false, userPassEnabled: true)
+	} else {
+		let userPassEnabled = (Environment.get("USER_PASS_ENABLED") as? NSString)?.boolValue ?? false
+		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, userPassEnabled: userPassEnabled)
+	}
 
 	app.views.use(.leaf)
 	app.leaf.tags["urlEncode"] = URLEncodeHostAllowedTag()
 
-	app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
+	if app.environment == .testing {
+		app.databases.use(.sqlite(.memory), as: .sqlite)
+	} else {
+		app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
+	}
 
 	app.migrations.add(CreateReference())
 	app.migrations.add(CreateUser())
@@ -40,8 +48,14 @@ public func configure(_ app: Application) async throws {
 
 	// Session handling
 	app.migrations.add(SessionRecord.migration)
+
 	app.sessions.use(.fluent(.sqlite))
 
+#if DEBUG
+	let secureCookie = false
+#else
+	let secureCookie = true
+#endif
 	app.sessions.configuration.cookieFactory = { sessionID in
 		return HTTPCookies.Value(
 			string: sessionID.string,
@@ -51,8 +65,8 @@ public func configure(_ app: Application) async throws {
 			maxAge: nil,
 			domain: nil,
 			path: "/",
-			isSecure: true,
-			isHTTPOnly: true,
+			isSecure: secureCookie,
+			isHTTPOnly: secureCookie,
 			sameSite: .lax
 		)
 	}
