@@ -22,7 +22,7 @@
       <table class="table">
         <tr><th>Callsign</th><th>QSOs</th></tr>
       #for(activator in activators):
-        <tr><td><a href="/user/#(activator.callsign)">#(activator.callsign)</a></td><td>#(activator.count)</td></tr>
+        <tr><td><a href="/user/#urlEncode(activator.callsign)">#(activator.callsign)</a></td><td>#(activator.count)</td></tr>
       #endfor
       </table>
     #endif
@@ -31,7 +31,7 @@
       <table class="table">
         <tr><th>Callsign</th><th>QSOs</th></tr>
       #for(hunter in hunters):
-        <tr><td><a href="/user/#(hunter.callsign)">#(hunter.callsign)</a></td><td>#(hunter.count)</td></tr>
+        <tr><td><a href="/user/#urlEncode(hunter.callsign)">#(hunter.callsign)</a></td><td>#(hunter.count)</td></tr>
       #endfor
       </table>
     #endif
