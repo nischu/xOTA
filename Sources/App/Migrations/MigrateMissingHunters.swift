@@ -4,7 +4,7 @@ import Fluent
 struct MigrateMissingHunters: AsyncMigration {
 	func prepare(on database: Database) async throws {
 
-		let users: [UserModel] = try await UserModel.query(on: database).with(\.$callsign).field(\.$id).field(Callsign.self,\.$callsign).all()
+		let users: [UserModel] = try await UserModel.query(on: database).with(\.$callsign).all()
 
 		// Update existing QSOs to add users that were created after QSO logging before the feature was in place on user creation.
 		for user in users {
