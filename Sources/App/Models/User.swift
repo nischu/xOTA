@@ -42,6 +42,9 @@ extension UserModel: SessionAuthenticatable {
 	var sessionID: UUID {
 		self.id ?? UUID()
 	}
+}
+
+extension UserModel {
 
 	static func find(
 		_ id: UserModel.IDValue?,
@@ -62,5 +65,25 @@ extension UserModel: SessionAuthenticatable {
 			.filter(Callsign.self, \.$callsign == normalizedCallsign(callsign))
 			.field(\.$id)
 			.first()
+	}
+
+	static func createUser(with callsign: String, kind: Callsign.CallsignKind, on database: any Database, additionalModifications: @escaping (UserModel) throws -> () = { _ in }) async throws -> UserModel {
+		try await database.transaction { database in
+			// Unfortunately we can't really model required 1:1 relationships in FluentKit, hence the user_id field on callsign is not enforced as required.
+			// Since the existenced of the id field is trated as insert vs. update indicator we dance a bit back and forth within the transaction.
+			let callsign = Callsign(callsign: callsign, kind: kind)
+			// Save the callsign to create an ID.
+			try await callsign.save(on: database)
+			// Now create a user with the callsign id
+			let newUserModel = UserModel(callsignId:try callsign.requireID())
+			// Apply any additional modifcations in the closure
+			try additionalModifications(newUserModel)
+			// Save the user model to create an ID.
+			try await newUserModel.save(on: database)
+			// Add the relationship for callsign to user.
+			callsign.$user.id = try newUserModel.requireID()
+			try await callsign.update(on: database)
+			return newUserModel
+		}
 	}
 }

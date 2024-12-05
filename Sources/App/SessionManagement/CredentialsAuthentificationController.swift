@@ -39,15 +39,15 @@ struct CredentialsAuthentificationController: RouteCollection {
 		return try await req.view.render(Self.registerTemplate, ["common":req.commonContent])
 	}
 
-	func registerPost(req: Request) async throws -> Response {
-		struct CredentialsRegisterContent: Content {
-			var accountType: BaseAuthentificationController.RegisterAccountType?
-			var callsign: String
-			var acceptTerms: String
-			var password: String
-			var password_repeat: String
-		}
+	struct CredentialsRegisterContent: Content {
+		var accountType: BaseAuthentificationController.RegisterAccountType?
+		var callsign: String
+		var acceptTerms: String
+		var password: String
+		var password_repeat: String
+	}
 
+	func registerPost(req: Request) async throws -> Response {
 		let registerContent = try req.content.decode(CredentialsRegisterContent.self)
 		let callsign = registerContent.callsign
 

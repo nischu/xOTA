@@ -94,25 +94,22 @@ struct BaseAuthentificationController: RouteCollection {
 		}()
 
 
-		let newUserModel = try await req.db.transaction { database in
-			// Unfortunately we can't really model required 1:1 relationships in FluentKit, hence the user_id field on callsign is not enforced as required.
-			// Since the existenced of the id field is trated as insert vs. update indicator we dance a bit back and forth within the transaction.
-			let callsign = Callsign(callsign: callsign, kind: callsignKind)
-			// Save the callsign to create an ID.
-			try await callsign.save(on: database)
-			// Now create a user with the callsign id
-			let newUserModel = UserModel(callsignId:try callsign.requireID())
-			// Apply any additional modifcations in the closure
-			try additionalModifications(newUserModel)
-			// Save the user model to create an ID.
-			try await newUserModel.save(on: database)
-			// Add the relationship for callsign to user.
-			callsign.$user.id = try newUserModel.requireID()
-			try await callsign.update(on: database)
-			return newUserModel
-		}
+		let newUserModel = try await UserModel.createUser(with: callsign, kind: callsignKind, on: req.db, additionalModifications: additionalModifications)
+		let userId = try newUserModel.requireID()
 
-		// TODO: update existing QSOs to add the newly created hunter if needed.
+		// Update existing QSOs to add the newly created hunter or contacted operator if needed.
+		try await req.db.transaction { db in
+			try await QSO.query(on: db)
+				.filter(\.$call, .equal, callsign)
+				.filter(\.$hunter.$id, .equal, nil)
+				.set(\.$hunter.$id, to: userId)
+				.update()
+			try await QSO.query(on: db)
+				.filter(\.$contactedOperator, .equal, callsign)
+				.filter(\.$contactedOperatorUser.$id, .equal, nil)
+				.set(\.$contactedOperatorUser.$id, to: userId)
+				.update()
+		}
 
 		req.auth.login(newUserModel)
 		return req.redirect(to: "/")
