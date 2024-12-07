@@ -60,6 +60,7 @@ struct UserController: RouteCollection {
 			let qsoGroups: [QSOGoup]
 			let hasTrainingQSOs: Bool
 			let trainingCallsigns: [Callsign]
+			let awards: [Award]
 			let common: CommonContent
 		}
 
@@ -73,7 +74,8 @@ struct UserController: RouteCollection {
 			.init(title: "Hunter QSOs", qsos: hunterQSOs, editable: false, visible: true),
 			.init(title: "Training QSOs", qsos: trainingQSOs, editable: true, visible: !trainingQSOs.isEmpty),
 		]
-		return try await req.view.render("profile", UserContent(formPath: req.url.path, user: user, qsoGroups: qsoGroups, hasTrainingQSOs:!trainingQSOs.isEmpty, trainingCallsigns: trainingCalls, common: req.commonContent))
+		let awards = try await Award.awards(for: userId, on: req.db)
+		return try await req.view.render("profile", UserContent(formPath: req.url.path, user: user, qsoGroups: qsoGroups, hasTrainingQSOs:!trainingQSOs.isEmpty, trainingCallsigns: trainingCalls, awards: awards, common: req.commonContent))
 	}
 
 	func specificUser(req: Request) async throws -> View {
@@ -95,9 +97,11 @@ struct UserController: RouteCollection {
 		let activated: [UserQSOReferenceRankEntry]
 		let hunted: [UserQSOReferenceRankEntry]
 
+		let userId = try user.requireID()
+
 		if let sql = req.db as? SQLDatabase {
 			// The underlying database driver is SQL.
-			let userId = try user.requireID().uuidString
+			let userId = userId.uuidString
 			let limit = 20
 			activated = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.activator_id = \(literal: userId) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
 			hunted = try await sql.raw("SELECT 'references'.title AS title, 'qsos'.mode AS mode, COUNT(*) AS count FROM 'qsos' INNER JOIN 'references' on 'references'.id = 'qsos'.reference_id WHERE 'qsos'.hunter_id = \(literal: userId) OR 'qsos'.contacted_operator_user_id = \(literal: userId) GROUP BY 'qsos'.reference_id, 'qsos'.mode ORDER BY count DESC, title, mode LIMIT \(literal: limit);").all(decoding: UserQSOReferenceRankEntry.self)
@@ -106,14 +110,19 @@ struct UserController: RouteCollection {
 			hunted = []
 		}
 
+		let awards = try await Award.awards(for: userId, on: req.db)
+		let isCurrentUser = req.auth.get(UserModel.self)?.id == userId
+
 		struct UserContent: Content, CommonContentProviding {
 			let user: UserModel
+			let isCurrentUser: Bool
 			let activated: [UserQSOReferenceRankEntry]
 			let hunted: [UserQSOReferenceRankEntry]
+			let awards: [Award]
 			let common: CommonContent
 		}
 
-		return try await req.view.render("user", UserContent(user: user, activated: activated, hunted: hunted, common: req.commonContent))
+		return try await req.view.render("user", UserContent(user: user, isCurrentUser: isCurrentUser, activated: activated, hunted: hunted, awards: awards, common: req.commonContent))
 	}
 
 	func deleteProfile(req: Request) async throws -> View {

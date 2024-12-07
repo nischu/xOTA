@@ -44,6 +44,19 @@
         </td></tr>
         </form>
       </table>
+
+      <h3>Awards</h3>
+      #if(count(awards)==0):
+      <p>No awards yet. Keep logging QSOs.</p>
+      #else:
+      <table class="table">
+        <tr><th>Award</th><th>Issued (UTC)</th><th>State</th></tr>
+        #for(award in awards):
+        <tr><td>#(award.name)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td><td>#if(award.state == "waiting-to-render"):Queued#elseif(award.state == "rendering"):Rendering#else:<a href="/#(award.filename)" target="_blank" >Download</a>#endif</td></tr>
+        #endfor
+      </table>
+      #endif
+
       <h3>Adif</h3>
        <form action="/profile/adif" method="get">
        <div class="row g-3">

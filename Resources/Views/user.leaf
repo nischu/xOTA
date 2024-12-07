@@ -2,12 +2,26 @@
 <html>
   <head>
     #extend("include_head")
-    <title>Profile</title>
+    <title>#(user.callsign.callsign) Profile</title>
   </head>
   <body>
     #extend("include_navbar")
     <div class="container">
     <h1>#(user.callsign.callsign)</h1>
+      #if(count(awards) > 0):
+      <h3>Awards</h3>
+      <table class="table">
+        <tr><th>Name</th></tr>
+        #for(award in awards):
+        #if(isCurrentUser && award.state == "issued"):
+        <td><a href="/#(award.filename)" target="_blank">#(award.name)</a>
+        #else:
+        <tr><td>#(award.name)</td></tr>
+        #endif
+        #endfor
+      </table>
+      #endif
+
     #if(count(activated) > 0):
       <h3>Activated</h3>
       <table class="table">
