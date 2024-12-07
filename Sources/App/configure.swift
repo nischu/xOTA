@@ -1,6 +1,7 @@
 import NIOSSL
 import Fluent
 import FluentSQLiteDriver
+import QueuesFluentDriver
 import Leaf
 import Vapor
 
@@ -39,6 +40,7 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(CreateUserRole())
 	app.migrations.add(CreateCallsign())
 	app.migrations.add(CreateQso())
+	app.migrations.add(CreateAward())
 	// TODO: can be removed before the next OSS release
 	app.migrations.add(MigrateMissingHunters())
 
@@ -52,6 +54,10 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(SessionRecord.migration)
 
 	app.sessions.use(.fluent(.sqlite))
+
+	// Queues
+	app.migrations.add(JobMetadataMigrate())
+	app.queues.use(.fluent(.sqlite))
 
 #if DEBUG
 	let secureCookie = false
@@ -78,8 +84,14 @@ public func configure(_ app: Application) async throws {
 	app.middleware.use(CustomDatabaseSessionAuthenticator(databaseID: .sqlite))
 
 	app.asyncCommands.use(MakeAdminCommand(), as: MakeAdminCommand.name)
-
 	app.asyncCommands.use(ResetPasswordCommand(), as: ResetPasswordCommand.name)
+
+
+	// Queues configuration
+	app.queues.configuration.refreshInterval = .seconds(60)
+	app.queues.configuration.workerCount = 1 // serial queue processing
+	app.queues.add(RenderAward())
+	try app.queues.startInProcessJobs(on: .default)
 
 	// register routes
 	try routes(app)

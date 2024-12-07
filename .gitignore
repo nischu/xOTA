@@ -10,3 +10,4 @@ db.sqlite
 .env.*
 ! .env.example
 .vscode
+Public/rendered-awards

@@ -11,6 +11,8 @@ let package = Package(
 		.package(url: "https://github.com/vapor/vapor.git", from: "4.89.0"),
 		// 🗄 An ORM for SQL and NoSQL databases.
 		.package(url: "https://github.com/vapor/fluent.git", from: "4.8.0"),
+		// Queues fluent driver
+		.package(url: "https://github.com/m-barthelemy/vapor-queues-fluent-driver.git", from: "3.0.0-beta1"),
 		// Fluent driver for SQLite.
 		.package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.6.0"),
 		// 🍃 An expressive, performant, and extensible templating language built for Swift.
@@ -27,6 +29,7 @@ let package = Package(
 				.product(name: "Fluent", package: "fluent"),
 				.product(name: "FluentSQLiteDriver", package: "fluent-sqlite-driver"),
 				.product(name: "Leaf", package: "leaf"),
+				.product(name: "QueuesFluentDriver", package: "vapor-queues-fluent-driver"),
 				.target(name: "ImperialCCCHub"),
 			],
 			path: "Sources/App"
