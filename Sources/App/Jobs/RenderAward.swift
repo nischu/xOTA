@@ -27,8 +27,8 @@ struct RenderAward: AsyncJob {
 		award.filename = filename
 		award.state = .rendering
 		try await award.save(on: db)
-		let currentDirectory = URL(filePath: FileManager.default.currentDirectoryPath, directoryHint: .isDirectory)
-		let scriptURL = URL(filePath: "awards/award.sh", directoryHint: .notDirectory, relativeTo: currentDirectory)
+		let currentDirectory = URL(filePath: FileManager.default.currentDirectoryPath)
+		let scriptURL = URL(filePath: "awards/award.sh", relativeTo: currentDirectory)
 		let renderPath = "Public/\(filename)"
 
 		let process = Process()
