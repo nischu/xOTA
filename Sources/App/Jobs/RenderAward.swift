@@ -6,26 +6,6 @@ struct AwardInfo: Codable {
 	let awardId: Award.IDValue
 }
 
-extension Award.AwardKind {
-	var templateName: String {
-		switch self {
-		case .activatedAll:
-			"activated"
-		case .huntedAll:
-			"hunted"
-		}
-	}
-
-	func fileName(_ namingTheme: NamingTheme) -> String {
-		switch self {
-		case .activatedAll:
-			"-activated-all-\(namingTheme.referencePlural.lowercased()).pdf"
-		case .huntedAll:
-			"-hunted-all-\(namingTheme.referencePlural.lowercased()).pdf"
-		}
-	}
-}
-
 struct RenderAward: AsyncJob {
 	typealias Payload = AwardInfo
 
@@ -38,12 +18,12 @@ struct RenderAward: AsyncJob {
 			})
 				.first()
 		else {
+			context.logger.error("Failed to find award with id \(payload.awardId) for award rendering.")
 			return
 		}
 
 		let userCallsign = award.user.callsign.callsign
-		let escapedCallsign = userCallsign.replacingOccurrences(of: "/", with: "_")
-		let filename = try "rendered-awards/\(award.requireID().uuidString)/\(escapedCallsign)\(award.kind.fileName(context.application.namingTheme))"
+		let filename = try "rendered-awards/\(award.requireID().uuidString)/\(award.filename ?? userCallsign).pdf"
 		award.filename = filename
 		award.state = .rendering
 		try await award.save(on: db)
@@ -58,7 +38,7 @@ struct RenderAward: AsyncJob {
 		process.standardError = pipe.fileHandleForWriting
 		process.arguments = [
 			userCallsign,
-			award.kind.templateName,
+			award.kind,
 			renderPath
 		]
 

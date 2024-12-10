@@ -107,6 +107,9 @@ final class QSO: Model, Content, @unchecked Sendable {
 	@Field(key: "rst_rcvd")
 	var rstRcvt: String?
 
+	@Timestamp(key: "modification_date", on: .update)
+	var modificationDate: Date?
+
 	init() { }
 
 	init(id: UUID? = nil, activator: UserModel, activatorTrainer: UserModel?, hunter: UserModel?, reference: Reference, huntedReference: Reference? = nil, date: Date, call: String, stationCallSign: String, operator: String?, contactedOperator: String?, contactedOperatorUser: UserModel?, freq: Int, mode: Mode, rstSent: String, rstRcvt: String) throws {

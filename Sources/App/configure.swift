@@ -43,6 +43,7 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(CreateAward())
 	// TODO: can be removed before the next OSS release
 	app.migrations.add(MigrateMissingHunters())
+	app.migrations.add(ModifyQsoAddModificationDate())
 
 #if DEBUG
 	app.migrations.add(SeedSampleData())
@@ -91,8 +92,14 @@ public func configure(_ app: Application) async throws {
 	app.queues.configuration.refreshInterval = .seconds(60)
 	app.queues.configuration.workerCount = 1 // serial queue processing
 	app.queues.add(RenderAward())
+	app.queues.add(CheckAwardElegibilityUser())
+	app.queues.add(AwardCheckScheduler())
 	try app.queues.startInProcessJobs(on: .default)
 
+	app.lifecycle.use(AwardCheckSchedulerLifecycle())
+
+	app.awardCheckers.append(AwardCheckerActivatedAll())
+	app.awardCheckers.append(AwardCheckerHuntedAll())
 	// register routes
 	try routes(app)
 }

@@ -19,6 +19,7 @@ struct CreateQso: AsyncMigration {
 			.field("mode", .string)
 			.field("rst_sent", .string)
 			.field("rst_rcvd", .string)
+			.field("modification_date", .datetime)
 			.create()
 	}
 	

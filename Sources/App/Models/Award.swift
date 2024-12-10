@@ -4,10 +4,7 @@ import Vapor
 final class Award: Model, Content, @unchecked Sendable {
 	static let schema = "awards"
 
-	enum AwardKind: String, RawRepresentable, Content {
-		case activatedAll = "activated-all"
-		case huntedAll = "hunted-all"
-	}
+	typealias AwardKind = String
 
 	enum State: String, RawRepresentable, Content {
 		case waitingToRender = "waiting-to-render"
@@ -48,20 +45,12 @@ final class Award: Model, Content, @unchecked Sendable {
 		self.state = .waitingToRender
 	}
 
-	static func awards(for userId: UserModel.IDValue, on db: any Database) async throws -> [Award] {
-		try await Award.query(on: db).filter(\.$user.$id == userId).sort(\.$issueDate, .descending).all()
+	static func awardsQuery(for userId: UserModel.IDValue, on db: any Database) -> QueryBuilder<Award> {
+		Award.query(on: db).filter(\.$user.$id == userId).sort(\.$issueDate, .descending)
 	}
-}
 
-extension Award.AwardKind {
-	func title(_ namingTheme: NamingTheme) -> String {
-		switch self {
-		case .activatedAll:
-			"Activated all \(namingTheme.referencePlural)"
-		case .huntedAll:
-			"Hunted all \(namingTheme.referencePlural)"
-		case .topFloorToBasement:
-			"Toilet2Toilet with highest elevation difference"
-		}
+	static func awards(for userId: UserModel.IDValue, on db: any Database) async throws -> [Award] {
+		try await self.awardsQuery(for: userId, on: db).all()
 	}
+
 }
