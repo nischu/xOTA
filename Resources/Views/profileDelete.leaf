@@ -7,7 +7,7 @@
   <body>
     #extend("include_navbar")
     <div class="container">
-    <p>Successfully deleted profile for #(callsign).</p>
+    <p>Successfully deleted profile for #(callsign.callsign).</p>
     </div>
   </body>
 </html>
