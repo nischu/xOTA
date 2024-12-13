@@ -21,9 +21,10 @@ struct BaseSSOAuthController: RouteCollection {
 	func register(req: Request) async throws -> View {
 		struct Context: Content {
 			let serviceName: String
+			let formPath: String
 			let common: CommonContent
 		}
-		return try await req.view.render(Self.registerTemplate, Context(serviceName: ssoServiceName, common: req.commonContent))
+		return try await req.view.render(Self.registerTemplate, Context(serviceName: ssoServiceName, formPath:req.url.path, common: req.commonContent))
 	}
 
 	func registerPost(req: Request) async throws -> Response {

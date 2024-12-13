@@ -9,7 +9,7 @@
   #extend("include_navbar")
   <div class="container">
   <h1>Register with #(serviceName)</h1>
-  <form action="/ccc-hub/register" method="post">
+  <form action="#(formPath)" method="post">
   #if(error):
   <div class="alert alert-warning" role="alert">
     #(error)
