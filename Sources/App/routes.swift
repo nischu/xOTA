@@ -36,8 +36,14 @@ func routes(_ app: Application) throws {
 	}
 
 
-	app.get("impressum") {req async throws in
-		return try await req.view.render("impressum", ["common": req.commonContent])
+	app.get("impressum") { req async throws -> View in
+
+		struct Context: Content {
+			let authConfig: AuthentificationConfiguration
+			let common: CommonContent
+		}
+
+		return try await req.view.render("impressum", Context(authConfig: req.application.authentificationConfiguration, common: req.commonContent))
 	}
 
 }
