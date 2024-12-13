@@ -137,6 +137,7 @@ struct AdminController: RouteCollection {
 
 	struct UserContent: Codable {
 		let user: UserModel
+		let credentials: [UserCredential]
 		let error: String?
 		let success: String?
 		let actionPath: String
@@ -150,7 +151,10 @@ struct AdminController: RouteCollection {
 			  let user = try await UserModel.query(on:req.db).filter(\.$id == userUUID).with(\.$callsign).first() else {
 			throw Abort(.notFound)
 		}
-		return try await req.view.render("admin/user_edit", UserContent(user: user, error: nil, success: nil, actionPath: actionPath(for: user), common: req.commonContent))
+
+		let credentials = try await UserCredential.query(on: req.db).filter(\.$user.$id == userUUID).all()
+
+		return try await req.view.render("admin/user_edit", UserContent(user: user, credentials: credentials, error: nil, success: nil, actionPath: actionPath(for: user), common: req.commonContent))
 	}
 
 	func updateUser(req: Request) async throws -> View {
@@ -160,27 +164,64 @@ struct AdminController: RouteCollection {
 			throw Abort(.notFound)
 		}
 
+		let credentials = try await UserCredential.query(on: req.db).filter(\.$user.$id == userUUID).all()
+
 		struct FormContent: Codable {
 			let callsign: String
-			let ccchubUser: String
-			let password: String
+			let authProvider: [String : String]
+			let loginIdentifier: [String : String]
+			let additionalInfo: [String : String]
 		}
-
 		let formContent = try req.content.decode(FormContent.self)
-		user.callsign.callsign = formContent.callsign
-		user.ccchubUser = formContent.ccchubUser.isEmpty ? nil : formContent.ccchubUser
-		var success = "Successfully updated user."
-		if !formContent.password.isEmpty {
-			user.hashedPassword = try Bcrypt.hash(formContent.password)
-			success = "Successfully updated user and password."
+		var message = ""
+
+		let callsignChanged = user.callsign.callsign != normalizedCallsign(formContent.callsign)
+		if callsignChanged {
+			user.callsign.callsign = normalizedCallsign(formContent.callsign)
+			message += "updated callsign, "
 		}
 
-		try await req.db.transaction { db in
-			try await user.save(on: db)
-			try await user.callsign.save(on: db)
+		var changedCredentials: [UserCredential] = []
+		for credential in credentials {
+			var changed = false
+			let credentialID = try credential.requireID().uuidString
+			if let provider = formContent.authProvider[credentialID],
+				provider != credential.authProvider {
+				credential.authProvider = provider
+				changed = true
+				message += "updated auth provider, "
+			}
+			if let loginIdentifier = formContent.loginIdentifier[credentialID],
+			   loginIdentifier != credential.loginIdentifier {
+				credential.loginIdentifier = loginIdentifier
+				changed = true
+				message += "updated login identifier, "
+			}
+			if let additionalInfo = formContent.additionalInfo[credentialID],
+			   !additionalInfo.isEmpty {
+				credential.additionalStorage = try Bcrypt.hash(additionalInfo)
+				changed = true
+				message += "updated additional storage as hashed value, "
+			}
+			if changed {
+				changedCredentials.append(credential)
+			}
 		}
 
-		return try await req.view.render("admin/user_edit", UserContent(user: user, error: nil, success: success, actionPath: actionPath(for: user), common: req.commonContent))
+		if callsignChanged || !changedCredentials.isEmpty {
+			try await req.db.transaction { [changedCredentials] db in
+				for credential in changedCredentials {
+					try await credential.save(on: db)
+				}
+				if callsignChanged {
+					try await user.callsign.save(on: db)
+				}
+			}
+			message += "saved."
+		} else {
+			message = "Nothing changed."
+		}
+		return try await req.view.render("admin/user_edit", UserContent(user: user, credentials:credentials, error: nil, success: message, actionPath: actionPath(for: user), common: req.commonContent))
 	}
 
 }

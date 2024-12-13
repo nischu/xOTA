@@ -12,6 +12,9 @@ struct CredentialsAuthentificationController: RouteCollection {
 	static let loginTemplate = "login-credentials"
 	static let changeTemplate = "credentials-change"
 
+	// Stored in UserCredential
+	static let authProviderIdentifier = "credentials-auth"
+
 	struct CredentialView: Content, CommonContentProviding {
 		var error: String?
 		var accountType: BaseAuthentificationController.RegisterAccountType?
@@ -79,8 +82,11 @@ struct CredentialsAuthentificationController: RouteCollection {
 		}
 
 		return try await BaseAuthentificationController.createUser(on: req, callsign: normalizedCallSign, accountType: accountType) { newUserModel in
-			newUserModel.hashedPassword = try Bcrypt.hash(registerContent.password)
-
+			try await UserCredential(userId: newUserModel.requireID(),
+									 authProvider: Self.authProviderIdentifier,
+									 loginIdentifier: normalizedCallSign,
+									 additionalStorage: try Bcrypt.hash(registerContent.password)
+			).save(on: req.db)
 		}
 	}
 
@@ -98,16 +104,17 @@ struct CredentialsAuthentificationController: RouteCollection {
 		let credentials = try req.content.decode(CredentialsLoginContent.self)
 
 		let callsign = normalizedCallsign(credentials.callsign)
-		guard let user = try await UserModel.query(on: req.db)
-			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
-			.filter(Callsign.self, \.$callsign == callsign)
-			.with(\.$callsign)
+
+		guard let userCredential = try await UserCredential.query(on: req.db)
+			.filter(UserCredential.self, \.$loginIdentifier == callsign)
+			.filter(\.$authProvider == Self.authProviderIdentifier)
+			.with(\.$user, { query in query.with(\.$callsign) })
 			.first() else {
 			let viewResponse: Response = try await req.view.render(Self.loginTemplate, CredentialView(error: "Unknown callsign.", callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		}
 
-		guard let hashedPassword = user.hashedPassword, !hashedPassword.isEmpty else {
+		guard let hashedPassword = userCredential.additionalStorage, !hashedPassword.isEmpty else {
 			let viewResponse: Response = try await req.view.render(Self.loginTemplate, CredentialView(error: "Callsign did not use password authentification during registration.", callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		}
@@ -117,7 +124,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 			return viewResponse
 		}
 
-		req.auth.login(user)
+		req.auth.login(userCredential.user)
 		return req.redirect(to: "/")
 	}
 
@@ -158,7 +165,10 @@ struct CredentialsAuthentificationController: RouteCollection {
 			return try await req.view.render(Self.registerTemplate, CredentialView(success: nil, error: "Passwords do not match.", common: req.commonContent))
 		}
 
-		guard let hashedPassword = user.hashedPassword, !hashedPassword.isEmpty else {
+
+		let credential = try await UserCredential.query(on: req.db).filter(\.$user.$id == user.requireID()).filter(\.$authProvider == Self.authProviderIdentifier).first()
+
+		guard let credential, let hashedPassword = credential.additionalStorage, !hashedPassword.isEmpty else {
 			return try await req.view.render(Self.changeTemplate, CredentialView(success: nil, error: "Callsign did not use password authentification during registration.", common: req.commonContent))
 		}
 
@@ -166,8 +176,9 @@ struct CredentialsAuthentificationController: RouteCollection {
 			return try await req.view.render(Self.changeTemplate, CredentialView(success: nil, error: "Old password does not match.", common: req.commonContent))
 		}
 
-		user.hashedPassword = try Bcrypt.hash(content.password)
-		try await user.save(on: req.db)
+		credential.additionalStorage = try Bcrypt.hash(content.password)
+
+		try await credential.save(on: req.db)
 
 		return try await req.view.render(Self.changeTemplate, CredentialView(success: "Successfully updated password.", error: nil, common: req.commonContent))
 	}

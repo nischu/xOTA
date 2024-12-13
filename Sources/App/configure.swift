@@ -41,9 +41,11 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(CreateCallsign())
 	app.migrations.add(CreateQso())
 	app.migrations.add(CreateAward())
+	app.migrations.add(CreateUserCredential())
 	// TODO: can be removed before the next OSS release
 	app.migrations.add(MigrateMissingHunters())
 	app.migrations.add(ModifyQsoAddModificationDate())
+	app.migrations.add(MigrateUserCredentials())
 
 #if DEBUG
 	app.migrations.add(SeedSampleData())

@@ -9,6 +9,7 @@ struct CreateUserRole: AsyncMigration {
 		try await database.schema("user_roles")
 			.id()
 			.field("user_id", .uuid, .required, .references("users", "id"))
+			.foreignKey("user_id", references: UserModel.schema, .id, onDelete: .cascade)
 			.field("role", specialRoles, .required)
 			.create()
 	}

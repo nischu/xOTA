@@ -18,9 +18,10 @@ final class ResetPasswordCommand: AsyncCommand {
 		}
 
 		let db = context.application.db
-		guard let user = try await UserModel.query(on: db)
-			.join(Callsign.self, on: \UserModel.$id == \Callsign.$user.$id)
+		guard let userCredential = try await UserCredential.query(on: db)
+			.join(Callsign.self, on: \UserCredential.$user.$id == \Callsign.$user.$id)
 			.filter(Callsign.self, \.$callsign == callsign)
+			.filter(UserCredential.self, \.$authProvider == CredentialsAuthentificationController.authProviderIdentifier)
 			.first()
 			.get()
 		else {
@@ -28,8 +29,8 @@ final class ResetPasswordCommand: AsyncCommand {
 			throw Error.unknownUser
 		}
 
-		user.hashedPassword = try Bcrypt.hash(signature.password)
-		try await user.save(on: db)
+		userCredential.additionalStorage = try Bcrypt.hash(signature.password)
+		try await userCredential.save(on: db)
 		print("Chaned password for \(signature.callsign!)")
 	}
 	

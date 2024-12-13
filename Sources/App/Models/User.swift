@@ -11,12 +11,6 @@ final class UserModel: Model, Content, @unchecked Sendable {
 	@Parent(key: "primary-callsign")
 	var callsign: Callsign
 
-	@Field(key: "ccchub-user")
-	var ccchubUser: String?
-
-	@Field(key: "hashed-password")
-	var hashedPassword: String?
-
 	@Children(for: \.$user)
 	var callsigns: [Callsign]
 

@@ -82,7 +82,7 @@ struct BaseAuthentificationController: RouteCollection {
 		return .success(normalizedCall: normalizedCallsign)
 	}
 
-	static func createUser(on req: Request, callsign: String, accountType: RegisterAccountType, additionalModifications: @escaping (UserModel) throws -> ()) async throws -> Response {
+	static func createUser(on req: Request, callsign: String, accountType: RegisterAccountType, createCredential: @escaping (UserModel) async throws -> ()) async throws -> Response {
 
 		let callsignKind: Callsign.CallsignKind = {
 			switch accountType {
@@ -94,7 +94,8 @@ struct BaseAuthentificationController: RouteCollection {
 		}()
 
 
-		let newUserModel = try await UserModel.createUser(with: callsign, kind: callsignKind, on: req.db, additionalModifications: additionalModifications)
+		let newUserModel = try await UserModel.createUser(with: callsign, kind: callsignKind, on: req.db)
+		try await createCredential(newUserModel)
 		let userId = try newUserModel.requireID()
 
 		// Update existing QSOs to add the newly created hunter or contacted operator if needed.

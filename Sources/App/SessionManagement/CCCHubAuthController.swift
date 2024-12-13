@@ -11,6 +11,9 @@ struct CCCHubAuthController: RouteCollection {
 
 	static let registerTemplate = "ccc-hub-register"
 
+	// Stored in UserCredential
+	static let authProviderIdentifier = "ccc-hub"
+
 	func boot(routes: RoutesBuilder) throws {
 		let baseSSOAuthController = BaseSSOAuthController(ssoServiceName: "CCC Hub SSO",
 														  ssoBasePath: Self.basePath,
@@ -34,15 +37,22 @@ struct CCCHubAuthController: RouteCollection {
 					return request.eventLoop.future(request.redirect(to: "/"))
 				}
 				
+				let userCredential = UserCredential.query(on: request.db)
+					.filter(\.$loginIdentifier, .equal , username)
+					.filter(\.$authProvider, .equal, Self.authProviderIdentifier)
+					.with(\.$user) { query in query.with(\.$callsign) }
+					.first()
 
-				return UserModel.query(on: request.db).filter(\.$ccchubUser, .equal, username).with(\.$callsign).first().map { userModel in
+				return userCredential.map { credential in
 					defer {
 						// Remove any registration callsign
 						request.session.data[Self.registerCallSignKey] = nil
 						request.session.data[Self.registerAccountType] = nil
 					}
-					if let userModel {
-						request.auth.login(userModel)
+					// Existing user?
+					if let credential {
+						// Sign in
+						request.auth.login(credential.user)
 						return request.eventLoop.future(request.redirect(to: "/"))
 					} else {
 						// We check if we are coming from the registration flow.
@@ -55,7 +65,11 @@ struct CCCHubAuthController: RouteCollection {
 
 						return request.eventLoop.makeFutureWithTask {
 							return try await BaseAuthentificationController.createUser(on: request, callsign: callsign, accountType: accountType) { newUserModel in
-								newUserModel.ccchubUser = username
+								try await UserCredential(userId: newUserModel.requireID(),
+														 authProvider: Self.authProviderIdentifier,
+														 loginIdentifier: username,
+														 additionalStorage: nil
+								).save(on: request.db)
 							}
 						}
 					}

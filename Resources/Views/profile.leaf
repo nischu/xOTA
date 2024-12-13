@@ -29,12 +29,13 @@
         </td>
         </tr>
         #endif
-        #if(user.ccchubUser):
-        <tr><th>Hub username:</th><td>#(user.ccchubUser)</td></tr>
-        #endif
-        #if(user.hashedPassword):
+        #for(credential in credentials):
+        #if(credential.authProvider == "credentials-auth"):
         <tr><th>Change Password:</th><td><a class="btn btn-primary" href="/credentials/change">Change Password</a></td></tr>
+        #else:
+        <tr><th>SSO ID (#(credential.authProvider))</th><td>#(credential.loginIdentifier)</td></tr>
         #endif
+        #endfor
         <form action="/profile/delete/" method="post">
         <tr><th>Account deletion:<br>
         <input class="form-check-input" type="checkbox" id="confirm-deletion" name="confirm" required> <label class="form-check-label" for="confirm-deletion">I want to delete my account and all uploaded QSO data.</label>

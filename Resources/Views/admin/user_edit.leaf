@@ -23,10 +23,21 @@
   <form action="#(actionPath)" method="POST">
     <label class="form-label" for="callsign">Callsign:</label>
     <input class="form-control" type="text" id="callsign" name="callsign" value="#(user.callsign.callsign)">
-    <label class="form-label" for="ccchubUser">CCC Hub Username:</label>
-    <input class="form-control" type="text" id="ccchubUser" name="ccchubUser" value="#(user.ccchubUser)">
-    <label class="form-label" for="website">Password (enter to reset):</label>
-    <input class="form-control" type="password" id="password" name="password" autocomplete="current-password">
+    <table>
+    <tr><th>Auth Provider</th><th>Identifier</th><th>Additional (enter to overwrite)</th></tr>
+    #for(credential in credentials):
+    <tr>
+    <td>
+    <input class="form-control" type="text" name="authProvider[#(credential.id)]" value="#(credential.authProvider)">
+    </td>
+    <td>
+    <input class="form-control" type="text" name="loginIdentifier[#(credential.id)]" value="#(credential.loginIdentifier)">
+    </td>
+    <td>
+    <input class="form-control" type="password" name="additionalInfo[#(credential.id)]" autocomplete="current-password">
+    </td>
+    #endfor
+    </table>
     <input class="form-control btn btn-primary" type="submit" value="Save" >
   </form>
 </body>

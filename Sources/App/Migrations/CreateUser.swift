@@ -5,9 +5,7 @@ struct CreateUser: AsyncMigration {
 		try await database.schema("users")
 			.id()
 			.field("primary-callsign", .uuid, .references("callsigns", "id"))
-			.field("ccchub-user", .string)
-			.field("hashed-password", .string)
-			.unique(on: "primary-callsign", "ccchub-user")
+			.unique(on: "primary-callsign")
 			.create()
 	}
 	
