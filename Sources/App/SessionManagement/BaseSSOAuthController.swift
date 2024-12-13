@@ -59,4 +59,48 @@ struct BaseSSOAuthController: RouteCollection {
 	func login(req: Request) async throws -> Response {
 		return req.redirect(to: self.authStartSSOPath)
 	}
+
+	func registerOrSignin(req: Request, loginIdentifier: String, authProviderIdentifier: String, registerCallsignKey: String, registerAccountTypeKey: String) -> EventLoopFuture<any ResponseEncodable> {
+		// Manually remove OAuth access token we only needed it for one request and don't want to hang onto it.
+		req.session.data["access_token"] = nil
+
+		let userCredential = UserCredential.query(on: req.db)
+			.filter(\.$loginIdentifier, .equal , loginIdentifier)
+			.filter(\.$authProvider, .equal, authProviderIdentifier)
+			.with(\.$user) { query in query.with(\.$callsign) }
+			.first()
+
+		return userCredential.map { credential in
+			defer {
+				// Remove any registration callsign
+				req.session.data[registerCallSignKey] = nil
+				req.session.data[registerAccountTypeKey] = nil
+			}
+			// Existing user?
+			if let credential {
+				// Sign in
+				req.auth.login(credential.user)
+				return req.eventLoop.future(req.redirect(to: "/"))
+			} else {
+				// We check if we are coming from the registration flow.
+				guard let callsign = req.session.data[registerCallSignKey],
+					  let accountTypeString = req.session.data[registerAccountTypeKey],
+					  let accountType = BaseAuthentificationController.RegisterAccountType(rawValue: accountTypeString)
+				else {
+					return req.eventLoop.future(req.redirect(to: "/register"))
+				}
+
+				return req.eventLoop.makeFutureWithTask {
+					return try await BaseAuthentificationController.createUser(on: req, callsign: callsign, accountType: accountType) { newUserModel in
+						try await UserCredential(userId: newUserModel.requireID(),
+												 authProvider: authProviderIdentifier,
+												 loginIdentifier: loginIdentifier,
+												 additionalStorage: nil
+						).save(on: req.db)
+					}
+				}
+			}
+		}
+
+	}
 }

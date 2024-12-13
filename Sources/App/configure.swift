@@ -20,10 +20,11 @@ public func configure(_ app: Application) async throws {
 
 
 	if app.environment == .testing {
-		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: false, userPassEnabled: true)
+		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: false, darcSSOEnabled: false, userPassEnabled: true)
 	} else {
 		let userPassEnabled = (Environment.get("USER_PASS_ENABLED") as? NSString)?.boolValue ?? false
-		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, userPassEnabled: userPassEnabled)
+		let darcSSO = Environment.get("DARC_SSO_AUTH_CALLBACK") != nil
+		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, darcSSOEnabled:darcSSO, userPassEnabled: userPassEnabled)
 	}
 
 	app.views.use(.leaf)

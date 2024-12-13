@@ -13,6 +13,9 @@
   #if(configuration.cccHUBEnabled):
   <p><a class="btn btn-primary" type="button" href="/ccc-hub/register">CCC Hub</a></p>
   #endif
+  #if(configuration.darcSSOEnabled):
+  <p><a class="btn btn-primary" type="button" href="/darc-sso/register">DARC SSO</a></p>
+  #endif
   #if(configuration.userPassEnabled):
   <p><a class="btn btn-primary" type="button" href="/credentials/register">Username/Password</a></p>
   #endif

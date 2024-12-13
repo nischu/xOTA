@@ -2,6 +2,7 @@ import Vapor
 
 struct AuthentificationConfiguration: Codable {
 	var cccHUBEnabled: Bool
+	var darcSSOEnabled: Bool
 	var userPassEnabled: Bool
 }
 
@@ -13,7 +14,7 @@ extension Application {
 
 	var authentificationConfiguration: AuthentificationConfiguration {
 		get {
-			self.storage[AuthentificationConfigurationKey.self] ?? AuthentificationConfiguration(cccHUBEnabled: false, userPassEnabled: false)
+			self.storage[AuthentificationConfigurationKey.self] ?? AuthentificationConfiguration(cccHUBEnabled: false, darcSSOEnabled: false, userPassEnabled: false)
 		}
 		set {
 			self.storage[AuthentificationConfigurationKey.self] = newValue
@@ -135,6 +136,11 @@ struct BaseAuthentificationController: RouteCollection {
 		if configuration.cccHUBEnabled {
 			try CCCHubAuthController().boot(routes: routes)
 		}
+
+		if configuration.darcSSOEnabled {
+			try DARCSSOAuthController().boot(routes: routes)
+		}
+
 		if configuration.userPassEnabled {
 			try CredentialsAuthentificationController().boot(routes: routes)
 		}

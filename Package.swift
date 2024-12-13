@@ -31,10 +31,15 @@ let package = Package(
 				.product(name: "Leaf", package: "leaf"),
 				.product(name: "QueuesFluentDriver", package: "vapor-queues-fluent-driver"),
 				.target(name: "ImperialCCCHub"),
+				.target(name: "ImperialDARCSSO"),
 			],
 			path: "Sources/App"
 		),
 		.target(name: "ImperialCCCHub", dependencies: [
+			.product(name: "ImperialCore", package: "Imperial"),
+			.target(name: "PKCE"),
+		]),
+		.target(name: "ImperialDARCSSO", dependencies: [
 			.product(name: "ImperialCore", package: "Imperial"),
 			.target(name: "PKCE"),
 		]),
