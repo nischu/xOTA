@@ -12,9 +12,14 @@ struct CCCHubAuthController: RouteCollection {
 	static let registerTemplate = "ccc-hub-register"
 
 	func boot(routes: RoutesBuilder) throws {
-		let authCallbackPath = try Environment.get("CCCHUB_AUTH_CALLBACK").value(or: ImperialError.missingEnvVar("CCCHUB_AUTH_CALLBACK"))
+		let baseSSOAuthController = BaseSSOAuthController(ssoServiceName: "CCC Hub SSO",
+														  ssoBasePath: Self.basePath,
+														  authStartSSOPath: Self.authStartSSOPath,
+														  registerCallSignKey: Self.registerCallSignKey,
+														  registerAccountTypeKey: Self.registerAccountType)
+		try routes.register(collection: baseSSOAuthController)
 
-		let grouped = routes.grouped(Self.basePath)
+		let authCallbackPath = try Environment.get("CCCHUB_AUTH_CALLBACK").value(or: ImperialError.missingEnvVar("CCCHUB_AUTH_CALLBACK"))
 
 		// Setup OAuth with CCC Hub
 		try routes.oAuth(from: CCCHub.self, authenticate: Self.authStartSSOPath, callback: authCallbackPath, scope: [ "38c3_attendee" ]) { (request, token) in
@@ -56,44 +61,6 @@ struct CCCHubAuthController: RouteCollection {
 					}
 				}
 			}
-		}
-
-		grouped.get("register") { req async throws in
-			return try await req.view.render(Self.registerTemplate, ["common" : req.commonContent])
-		}
-		
-		grouped.post("register") { req async throws -> Response in
-			struct CCCRegisterContent: BaseAuthentificationController.RegisterContent {
-				var accountType: BaseAuthentificationController.RegisterAccountType?
-				var callsign: String
-				var acceptTerms: String
-			}
-			struct RegisterView: Content, CommonContentProviding {
-				var error: String
-				var accountType: BaseAuthentificationController.RegisterAccountType?
-				var callsign: String
-				let common: CommonContent
-			}
-
-			let registerContent = try req.content.decode(CCCRegisterContent.self)
-			let accountType = registerContent.accountType
-			let callsign = registerContent.callsign
-
-			let baseValidationResult = try await BaseAuthentificationController.commonRegistrationValidation(req: req)
-			switch baseValidationResult {
-			case .success(normalizedCall: let normalizedCallsign):
-				req.session.data[Self.registerCallSignKey] = normalizedCallsign
-				req.session.data[Self.registerAccountType] = accountType?.rawValue
-				let redirectResponse:Response = req.redirect(to: Self.authStartSSOPath)
-				return redirectResponse
-			case .error(let error):
-				let viewResponse: Response = try await req.view.render(Self.registerTemplate, RegisterView(error: error, accountType: accountType, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
-				return viewResponse
-			}
-		}
-
-		grouped.get("login") { req async throws in
-			return req.redirect(to: Self.authStartSSOPath)
 		}
 	}
 }

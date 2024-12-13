@@ -118,11 +118,11 @@ struct BaseAuthentificationController: RouteCollection {
 	func boot(routes: RoutesBuilder) throws {
 
 		routes.get("register") { req async throws in
-			return try await req.view.render("base-register", AuthentificationContext(common: req.commonContent, configuration: configuration))
+			return try await req.view.render("register-entry", AuthentificationContext(common: req.commonContent, configuration: configuration))
 		}
 
 		routes.get("login") { req async throws in
-			try await req.view.render("base-login", AuthentificationContext(common: req.commonContent, configuration: configuration))
+			try await req.view.render("login-entry", AuthentificationContext(common: req.commonContent, configuration: configuration))
 		}
 
 		routes.get("logout") { req async throws in

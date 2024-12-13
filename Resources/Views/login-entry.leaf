@@ -11,10 +11,10 @@
   <h1>Login</h1>
   <p>How would you like to log in?</p>
   #if(configuration.cccHUBEnabled):
-  <a class="btn btn-primary" type="button" href="/ccc-hub/login">CCC Hub</a>
+  <p><a class="btn btn-primary" type="button" href="/ccc-hub/login">CCC Hub</a></p>
   #endif
   #if(configuration.userPassEnabled):
-  <a class="btn btn-primary" type="button" href="/credentials/login">Username/Password</a>
+  <p><a class="btn btn-primary" type="button" href="/credentials/login">Username/Password</a></p>
   #endif
   </div>
 </body>

@@ -8,8 +8,8 @@ struct CredentialsAuthentificationController: RouteCollection {
 	static let minimumPasswordLength = 8
 	static let maxPasswordLength = 1024
 
-	static let registerTemplate = "credentials-register"
-	static let loginTemplate = "credentials-login"
+	static let registerTemplate = "register-credentials"
+	static let loginTemplate = "login-credentials"
 	static let changeTemplate = "credentials-change"
 
 	struct CredentialView: Content, CommonContentProviding {

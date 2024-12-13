@@ -36,6 +36,9 @@ let package = Package(
 		),
 		.target(name: "ImperialCCCHub", dependencies: [
 			.product(name: "ImperialCore", package: "Imperial"),
+			.target(name: "PKCE"),
+		]),
+		.target(name: "PKCE", dependencies: [
 			.product(name: "Crypto", package: "swift-crypto"),
 		]),
 		.testTarget(name: "AppTests", dependencies: [

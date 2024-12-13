@@ -1,6 +1,7 @@
 import Vapor
 import Foundation
 import ImperialCore
+import PKCE
 
 public class CCCHubRouter: FederatedServiceRouter {
 

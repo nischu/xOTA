@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   #extend("include_head")
-  <title>Register with CCC Hub SSO</title>
+  <title>Register with #(serviceName)</title>
 </head>
 
 <body>
   #extend("include_navbar")
   <div class="container">
-  <h1>Register with CCC Hub SSO</h1>
+  <h1>Register with #(serviceName)</h1>
   <form action="/ccc-hub/register" method="post">
   #if(error):
   <div class="alert alert-warning" role="alert">
