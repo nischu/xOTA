@@ -26,6 +26,9 @@ struct QSOController: RouteCollection {
 		}
 
 		api.get("", use: apiQsos(req:)).description("All qsos, no auth required. Please don't overwhelm the server with requests.")
+		api.webSocket("live") { req, ws in
+			req.application.webSocketManager?.track(ws)
+		}.description("Websocket that broadcasts any new QSOs.")
 
 		routes.get("qsos", use: qsosDashboard)
 
@@ -162,8 +165,9 @@ struct QSOController: RouteCollection {
 	func postLog(req: Request) async throws -> Response {
 		let reference = try await ReferenceController(namingTheme: namingTheme).specific(req: req)
 		return try await createOrUpdateLog(req: req, title:"Log QSO at \(reference.title)") { qsoInfo in
-			try await QSO(activator: qsoInfo.activator, activatorTrainer:qsoInfo.activatorTrainer, hunter: qsoInfo.hunter, reference: qsoInfo.reference, huntedReference: qsoInfo.huntedReference, date: qsoInfo.date, call:qsoInfo.call, stationCallSign: qsoInfo.stationCallSign, operator: qsoInfo.operator, contactedOperator: qsoInfo.contactedOperator, contactedOperatorUser: qsoInfo.contactedOperatorUser, freq: qsoInfo.freq, mode: qsoInfo.mode, rstSent: qsoInfo.rstSent, rstRcvt: qsoInfo.rstRcvt)
-				.save(on: req.db)
+			let qso = try QSO(activator: qsoInfo.activator, activatorTrainer:qsoInfo.activatorTrainer, hunter: qsoInfo.hunter, reference: qsoInfo.reference, huntedReference: qsoInfo.huntedReference, date: qsoInfo.date, call:qsoInfo.call, stationCallSign: qsoInfo.stationCallSign, operator: qsoInfo.operator, contactedOperator: qsoInfo.contactedOperator, contactedOperatorUser: qsoInfo.contactedOperatorUser, freq: qsoInfo.freq, mode: qsoInfo.mode, rstSent: qsoInfo.rstSent, rstRcvt: qsoInfo.rstRcvt)
+			try await qso.save(on: req.db)
+			try await req.application.webSocketManager?.broadcast(APIQSOContent(id: qso.id, model: qsoInfo))
 		}
 	}
 
@@ -280,6 +284,8 @@ struct QSOController: RouteCollection {
 
 		let reference = try await Reference.query(on: req.db)
 			.filter(\.$title, .equal, form.reference)
+			.field(\.$id)
+			.field(\.$title)
 			.first()
 			.get()
 
@@ -333,6 +339,7 @@ struct QSOController: RouteCollection {
 			huntedReference = try await Reference.query(on: req.db)
 				.filter(\.$title, .equal, huntedRefTitle.uppercased())
 				.field(\.$id)
+				.field(\.$title)
 				.first()
 				.get()
 			if huntedReference == nil {
@@ -524,37 +531,52 @@ struct QSOController: RouteCollection {
 		return .noContent
 	}
 
-	func apiQsos(req: Request, queryBuilder: QueryBuilder<QSO>) async throws -> Page<some Content> {
+	struct APIQSOContent: Content {
+		var id: UUID?
+		var reference: String
+		var hunted_reference: String?
+		var date: Date
+		var call: String
+		var station_callsign: String
+		var `operator`: String?
+		var contactedOperator: String?
+		var freq: Int
+		var mode: QSO.Mode
+		var rstSent: String?
+		var rstRcvt: String?
 
-		struct QSOContent: Content {
-			var id: UUID?
-			var reference: String
-			var hunted_reference: String?
-			var date: Date
-			var call: String
-			var station_callsign: String
-			var `operator`: String?
-			var contactedOperator: String?
-			var freq: Int
-			var mode: QSO.Mode
-			var rstSent: String?
-			var rstRcvt: String?
-
-			init(with qso:QSO) {
-				self.id = qso.id
-				self.reference = qso.reference.title
-				self.hunted_reference = qso.huntedReference?.title
-				self.date = qso.date
-				self.call = qso.call
-				self.station_callsign = qso.stationCallSign
-				self.operator = qso.operator
-				self.contactedOperator = qso.contactedOperator
-				self.freq = qso.freq
-				self.mode = qso.mode
-				self.rstSent = qso.rstSent
-				self.rstRcvt = qso.rstRcvt
-			}
+		init(with qso:QSO) {
+			self.id = qso.id
+			self.reference = qso.reference.title
+			self.hunted_reference = qso.huntedReference?.title
+			self.date = qso.date
+			self.call = qso.call
+			self.station_callsign = qso.stationCallSign
+			self.operator = qso.operator
+			self.contactedOperator = qso.contactedOperator
+			self.freq = qso.freq
+			self.mode = qso.mode
+			self.rstSent = qso.rstSent
+			self.rstRcvt = qso.rstRcvt
 		}
+
+		init(id: UUID?, model: CreateUpdateQSOModel) {
+			self.id = id
+			self.reference = model.reference.title
+			self.hunted_reference = model.huntedReference?.title
+			self.date = model.date
+			self.call = model.call
+			self.station_callsign = model.stationCallSign
+			self.operator = model.operator
+			self.contactedOperator = model.contactedOperator
+			self.freq = model.freq
+			self.mode = model.mode
+			self.rstSent = model.rstSent
+			self.rstRcvt = model.rstRcvt
+		}
+	}
+
+	func apiQsos(req: Request, queryBuilder: QueryBuilder<QSO>) async throws -> Page<some Content> {
 
 		return try await queryBuilder
 			.field(\.$id)
@@ -572,7 +594,7 @@ struct QSOController: RouteCollection {
 			.field(.path([.string("reference_id")], schema: "qsos"))
 			.with(\.$reference)
 			.sort(\.$date, .descending)
-			.paginate(for: req).map { QSOContent(with: $0) }
+			.paginate(for: req).map { APIQSOContent(with: $0) }
 	}
 
 	func apiQsos(req: Request) async throws -> Page<some Content> {

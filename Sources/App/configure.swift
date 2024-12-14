@@ -83,6 +83,9 @@ public func configure(_ app: Application) async throws {
 		)
 	}
 
+	let webSockets = WebSocketManager()
+	app.lifecycle.use(webSockets)
+	app.webSocketManager = webSockets
 
 	app.middleware.use(app.sessions.middleware)
 	app.middleware.use(CustomDatabaseSessionAuthenticator(databaseID: .sqlite))
