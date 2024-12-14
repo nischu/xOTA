@@ -1,0 +1,168 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <style> body { margin: 0; } </style>
+    <!-- https://github.com/vasturiano/force-graph -->
+    <!--<script src="//unpkg.com/force-graph"></script>-->
+    <script src="/js/force-graph.min.js"></script>
+    <title>Contact Graph</title>
+  </head>
+  <body>
+    #if(showNav):
+    #extend("include_navbar")
+    #endif
+    <!--<div class="container">-->
+      <div id="graph"></div>
+    <!--</div>-->
+      <script>
+        const Graph = new ForceGraph(document.getElementById('graph'))
+          .nodeAutoColorBy('kind')
+          .linkAutoColorBy('kind')
+          .linkWidth(link => Math.log2(link.width)+1 )
+          .nodeCanvasObject((node, ctx, globalScale) => {
+            const label = node.id;
+            const fontSize = 12/globalScale;
+            ctx.font = `${fontSize}px Sans-Serif`;
+            const textWidth = ctx.measureText(label).width;
+            const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = node.color;
+            ctx.fillText(label, node.x, node.y);
+
+            node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+          })
+          .nodePointerAreaPaint((node, color, ctx) => {
+            ctx.fillStyle = color;
+            const bckgDimensions = node.__bckgDimensions;
+            bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+          });
+
+        let linkMap = new Map();
+        let nodes = new Array();
+        let knownNodes = new Set();
+
+        const addLink = (link) => {
+            if (link.source === undefined || link.source.length === 0 || link.target === undefined || link.target.length === 0) { return; }
+            let key = link.source+link.target+link.kind;
+            let value = linkMap.get(key);
+            if (value == undefined) {
+                // New link, add it.
+                value = link
+                value.width = 1
+                linkMap.set(key, value);
+            } else {
+                // Link exists, increase its width.
+                value.width += 1;
+            }
+        };
+
+        const addNode = (nodeName, kind) => {
+            if (nodeName != undefined && nodeName.length > 0 && !knownNodes.has(nodeName)) {
+                knownNodes.add(nodeName)
+                nodes.push({ id: nodeName,  kind: kind })
+            }
+        }
+
+        // Node kinds are c = callsign and r = reference
+        // Link kinds are: qso (c -> c), train (c -> c), hunt (c -> r), activate (c -> r), r2r (reference to reference)
+        const addQSO = (q) => {
+            addNode(q.reference, "r");
+            addNode(q.station_callsign, "c");
+            addNode(q.call, "c");
+            addNode(q.operator, "c");
+            addNode(q.contactedOperator, "c");
+            addNode(q.hunted_reference, "r");
+
+            addLink({ source: q.station_callsign, target: q.call, kind: "qso" });
+            addLink({ source: q.station_callsign, target: q.contactedOperator, kind: "qso" });
+            addLink({ source: q.station_callsign, target: q.reference, kind: "activate" });
+            addLink({ source: q.station_callsign, target: q.hunted_reference, kind: "hunt" });
+
+            // Training QSOs
+            addLink({ source: q.operator, target: q.call, kind: "qso" });
+            addLink({ source: q.operator, target: q.contactedOperator, kind: "qso" });
+            addLink({ source: q.operator, target: q.reference, kind: "activate" });
+            addLink({ source: q.operator, target: q.hunted_reference, kind: "hunt" });
+            addLink({ source: q.station_callsign, target: q.operator, kind: "train" });
+
+            addLink({ source: q.call, target: q.reference, kind: "hunt" });
+            addLink({ source: q.contactedOperator, target: q.reference, kind: "hunt" });
+
+            addLink({ source: q.reference, target: q.hunted_reference, kind: "r2r" });
+
+
+            let links = Array.from(linkMap.values())
+            Graph.graphData({ nodes, links})
+        };
+
+        // Set to true to add qsos with a delay to see how it looks when new ones are added live.
+        const addWithDelay = false;
+
+        const zoom = () => {
+          Graph.zoomToFit(100, 50);
+        };
+
+        const fetchPage = (page) => {
+          fetch('/api/qso/?per=100&page='+page).then(res => res.json()).then(qsoFetch => {
+            let qsos = qsoFetch.items;
+            let delay = 0;
+            qsos.forEach(q => {
+              if (addWithDelay) {
+                setTimeout(() => {
+                  addQSO(q);
+                  zoom();
+                }, delay * 500);
+                delay += 1;
+              } else {
+                addQSO(q);
+              }
+            });
+            if (!addWithDelay) {
+              setTimeout(() => {
+                zoom();
+              }, 1000);
+            }
+            let metadata = qsoFetch.metadata;
+            if (metadata.total > metadata.page * metadata.per) {
+              fetchPage(metadata.page+1);
+            }
+        });
+      };
+      fetchPage(1);
+
+
+      function blobToJson(blob) {
+          return new Promise((resolve, reject) => {
+              let fr = new FileReader();
+              fr.onload = () => {
+                  resolve(JSON.parse(fr.result));
+              };
+              fr.readAsText(blob);
+          });
+      }
+
+      const ws = new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/api/qso/live")
+      ws.onopen = () => {
+          console.log("Socket is opened.");
+      }
+
+      ws.onmessage = (event) => {
+          blobToJson(event.data).then((qso) => {
+            addQSO(qso);
+            zoom();
+          });
+      };
+
+      ws.onclose = () => {
+          console.log("Socket is closed.");
+      };
+
+    </script>
+  </body>
+</html>
