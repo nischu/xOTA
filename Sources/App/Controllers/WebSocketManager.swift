@@ -55,8 +55,14 @@ final class WebSocketManager: @unchecked Sendable, LifecycleHandler {
 	}
 }
 
+#if compiler(<6)
+extension WebSocket: Equatable {}
+extension WebSocket: Hashable {}
+#else
 extension WebSocket: @retroactive Equatable {}
-extension WebSocket: @retroactive Hashable {
+extension WebSocket: @retroactive Hashable {}
+#endif
+extension WebSocket {
 	public static func == (lhs: WebSocket, rhs: WebSocket) -> Bool {
 		lhs === rhs
 	}
