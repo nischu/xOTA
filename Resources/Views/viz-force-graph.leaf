@@ -14,6 +14,7 @@
     #endif
     <!--<div class="container">-->
       <div id="graph"></div>
+      <p id="status" style="margin-top:-35px; margin-left:15px;" >Connecting…</p>
     <!--</div>-->
       <script>
         const Graph = new ForceGraph(document.getElementById('graph'))
@@ -149,6 +150,7 @@
 
       const ws = new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/api/qso/live")
       ws.onopen = () => {
+          document.getElementById('status').innerText = "Connected."
           console.log("Socket is opened.");
       }
 
@@ -160,6 +162,7 @@
       };
 
       ws.onclose = () => {
+          document.getElementById('status').innerText = "Not connected!"
           console.log("Socket is closed.");
       };
 
