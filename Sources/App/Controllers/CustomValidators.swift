@@ -47,6 +47,20 @@ extension Validator where T == String {
 			return ValidatorResults.Callsign(isValidCallsign: true)
 		}
 	}
+
+	private static let callsignPrefixIsGermanOrCEPTRegexString = "^(D[A-R]\\d)|(DL/)|(DO/)"
+	public static var callsignPrefixIsGermanOrCEPT: Validator<T> {
+		.init { input in
+			let input = normalizedCallsign(input)
+			guard let range = input.range(of: Self.callsignPrefixIsGermanOrCEPTRegexString, options: [.regularExpression]),
+				  range.lowerBound == input.startIndex
+			else {
+				return ValidatorResults.Callsign(isValidCallsign: false)
+			}
+			return ValidatorResults.Callsign(isValidCallsign: true)
+		}
+	}
+
 	public static var relaxedCallsign: Validator<T> {
 		.init { data in
 			(.count(3...10) && .characterSet(.alphanumerics.union(CharacterSet(charactersIn: "/")))).validate(data)

@@ -76,6 +76,13 @@ struct BaseAuthentificationController: RouteCollection {
 		   Validator.callsign.validate(registerContent.callsign).isFailure {
 			return .error("Callsign not valid.")
 		}
+
+		// Check if the callsign is a valid callsign for operating in Germany. Either a German callsign or one with the right CEPT-prefix.
+		if registerContent.accountType == .licensed,
+		   Validator.callsignPrefixIsGermanOrCEPT.validate(registerContent.callsign).isFailure {
+			return .error("Callsign is not a German callsign and doesn't have the correct CEPT prefix according to ECC/REC/(05)06 or T/R 61-01. (‘DL/‘ for class A or ‘DO/‘ for class E)")
+		}
+
 		let normalizedCallsign = normalizedCallsign(registerContent.callsign)
 		guard try await Callsign.query(on: req.db).field(\.$id).filter(\.$callsign, .equal, normalizedCallsign).first() == nil else {
 			return .error("Callsign already registered.")
