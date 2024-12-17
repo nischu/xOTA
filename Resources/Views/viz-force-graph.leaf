@@ -25,12 +25,15 @@
         const trainColor = lineColor;
         const r2rColor = lineColor;
         const labelFont = 'space-mono';
+        const defaultFontSize = 24;
+        const smallFontSize = 12;
+        const smallSizeWidthLimit = 800;
 
         const Graph = new ForceGraph(document.getElementById('graph'))
           .linkWidth(link => Math.log2(link.width)+2 )
           .nodeCanvasObject((node, ctx, globalScale) => {
             const label = node.id;
-            const fontSize = 24/globalScale;
+            const fontSize = (ctx.canvas.scrollWidth<smallSizeWidthLimit  ? smallFontSize : defaultFontSize)/globalScale;
             ctx.font = `${fontSize}px ${labelFont}`;
             const textWidth = ctx.measureText(label).width;
             const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
