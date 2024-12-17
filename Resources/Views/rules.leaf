@@ -6,10 +6,10 @@
   </head>
   <body>
     #extend("include_navbar")
-    <div class="container">
+    <div class="container hub-card">
     #if(common.loggingDisabled):
     <div class="alert alert-success" role="alert">
-    Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. All data will be deleted in early January 2024. Please download your QSO data as ADIF files from your profile page.
+    Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. All data will be deleted in early January 2025. Please download your QSO data as ADIF files from your profile page.
     </div>
     #endif
     <h1>Rules</h1>
@@ -17,12 +17,12 @@
     Toilets on the Air (TOTA) is intended as an amateur radio activity during 38C3.<br>Use amateur radio to activate "references" just like you would for other xOTA programs like Parks on the Air (POTA), Summits on the Air (SOTA), Island on the Air (IOTA), …
     In this case, the references are just toilets.<br>
     </p>
-    <h3>Activity centers:</h3>
+    <h3><a id="centers">Activity centers:</a></h3>
     <ul>
       <li>FM: 430.200MHz</li>
       <li>DMR: Brandmeister TG26223</li>
     </ul>
-    <h3>Ground rules:</h3>
+    <h3><a id="ground-rules">Ground rules:</a></h3>
     <ul>
       <li>Only operate on frequencies you are licensed to operate on. With a radio licensed for the use on the given frequency.</li>
       <li>Always respect the band plans.</li>
@@ -30,7 +30,7 @@
       <li>Don't be rude, don't unncessarily block restrooms when others need to use them and always respect the privacy of other restroom users.</li>
       <li>It's not required to activate from within a restroom. A radius of a few meters from the doors (in either direction) is fine.</li>
     </ul>
-    <h3>Terminology:</h3>
+    <h3><a id="terms">Terminology:</a></h3>
     <dl class="row">
        <dt>Activator</dt>
        <dd>Person who activates a reference (in this case toilet). Only the activator needs to log QSOs in this system.</dd>
@@ -45,7 +45,7 @@
        <dt>Toilet to Toilet (T2T)</dt>
        <dd>When two activators have a QSOs from reference locations, both are activators and hunters at the same time. They receive both activator and hunter credit and they can log the hunted reference.</dd>
     </dl>
-    <h3>Training:</h3>
+    <h3><a id="training">Training:</a></h3>
     <ul>
       <li>Licensed operators with class E or A are permitted to train future amateur radio operators. Please adhere to the <a href="https://www.gesetze-im-internet.de/afuv_2005/__12.html" target="_blank">official legal rules</a>.</li>
       <li>Operators who whish to train can to add their training call (separate DN callsign or personal callsign with /T suffix which is spoken as /Trainee in voice modes) to their <a href="/profile/">profile</a>.</li>
@@ -53,10 +53,22 @@
       <li>Unlicensed operators can change the logging mode and enter a training callsign on the logging page.</li>
       <li>Reminder: It's illegal to use callsigns without permission. Please stay with your trainer.</li>
     </ul>
-    <h3>Additional asks:</h3>
+    <h3><a id="foreign">Foreign radio amateurs welcome:</a></h3>
+      <p>Thanks to <a href="https://docdb.cept.org/download/4541" target="_blank">CEPT Recommendation T/R 61-01</a> and <a href="https://docdb.cept.org/download/1855" target="_blank">ECC Recommendation ECC/REC/(05)06</a>, radio amateurs from many countries around the world can operate in Germany.<br>
+      If you own a CEPT license, you can use the prefix “DL/” in front of your home callsign, if you own a CEPT Novice license, you can use the prefix “DO/”. If you want to know exactly on which band you are allowed to operate with which power, you can <a href="https://files.darc.de/index.php/s/CKT38kZP6miK7xf/download/Cept_Laenderliste.pdf" target="_blank">look it up here</a>.<br>
+      In addition to the <a href="https://www.cept.org/cept/membership-and-observers" target="_blank">CEPT countries</a>, non-CEPT countries can also participate in the reciprocal license agreement:  4X 🇮🇱, K 🇺🇸, OA 🇵🇪, PJ2 🇨🇼, PJ4-PJ6 🇧🇶, PJ7 🇸🇽, VE 🇨🇦, VK 🇦🇺, ZL 🇳🇿, ZS 🇿🇦.</p>
+
+    <h3><a id="unlicesed">Unlicensed operators:</a></h3>
     <ul>
+      <li>This year, the system also supports accounts for unlicensed operators.</li>
+      <li>Please only use radios and frequencies that are allowed to be used without an individual licenses, like PMR, Freenet or CB radios.</li>
+      <li>If you are interested in pursuing an amateur radio license, find a friendly amateur radio operator who can give you practical a on-air <a href="#training">training</a> opportunity.
+    </ul>
+    <h3><a id="asks">Additional asks:</a></h3>
+    <ul>
+      <li>Always be excellent to each other.</li>
       <li>Please don't spam the system, it was thrown together in a very short time.</li>
-      <li>If there are any problems, please <a href="/impressum">contact me</a>.
+      <li>If there are any problems, please <a href="/impressum">contact me</a>.</li>
     </ul>
     </div>
   </body>
