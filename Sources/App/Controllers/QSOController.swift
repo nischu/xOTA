@@ -491,8 +491,8 @@ struct QSOController: RouteCollection {
 	}
 
 	func qsosDashboard(req: Request) async throws -> View {
-		let queryCount = try? req.query.get(Int.self, at: "count")
-		let count = min(queryCount ?? 25, 100)
+		let queryLimit = try? req.query.get(Int.self, at: "limit")
+		let count = min(queryLimit ?? 25, 100)
 		let autorefresh = (try? req.query.get(Bool.self, at: "refresh")) ?? false
 		var queryInterval = try? req.query.get(Int.self, at: "interval")
 		if let interval = queryInterval {
@@ -501,7 +501,7 @@ struct QSOController: RouteCollection {
 		struct QSOsContext: Encodable, CommonContentProviding {
 			let autorefresh: Bool
 			let interval: Int?
-			let count: Int?
+			let limit: Int?
 			let qsos: [QSO]
 			let formPath: String
 			let common: CommonContent
@@ -512,7 +512,7 @@ struct QSOController: RouteCollection {
 			.with(\.$reference)
 			.with(\.$huntedReference)
 			.all()
-		let context = QSOsContext(autorefresh: autorefresh, interval:queryInterval, count: queryCount, qsos: qsos, formPath: req.url.path, common: req.commonContent)
+		let context = QSOsContext(autorefresh: autorefresh, interval:queryInterval, limit: queryLimit, qsos: qsos, formPath: req.url.path, common: req.commonContent)
 		return try await req.view.render("recentQsos", context)
 	}
 

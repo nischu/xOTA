@@ -12,8 +12,8 @@
     <div class="container">
     <h1>Recent QSOs</h1>
       <form action="" method="get" action="#(formPath)">
-      #if(count):
-      <input type="hidden" name="count" value="#(count)" />
+      #if(limit):
+      <input type="hidden" name="limit" value="#(limit)" />
       #endif
       <input type="checkbox" id="refresh" name="refresh" onChange="this.form.submit()" #if(autorefresh): checked #endif/>
       <label for="refresh">Automatic Refresh</label>
