@@ -110,7 +110,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 			.filter(\.$authProvider == Self.authProviderIdentifier)
 			.with(\.$user, { query in query.with(\.$callsign) })
 			.first() else {
-			let viewResponse: Response = try await req.view.render(Self.loginTemplate, CredentialView(error: "Unknown callsign.", callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			let viewResponse: Response = try await req.view.render(Self.loginTemplate, CredentialView(error: "Unknown callsign. Did you use a different auth provider during registration?", callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		}
 
