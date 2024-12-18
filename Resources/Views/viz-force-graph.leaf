@@ -41,10 +41,10 @@
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // default
             if(node.kind == "c") ctx.fillStyle = operatorColor;  // operator
             if(node.kind == "r") ctx.fillStyle = toiletColor; // toilet
-            ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+            ctx.fillRect(node.x - bckgDimensions[0]/2, node.y - fontSize, ...bckgDimensions);
 
             ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            //ctx.textBaseline = 'middle';
             //ctx.fillStyle = node.color;
             if(node.kind == "c") ctx.fillStyle = operatorTextColor;  // operator
             if(node.kind == "r") ctx.fillStyle = toiletTextColor; // toilet
