@@ -21,6 +21,7 @@ struct StatsController: RouteCollection {
 			var ref2ref: StatsTable
 			var activators: StatsTable
 			var hunters: StatsTable
+			var graphQSOs: [StatsGraphQSOs]
 			var common: CommonContent
 		}
 
@@ -111,36 +112,41 @@ struct StatsController: RouteCollection {
 
 		let activators = StatsContent.StatsTable(columnNames: ["Activator", "All"] + referenceNames, htmlRows: activatorsHtmlRows)
 		let hunters = StatsContent.StatsTable(columnNames: ["Hunter", "All"] + referenceNames, htmlRows: hunterHtmlRows)
-		let statsContent = StatsContent(references: references, ref2ref: ref2ref, activators:activators, hunters:hunters, common: req.commonContent)
+		let graphQSOs = try await graphQSOs(req: req)
+		let statsContent = StatsContent(references: references, ref2ref: ref2ref, activators:activators, hunters:hunters, graphQSOs: graphQSOs, common: req.commonContent)
 
 		return try await req.view.render("stats", statsContent)
 	}
 
-	func graph(req: Request) async throws -> View {
-		struct StatsContent: Codable, CommonContentProviding {
-			struct QSO: Codable {
-				var count: Int
-				var date: String
+	struct StatsGraphQSOs: Codable {
+		var count: Int
+		var date: String
 
-				init(from decoder: Decoder) throws {
-					let container: KeyedDecodingContainer<StatsContent.QSO.CodingKeys> = try decoder.container(keyedBy: StatsContent.QSO.CodingKeys.self)
-					self.count = try container.decode(Int.self, forKey: StatsContent.QSO.CodingKeys.count)
-					let date = try container.decode(Date.self, forKey: StatsContent.QSO.CodingKeys.date)
-					self.date = ISO8601DateFormatter().string(from: date)
-				}
-			}
-			var qsos: [QSO]
-			var common: CommonContent
+		init(from decoder: Decoder) throws {
+			let container: KeyedDecodingContainer<StatsGraphQSOs.CodingKeys> = try decoder.container(keyedBy: StatsGraphQSOs.CodingKeys.self)
+			self.count = try container.decode(Int.self, forKey: StatsGraphQSOs.CodingKeys.count)
+			let date = try container.decode(Date.self, forKey: StatsGraphQSOs.CodingKeys.date)
+			self.date = ISO8601DateFormatter().string(from: date)
 		}
+	}
 
-		let qsos: [StatsContent.QSO]
+	func graphQSOs(req: Request) async throws -> [StatsGraphQSOs] {
+		let qsos: [StatsGraphQSOs]
 		if let sql = req.db as? SQLDatabase {
 			// The underlying database driver is SQL.
-			qsos = try await sql.raw("SELECT row_number() OVER win AS count, date FROM qsos WINDOW win as (ORDER BY date);").all(decoding: StatsContent.QSO.self)
+			qsos = try await sql.raw("SELECT row_number() OVER win AS count, date FROM qsos WINDOW win as (ORDER BY date);").all(decoding: StatsGraphQSOs.self)
 		} else {
 			qsos = []
 		}
+		return qsos
+	}
 
+	func graph(req: Request) async throws -> View {
+		struct StatsContent: Codable, CommonContentProviding {
+			var qsos: [StatsGraphQSOs]
+			var common: CommonContent
+		}
+		let qsos = try await graphQSOs(req: req)
 		return try await req.view.render("graph", StatsContent(qsos: qsos, common: req.commonContent))
 	}
 
