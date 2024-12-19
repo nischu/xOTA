@@ -40,6 +40,8 @@ struct AwardCheckScheduler: AsyncJob {
 			try await queue.dispatch(CheckAwardElegibilityUser.self, .init(userId: userId))
 		}
 
+		context.logger.trace("AwardCheckScheduler found \(qsos.count) QSOs since \(sinceDate) and queued checks for \(userIds.count) users.")
+
 		// Alternate between two identifiers
 		let nextIdentifier = payload.identifier == AwardCheckScheduler.jobIdentifier1.string ? AwardCheckScheduler.jobIdentifier2 : AwardCheckScheduler.jobIdentifier1
 		let scheduleDate = Date(timeIntervalSinceNow: 5*60) // +5min

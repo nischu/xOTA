@@ -18,13 +18,16 @@ struct CheckAwardElegibilityUser: AsyncJob {
 		}
 
 		for checker in app.awardCheckers {
+			context.logger.trace("CheckAwardElegibilityUser for userId \(userId), checker \(checker.awardKind) running.")
 			if try await Award.awardsQuery(for: userId, on: app.db).filter(\.$kind, .equal, checker.awardKind).first() != nil {
+				context.logger.trace("CheckAwardElegibilityUser for userId \(userId) already has award \(checker.awardKind).")
 				continue
 			}
 			let awards = try await checker.generateAwards(for: user, app: app)
 			for award in awards {
 				try await app.queues.queue.dispatch(RenderAward.self, .init(awardId: award.requireID()))
 			}
+			context.logger.trace("CheckAwardElegibilityUser for userId \(userId) generated \(awards.count) awards.")
 		}
 	}
 
