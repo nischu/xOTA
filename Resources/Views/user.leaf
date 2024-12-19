@@ -14,7 +14,7 @@
         <tr><th>Name</th></tr>
         #for(award in awards):
         #if(isCurrentUser && award.state == "issued"):
-        <td><a href="/#(award.filename)" target="_blank">#(award.name)</a>
+        <tr><td><a href="/#(award.filename)" target="_blank">#(award.name)</a></td></tr>
         #else:
         <tr><td>#(award.name)</td></tr>
         #endif
