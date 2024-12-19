@@ -104,8 +104,14 @@ public func configure(_ app: Application) async throws {
 
 	app.lifecycle.use(AwardCheckSchedulerLifecycle())
 
+	// General Awards:
 	app.awardCheckers.append(AwardCheckerActivatedAll())
 	app.awardCheckers.append(AwardCheckerHuntedAll())
+
+	// 38C3 specific:
+	app.awardCheckers.append(AwardCheckerBasementConnection())
+	app.awardCheckers.append(AwardCheckerInHouseDX())
+
 	// register routes
 	try routes(app)
 }
