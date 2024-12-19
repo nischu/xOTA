@@ -11,12 +11,12 @@
       #if(count(awards) > 0):
       <h3>Awards</h3>
       <table class="table">
-        <tr><th>Name</th></tr>
+        <tr><th>Name</th><th>Issued (UTC)</th></tr>
         #for(award in awards):
         #if(isCurrentUser && award.state == "issued"):
-        <tr><td><a href="/#(award.filename)" target="_blank">#(award.name)</a></td></tr>
+        <tr><td><a href="/#(award.filename)" target="_blank">#(award.name)</a></td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td></tr>
         #else:
-        <tr><td>#(award.name)</td></tr>
+        <tr><td>#(award.name)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td></tr>
         #endif
         #endfor
       </table>
