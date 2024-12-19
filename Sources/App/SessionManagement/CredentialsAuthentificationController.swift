@@ -19,6 +19,7 @@ struct CredentialsAuthentificationController: RouteCollection {
 		var error: String?
 		var accountType: BaseAuthentificationController.RegisterAccountType?
 		var callsign: String?
+		var showCallsignCheckOverride: Bool = false
 		let common: CommonContent
 	}
 
@@ -42,9 +43,10 @@ struct CredentialsAuthentificationController: RouteCollection {
 		return try await req.view.render(Self.registerTemplate, ["common":req.commonContent])
 	}
 
-	struct CredentialsRegisterContent: Content {
+	struct CredentialsRegisterContent: Content, BaseAuthentificationController.RegisterContent {
 		var accountType: BaseAuthentificationController.RegisterAccountType?
 		var callsign: String
+		var overrideCallsignCountryCheck: String?
 		var acceptTerms: String
 		var password: String
 		var password_repeat: String
@@ -56,9 +58,13 @@ struct CredentialsAuthentificationController: RouteCollection {
 
 		let baseValidationResult = try await BaseAuthentificationController.commonRegistrationValidation(req: req)
 		let normalizedCallSign: String
+		var showCallsignCheckOverride = false
 		switch baseValidationResult {
+		case .callsignCountryCheck(let error):
+			showCallsignCheckOverride = true
+			fallthrough
 		case .error(let error):
-			let viewResponse: Response = try await req.view.render(Self.registerTemplate, CredentialView(error: error, accountType: registerContent.accountType, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			let viewResponse: Response = try await req.view.render(Self.registerTemplate, CredentialView(error: error, accountType: registerContent.accountType, callsign: callsign, showCallsignCheckOverride: showCallsignCheckOverride, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		case .success(normalizedCall: let call):
 			normalizedCallSign = call

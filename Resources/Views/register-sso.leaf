@@ -17,6 +17,9 @@
   #endif
   <label class="form-label" for="callsign">Callsign:</label><br>
   <input class="form-control" type="text" id="callsign" name="callsign" value="#(callsign)" />
+  #if(showCallsignCheckOverride):
+  <input class="form-check-input" type="checkbox" id="overrideCallsignCountryCheck" name="overrideCallsignCountryCheck"> <label class="form-check-label" for="overrideCallsignCountryCheck">Override callsign country check. I'll only hunt remotely, without operating from within Germany.</label><br>
+  #endif
   <fieldset>
     <label>Account type:</label><br>
     <input type="radio" id="licensed" name="accountType" value="licensed" required#if(accountType == "licensed"): checked="checked"#endif />
@@ -25,7 +28,7 @@
     <label for="unlicensed">Not licensed</label>
   </fieldset>
   <br>
-  <input class="form-check-input" type="checkbox" id="acceptTerms" name="acceptTerms" required /> <label class="form-check-label" for="accept">I accept the rules layed out in <a href="/rules/">rules</a> and <a href=/impressum/>privacy terms</a>.</label><br>
+  <input class="form-check-input" type="checkbox" id="acceptTerms" name="acceptTerms" required /> <label class="form-check-label" for="acceptTerms">I accept the rules layed out in <a href="/rules/">rules</a> and <a href=/impressum/>privacy terms</a>.</label><br>
   <input class="btn btn-primary" type="submit" value="Register" />
   </form>
   </div>

@@ -18,25 +18,33 @@ struct BaseSSOAuthController: RouteCollection {
 		grouped.get("login", use: login(req:))
 	}
 
+	struct RegisterViewContext: Content, CommonContentProviding {
+		let serviceName: String
+		let formPath: String
+		var error: String?
+		var accountType: BaseAuthentificationController.RegisterAccountType?
+		var callsign: String = ""
+		var showCallsignCheckOverride: Bool = false
+		let common: CommonContent
+	}
+
+
 	func register(req: Request) async throws -> View {
-		struct Context: Content {
-			let serviceName: String
-			let formPath: String
-			let common: CommonContent
-		}
-		return try await req.view.render(Self.registerTemplate, Context(serviceName: ssoServiceName, formPath:req.url.path, common: req.commonContent))
+		return try await req.view.render(Self.registerTemplate, RegisterViewContext(serviceName: ssoServiceName, formPath:req.url.path, common: req.commonContent))
 	}
 
 	func registerPost(req: Request) async throws -> Response {
 		struct SSORegisterContent: BaseAuthentificationController.RegisterContent {
 			var accountType: BaseAuthentificationController.RegisterAccountType?
 			var callsign: String
+			var overrideCallsignCountryCheck: String?
 			var acceptTerms: String
 		}
 		struct RegisterView: Content, CommonContentProviding {
 			var error: String
 			var accountType: BaseAuthentificationController.RegisterAccountType?
 			var callsign: String
+			var showCallsignCheckOverride: Bool = false
 			let common: CommonContent
 		}
 
@@ -45,14 +53,18 @@ struct BaseSSOAuthController: RouteCollection {
 		let callsign = registerContent.callsign
 
 		let baseValidationResult = try await BaseAuthentificationController.commonRegistrationValidation(req: req)
+		var showCallsignCheckOverride = false
 		switch baseValidationResult {
 		case .success(normalizedCall: let normalizedCallsign):
 			req.session.data[registerCallSignKey] = normalizedCallsign
 			req.session.data[registerAccountTypeKey] = accountType?.rawValue
 			let redirectResponse:Response = req.redirect(to: self.authStartSSOPath)
 			return redirectResponse
+		case .callsignCountryCheck(let error):
+			showCallsignCheckOverride = true
+			fallthrough
 		case .error(let error):
-			let viewResponse: Response = try await req.view.render(Self.registerTemplate, RegisterView(error: error, accountType: accountType, callsign: callsign, common: req.commonContent)).encodeResponse(for: req)
+			let viewResponse: Response = try await req.view.render(Self.registerTemplate, RegisterViewContext(serviceName: ssoServiceName, formPath:req.url.path, error: error, accountType: accountType, callsign: callsign, showCallsignCheckOverride: showCallsignCheckOverride, common: req.commonContent)).encodeResponse(for: req)
 			return viewResponse
 		}
 	}

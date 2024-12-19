@@ -36,6 +36,7 @@ struct BaseAuthentificationController: RouteCollection {
 	enum ValidationResponse {
 		case success(normalizedCall: String)
 		case error(_ error: String)
+		case callsignCountryCheck(_ error: String)
 	}
 
 	enum RegisterAccountType: String, RawRepresentable, Codable {
@@ -46,6 +47,7 @@ struct BaseAuthentificationController: RouteCollection {
 	protocol RegisterContent: Content {
 		var accountType: RegisterAccountType? { get }
 		var callsign: String { get }
+		var overrideCallsignCountryCheck: String? { get }
 		var acceptTerms: String { get }
 	}
 
@@ -53,6 +55,7 @@ struct BaseAuthentificationController: RouteCollection {
 		struct BaseRegisterContent: RegisterContent, Validatable {
 			var accountType: RegisterAccountType?
 			var callsign: String
+			var overrideCallsignCountryCheck: String?
 			var acceptTerms: String
 
 			static func validations(_ validations: inout Validations) {
@@ -77,10 +80,11 @@ struct BaseAuthentificationController: RouteCollection {
 			return .error("Callsign not valid.")
 		}
 
+		let ignoreCallsignCheck = registerContent.overrideCallsignCountryCheck == "on"
 		// Check if the callsign is a valid callsign for operating in Germany. Either a German callsign or one with the right CEPT-prefix.
-		if registerContent.accountType == .licensed,
+		if !ignoreCallsignCheck, registerContent.accountType == .licensed,
 		   Validator.callsignPrefixIsGermanOrCEPT.validate(registerContent.callsign).isFailure {
-			return .error("Callsign is not a German callsign and doesn't have the correct CEPT prefix according to ECC/REC/(05)06 or T/R 61-01. (‘DL/‘ for class A or ‘DO/‘ for class E)")
+			return .callsignCountryCheck("Callsign is not a German callsign and doesn't have the correct CEPT prefix according to ECC/REC/(05)06 or T/R 61-01. (‘DL/‘ for class A or ‘DO/‘ for class E)")
 		}
 
 		let normalizedCallsign = normalizedCallsign(registerContent.callsign)
