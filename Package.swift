@@ -12,6 +12,7 @@ let package = Package(
 		// 🗄 An ORM for SQL and NoSQL databases.
 		.package(url: "https://github.com/vapor/fluent.git", from: "4.8.0"),
 		// Queues fluent driver
+		.package(url: "https://github.com/vapor/queues.git", from: "1.17.0"),
 		.package(url: "https://github.com/m-barthelemy/vapor-queues-fluent-driver.git", from: "3.0.0-beta1"),
 		// Fluent driver for SQLite.
 		.package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.6.0"),
@@ -49,6 +50,7 @@ let package = Package(
 		.testTarget(name: "AppTests", dependencies: [
 			.target(name: "xOTA_App"),
 			.product(name: "XCTVapor", package: "vapor"),
+			.product(name: "XCTQueues", package: "queues"),
 
 			// Workaround for https://github.com/apple/swift-package-manager/issues/6940
 			.product(name: "Vapor", package: "vapor"),

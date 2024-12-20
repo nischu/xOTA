@@ -9,6 +9,10 @@ struct AwardInfo: Codable {
 struct RenderAward: AsyncJob {
 	typealias Payload = AwardInfo
 
+	static func renderPath(for filename: String) -> String {
+		"Public/\(filename)"
+	}
+
 	func dequeue(_ context: QueueContext, _ payload: Payload) async throws {
 		let db = context.application.db
 		guard let award = try await Award.query(on: db)
@@ -29,7 +33,7 @@ struct RenderAward: AsyncJob {
 		try await award.save(on: db)
 		let currentDirectory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
 		let scriptURL = URL(fileURLWithPath: "awards/award.sh", relativeTo: currentDirectory)
-		let renderPath = "Public/\(filename)"
+		let renderPath = Self.renderPath(for: filename)
 
 		let process = Process()
 		let pipe = Pipe()

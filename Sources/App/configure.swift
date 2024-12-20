@@ -98,6 +98,7 @@ public func configure(_ app: Application) async throws {
 	app.queues.configuration.refreshInterval = .seconds(60)
 	app.queues.configuration.workerCount = 1 // serial queue processing
 	app.queues.add(RenderAward())
+	app.queues.add(DeleteAwardData())
 	app.queues.add(CheckAwardElegibilityUser())
 	app.queues.add(AwardCheckScheduler())
 	try app.queues.startInProcessJobs(on: .default)

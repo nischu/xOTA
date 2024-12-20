@@ -131,8 +131,22 @@ struct UserController: RouteCollection {
 		guard let user = req.auth.get(UserModel.self) else {
 			throw Abort(.unauthorized)
 		}
+		guard let confirm = try req.content.get(String?.self, at: "confirm"), confirm == "on" else {
+			throw Abort(.badRequest)
+		}
+
 		let callsign = user.callsign
 		try await req.db.transaction { database in
+			for award in try await user.$awards.query(on: database).all() {
+				switch award.state {
+				case .rendering, .issued:
+					if let filename = award.filename {
+						try await req.application.queues.queue.dispatch(DeleteAwardData.self, .init(awardId: try award.requireID(), filename: filename))
+					}
+				case .waitingToRender:
+					continue
+				}
+			}
 			for qso in try await user.$activatorQsos.query(on: database).field(\.$id).all() {
 				try await qso.delete(force: true, on: database)
 			}

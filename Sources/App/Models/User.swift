@@ -23,6 +23,9 @@ final class UserModel: Model, Content, @unchecked Sendable {
 	@Children(for: \.$user)
 	var specialRoles: [UserRoleModel]
 
+	@Children(for: \.$user)
+	var awards: [Award]
+
 	init() { }
 
 	init(id: UserModel.IDValue? = nil,
