@@ -101,10 +101,10 @@
   #if(editing):
   <input class="form-control btn btn-primary" type="submit" value="Update" >
   #else:
-  <input class="form-control btn btn-primary" type="submit" value="Log" >
+  <p><input class="form-control btn btn-primary" type="submit" value="Log" ></p>
+  <p><input class="form-control btn btn-secondary" formnovalidate name="spot" type="submit" value="Spot me" ></p>
   #endif
   </form>
-  <br>
 
   #if(editing):
   <form style="max-width: 350px" action="#(formPath)/delete?#(urlQuery)" method="post">

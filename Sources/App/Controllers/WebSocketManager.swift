@@ -76,6 +76,10 @@ struct WebSocketManagerKey: StorageKey {
 	typealias Value = WebSocketManager
 }
 
+struct WebSocketManagerSpotsKey: StorageKey {
+	typealias Value = WebSocketManager
+}
+
 extension Application {
 
 	var webSocketManager: WebSocketManager? {
@@ -86,4 +90,14 @@ extension Application {
 			self.storage[WebSocketManagerKey.self] = newValue
 		}
 	}
+
+	var webSocketManagerSpots: WebSocketManager? {
+		get {
+			self.storage[WebSocketManagerSpotsKey.self]
+		}
+		set {
+			self.storage[WebSocketManagerSpotsKey.self] = newValue
+		}
+	}
+
 }

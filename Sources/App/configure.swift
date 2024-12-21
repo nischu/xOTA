@@ -43,6 +43,7 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(CreateQso())
 	app.migrations.add(CreateAward())
 	app.migrations.add(CreateUserCredential())
+	app.migrations.add(CreateSpot())
 	// TODO: can be removed before the next OSS release
 	app.migrations.add(MigrateMissingHunters())
 	app.migrations.add(ModifyQsoAddModificationDate())
@@ -87,6 +88,10 @@ public func configure(_ app: Application) async throws {
 	app.lifecycle.use(webSockets)
 	app.webSocketManager = webSockets
 
+	let webSocketsSpots = WebSocketManager()
+	app.lifecycle.use(webSocketsSpots)
+	app.webSocketManagerSpots = webSocketsSpots
+
 	app.middleware.use(app.sessions.middleware)
 	app.middleware.use(CustomDatabaseSessionAuthenticator(databaseID: .sqlite))
 
@@ -95,13 +100,16 @@ public func configure(_ app: Application) async throws {
 
 
 	// Queues configuration
-	app.queues.configuration.refreshInterval = .seconds(60)
+	app.queues.configuration.refreshInterval = .seconds(10)
 	app.queues.configuration.workerCount = 1 // serial queue processing
 	app.queues.add(RenderAward())
 	app.queues.add(DeleteAwardData())
 	app.queues.add(CheckAwardElegibilityUser())
 	app.queues.add(AwardCheckScheduler())
 	try app.queues.startInProcessJobs(on: .default)
+
+	app.queues.schedule(UpdateSpots()).minutely().at(13)
+	try app.queues.startScheduledJobs()
 
 	app.lifecycle.use(AwardCheckSchedulerLifecycle())
 

@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    #extend("include_head")
+    <title>Current Spots</title>
+  </head>
+  <body>
+    #extend("include_navbar")
+    <div class="container">
+    #if(canMarkQRT):
+    <form action="/spot/me/qrt" method="post">
+       <input class="btn btn-primary" type="submit" value="Remove my spot" >
+    </form>
+    #endif
+    <h1>Current Spots</h1>
+      <p>
+      <table class="table">
+        <thead>
+          <tr><th>Date/Time (UTC)</th><th>Station Callsign</th><th>Operator</th><th>#(common.namingTheme.referenceSingular)</th><th>QRG (kHz)</th><th>Mode</th></tr>
+        </thead>
+        <tbody id="spotsTable">
+    #for(spot in spots):
+          <tr id="#(spot.id)"><td>#date(spot.modificationDate, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(spot.stationCallSign)</td><td>#(spot.operator)</td><td>#(spot.reference.title)</td><td>#(spot.freq)</td><td>#(spot.mode)</td></tr>
+    #endfor
+       </tbody>
+      </table>
+      <p id="status"></p>
+      </p>
+    </div>
+    <script>
+
+      function updateRowForSpot(row, spot) {
+        const date = new Date(Date(spot.modificationDate));
+        let formatDate = date.toISOString().replace("T", " ").substr(0,16);
+        row.innerHTML = "<td>"+formatDate+"</td><td>"+spot.stationCallSign+"</td><td>"+(spot.operator || "")+"</td><td>"+spot.reference.title+"</td><td>"+spot.freq+"</td><td>"+spot.mode+"</td>";
+        row.id = spot.id;
+      }
+
+      function updateSpot(spot) {
+        if (spot.state == "qrt") {
+          document.getElementById(spot.id).remove();
+        } else {
+          let spotRow = document.getElementById(spot.id);
+          if (spotRow !== null) {
+            spotRow.remove();
+          }
+          let spotTable = document.getElementById("spotsTable");
+          updateRowForSpot(spotTable.insertRow(0), spot);
+        }
+      }
+
+      function blobToJson(blob) {
+          return new Promise((resolve, reject) => {
+              let fr = new FileReader();
+              fr.onload = () => {
+                  resolve(JSON.parse(fr.result));
+              };
+              fr.readAsText(blob);
+          });
+      }
+      const ws = new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + "/api/spot/live")
+      ws.onopen = () => {
+          document.getElementById('status').innerText = "Connected."
+          console.log("Socket is opened.");
+      }
+
+      ws.onmessage = (event) => {
+          blobToJson(event.data).then((spot) => {
+                updateSpot(spot);
+          });
+      };
+
+      ws.onclose = () => {
+          document.getElementById('status').innerText = "Not connected!"
+          console.log("Socket is closed.");
+      };
+
+    </script>
+  </body>
+</html>

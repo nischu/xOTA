@@ -3,8 +3,16 @@ import Vapor
 
 
 struct QSOController: RouteCollection {
+
 	let authMiddleware: [Middleware]
 	let namingTheme: NamingTheme
+	internal let spotController: SpotController
+
+	init(authMiddleware: [any Middleware], namingTheme: NamingTheme) {
+		self.authMiddleware = authMiddleware
+		self.namingTheme = namingTheme
+		self.spotController = SpotController(authMiddleware: authMiddleware, namingTheme: namingTheme)
+	}
 
 	enum SessionDataKeys: String, RawRepresentable {
 		case loggingMode
@@ -163,11 +171,30 @@ struct QSOController: RouteCollection {
 	}()
 
 	func postLog(req: Request) async throws -> Response {
+
 		let reference = try await ReferenceController(namingTheme: namingTheme).specific(req: req)
-		return try await createOrUpdateLog(req: req, title:"Log QSO at \(reference.title)") { qsoInfo in
+		let title = "Log QSO at \(reference.title)"
+
+		// Common spotting closure
+		let spotWithQSOInfo: (CreateUpdateQSOModel) async throws -> () = { qsoInfo in
+			let spot = try Spot(activator: qsoInfo.activator, activatorTrainer: qsoInfo.activatorTrainer, reference: reference, stationCallSign: qsoInfo.stationCallSign, operator: qsoInfo.operator, freq: qsoInfo.freq, mode: qsoInfo.mode, state: .active, modificationDate: qsoInfo.date)
+			do {
+				// Ignore spotting failures
+				try await spotController.createOrRenew(spot: spot, req: req)
+			}
+		}
+
+		// Requested only spotting
+		if try req.content.get(String?.self, at: "spot") != nil {
+			return try await createOrUpdateLog(req: req, title: title, updateMode: .spot, save: spotWithQSOInfo)
+		}
+
+		// Log QSO
+		return try await createOrUpdateLog(req: req, title: title) { qsoInfo in
 			let qso = try QSO(activator: qsoInfo.activator, activatorTrainer:qsoInfo.activatorTrainer, hunter: qsoInfo.hunter, reference: qsoInfo.reference, huntedReference: qsoInfo.huntedReference, date: qsoInfo.date, call:qsoInfo.call, stationCallSign: qsoInfo.stationCallSign, operator: qsoInfo.operator, contactedOperator: qsoInfo.contactedOperator, contactedOperatorUser: qsoInfo.contactedOperatorUser, freq: qsoInfo.freq, mode: qsoInfo.mode, rstSent: qsoInfo.rstSent, rstRcvt: qsoInfo.rstRcvt)
 			try await qso.save(on: req.db)
 			try await req.application.webSocketManager?.broadcast(APIQSOContent(id: qso.id, model: qsoInfo))
+			try await spotWithQSOInfo(qsoInfo)
 		}
 	}
 
@@ -199,7 +226,7 @@ struct QSOController: RouteCollection {
 			throw Abort(.forbidden)
 		}
 
-		return try await createOrUpdateLog(req: req, title:"Update QSO", editing: true) { qsoInfo in
+		return try await createOrUpdateLog(req: req, title:"Update QSO", updateMode: .edit) { qsoInfo in
 			// Do not update activator, activator trainer, stationCallsign or operator info for editing since we don't keep the info in the form.
 //			qso.$activator.id = try qsoInfo.activator.requireID()
 //			qso.$activatorTrainer.id = try qsoInfo.activatorTrainer?.requireID()
@@ -273,7 +300,12 @@ struct QSOController: RouteCollection {
 		}
 	}
 
-	func createOrUpdateLog(req: Request, title:String, editing: Bool = false, save: (CreateUpdateQSOModel) async throws -> ()) async throws -> Response {
+	enum LogUpdateMode {
+		case create
+		case edit
+		case spot
+	}
+	func createOrUpdateLog(req: Request, title:String, updateMode: LogUpdateMode = .create, save: (CreateUpdateQSOModel) async throws -> ()) async throws -> Response {
 
 		let authedUser = try req.auth.require(UserModel.self)
 
@@ -295,7 +327,7 @@ struct QSOController: RouteCollection {
 			errorMessage = "Reference not found."
 		}
 
-		if errorMessage == nil {
+		if updateMode != .spot, errorMessage == nil {
 			do {
 				try QSOContext.validate(content: req)
 			} catch let validationError as ValidationsError {
@@ -335,7 +367,7 @@ struct QSOController: RouteCollection {
 
 
 		let huntedReference: Reference?
-		if errorMessage == nil, let huntedRefTitle = form.huntedReference, !huntedRefTitle.isEmpty {
+		if updateMode != .spot, errorMessage == nil, let huntedRefTitle = form.huntedReference, !huntedRefTitle.isEmpty {
 			huntedReference = try await Reference.query(on: req.db)
 				.filter(\.$title, .equal, huntedRefTitle.uppercased())
 				.field(\.$id)
@@ -369,17 +401,17 @@ struct QSOController: RouteCollection {
 			}
 		}
 
-		let hunterCall = normalizedCallsignOptional(form.callsign)
+		var hunterCall = normalizedCallsignOptional(form.callsign)
 		let contactedOperator = normalizedCallsignOptional(form.contactedOperator)
 
 		var contactedOperatorUser: UserModel? = nil
 		var hunter: UserModel? = nil
 
-		if hunterCall == contactedOperator {
+		if updateMode != .spot, hunterCall == contactedOperator {
 			errorMessage = "Callsign and contacted operator are not expected not be equal."
 		}
 
-		if errorMessage == nil {
+		if updateMode != .spot, errorMessage == nil {
 
 			if let hunterCall = hunterCall {
 				let callsign = try await Callsign.callsign(hunterCall, on: req.db).with(\.$user).first()
@@ -393,6 +425,8 @@ struct QSOController: RouteCollection {
 			if let contactedOperator {
 				contactedOperatorUser = try await UserModel.userFor(callsign: contactedOperator, on: req.db).get()
 			}
+		} else if updateMode == .spot {
+			hunterCall = ""
 		}
 
 		if errorMessage == nil, contactedOperatorUser?.id != nil, contactedOperatorUser?.id == hunter?.id {
@@ -403,19 +437,24 @@ struct QSOController: RouteCollection {
 		if errorMessage == nil {
 			if let hunterCall = hunterCall, let rstSent = form.rst_sent, let rstRcvd = form.rst_rcvd, let date {
 				try await save(CreateUpdateQSOModel(activator: authedUser, activatorTrainer: activatorTrainer, hunter: hunter, reference: reference!, huntedReference: huntedReference, date: date, call: hunterCall, contactedOperator:contactedOperator, contactedOperatorUser: contactedOperatorUser, stationCallSign: stationCallsign, operator:operatorCall, freq: form.freq, mode: form.mode, rstSent: rstSent, rstRcvt: rstRcvd))
-				if !editing {
+				switch updateMode {
+				case .create:
 					nextForm.resetForNextQSO()
-				} else {
+				case .edit:
 					if let callback = try req.query.get(String?.self, at: "callback") {
 						return req.redirect(to: callback)
 					}
+				case .spot:
+					errorMessage = "Successfully spotted."
 				}
-				let operatorAddition = (contactedOperator?.isEmpty == false) ? " operator \(contactedOperator!)" : ""
-				errorMessage = "Successfully saved your QSO with \(hunterCall)\(operatorAddition)."
+				if errorMessage == nil {
+					let operatorAddition = (contactedOperator?.isEmpty == false) ? " operator \(contactedOperator!)" : ""
+					errorMessage = "Successfully saved your QSO with \(hunterCall)\(operatorAddition)."
+				}
 			}
 		}
 
-		return try await req.view.render("logQSO", LogQSOContext(editing:editing, formTitle:title, user:authedUser, error:errorMessage, formPath:req.url.path, urlQuery: req.url.query, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:nextForm, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent)).encodeResponse(for: req)
+		return try await req.view.render("logQSO", LogQSOContext(editing:updateMode == .edit, formTitle:title, user:authedUser, error:errorMessage, formPath:req.url.path, urlQuery: req.url.query, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:nextForm, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent)).encodeResponse(for: req)
 	}
 
 	func postDelete(req: Request) async throws -> Response {
