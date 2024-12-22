@@ -9,9 +9,15 @@
     <div class="container hub-card">
     #if(common.loggingDisabled):
     <div class="alert alert-success" role="alert">
-    Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. All data will be deleted in early January 2025. Please download your QSO data as ADIF files from your profile page.
+    Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. All data will be deleted in early January 2025. Please download your QSO data as ADIF files and your awards from your profile page.
     </div>
     #endif
+    #if(common.devInstance):
+    <div class="alert alert-info" role="alert">
+    This is a development instance of the TOTA software. You are free to play around with it and try out every feature, but keep in mind that the contents of this instance at any time.
+    </div>
+    #endif
+
     <h1>Rules</h1>
     <p>
     Toilets on the Air (TOTA) is intended as an amateur radio activity during 38C3.<br>Use amateur radio to activate "references" just like you would for other xOTA programs like Parks on the Air (POTA), Summits on the Air (SOTA), Island on the Air (IOTA), …
