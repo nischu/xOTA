@@ -35,7 +35,7 @@
        <dt>Activator</dt>
        <dd>Person who activates a reference (in this case toilet). Only the activator needs to log QSOs in this system.</dd>
        <dt>Contacted Operator</dt>
-       <dd>When somebody uses a training callsign you should log both the training callsign as 'callsign' and their 'unlicesed call' as 'operator callsign' to give them hunter and T2T credits.</dd>
+       <dd>When somebody uses a training callsign you should log both the training callsign as 'callsign' and their 'unlicensed call' as 'operator callsign' to give them hunter and T2T credits.</dd>
        <dt>Chaser</dt>
        <dd>See hunter.</dd>
        <dt>Hunter</dt>
@@ -62,7 +62,9 @@
     <ul>
       <li>This year, the system also supports accounts for unlicensed operators.</li>
       <li>Please only use radios and frequencies that are allowed to be used without an individual licenses, like PMR, Freenet or CB radios.</li>
-      <li>If you are interested in pursuing an amateur radio license, find a friendly amateur radio operator who can give you practical a on-air <a href="#training">training</a> opportunity.
+      <li>If you are interested in pursuing an amateur radio license, find a friendly amateur radio operator who can give you practical a on-air <a href="#training">training</a> opportunity. <br>
+          Most likely there will always be licensed amateur radio operators at the <a href="https://events.ccc.de/congress/2024/hub/de/assembly/chaoswelle/" target="_blank">Assembly Chaoswelle</a> <a href="https://38c3.c3nav.de/l/chaoswelle/" target="_blank">near stage YELL</a> for questions/etc. about amateur radio.
+      </li>
     </ul>
     <h3><a id="asks">Additional asks:</a></h3>
     <ul>
