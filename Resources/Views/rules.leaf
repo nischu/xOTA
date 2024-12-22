@@ -14,7 +14,7 @@
     #endif
     #if(common.devInstance):
     <div class="alert alert-info" role="alert">
-    This is a development instance of the TOTA software. You are free to play around with it and try out every feature, but keep in mind that the contents of this instance at any time.
+    This is a development instance of the TOTA software. You are free to play around with it and try out every feature, but keep in mind that the contents of this instance may be deleted at any time.
     </div>
     #endif
 
