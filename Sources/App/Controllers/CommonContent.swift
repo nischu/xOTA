@@ -3,7 +3,7 @@ import Vapor
 extension Request {
 	var commonContent: CommonContent {
 		let hasUser = auth.has(UserModel.self)
-		return CommonContent(hasUser: hasUser, namingTheme: application.namingTheme, loggingDisabled: CommonContent.loggingDisabled)
+		return CommonContent(hasUser: hasUser, namingTheme: application.namingTheme, loggingDisabled: CommonContent.loggingDisabled, devInstance: CommonContent.devInstance)
 	}
 }
 
@@ -13,6 +13,10 @@ struct CommonContent: Codable {
 	var loggingDisabled: Bool
 	static var loggingDisabled: Bool {
 		return Environment.get("LOGGING_DISABLED") != nil
+	}
+	var devInstance: Bool
+	static var devInstance: Bool {
+		return Environment.get("DEV") != nil
 	}
 }
 
