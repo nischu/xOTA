@@ -13,12 +13,14 @@ struct VisualizationController: RouteCollection {
 			var showNav: Bool
 			var width: Int?
 			var height: Int?
+			var margin: Int
 			var common: CommonContent
 		}
 		let showNav = try req.query.get(Bool?.self, at: "hideNav") != true
-		let width = try req.query.get(Int?.self, at: "width") ?? 0
-		let height = try req.query.get(Int?.self, at: "height") ?? 0
+		let width = try req.query.get(Int?.self, at: "width")
+		let height = try req.query.get(Int?.self, at: "height")
+		let margin = try req.query.get(Int?.self, at: "margin") ?? 50
 
-		return try await req.view.render("viz-force-graph", Context(showNav:showNav, width: width, height: height, common: req.commonContent))
+		return try await req.view.render("viz-force-graph", Context(showNav:showNav, width: width, height: height, margin: margin, common: req.commonContent))
 	}
 }
