@@ -9,7 +9,7 @@
     <div class="container hub-card">
     #if(common.loggingDisabled):
     <div class="alert alert-success" role="alert">
-    Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. All data will be deleted in early January 2025. Please download your QSO data as ADIF files and your awards from your profile page.
+    Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. The server will be shut down in early January 2025. Please download your QSO data as ADIF files and your awards from your profile page.
     </div>
     #endif
     #if(common.devInstance):
