@@ -179,8 +179,9 @@ struct QSOController: RouteCollection {
 		let spotWithQSOInfo: (CreateUpdateQSOModel) async throws -> () = { qsoInfo in
 			let spot = try Spot(activator: qsoInfo.activator, activatorTrainer: qsoInfo.activatorTrainer, reference: reference, stationCallSign: qsoInfo.stationCallSign, operator: qsoInfo.operator, freq: qsoInfo.freq, mode: qsoInfo.mode, state: .active, modificationDate: qsoInfo.date)
 			do {
-				// Ignore spotting failures
 				try await spotController.createOrRenew(spot: spot, req: req)
+			} catch {
+				// Ignore spotting failures
 			}
 		}
 
