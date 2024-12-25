@@ -9,14 +9,13 @@
     <div class="container">
     <h1>Profile</h1>
     <a class="btn btn-primary" href="/logout">Logout</a>
+      <div class="table-responsive">
       <table class="table">
-        <tr><th>Callsign</th><td>#(user.callsign.callsign)</td></tr>
+        <tr><th>Callsign</th><td>#(user.callsign.callsign)</td><td></td></tr>
         #if(user.callsign.kind == "licensed"):
-        <tr><th>Training Callsigns:</th>
-        <td>
-        <table class="table">
+        <tr><th>Training Callsigns:</th><td></td><td><a class="btn btn-primary" href="/profile/callsign/add">Add Callsign</a></td></tr>
         #for(callsign in trainingCallsigns):
-        <tr><td>#(callsign.callsign)</td><td>
+        <tr><td></td><th>#(callsign.callsign)</th><td>
          <form action="" method="post">
          <input class="form-check-input" type="checkbox" id="confirm-#(callsign.callsign)" name="confirm" required>
          <label class="form-check-label" for="confirm-#(callsign.callsign)">Confirm Deletion</label><br>
@@ -24,20 +23,16 @@
          </form>
         </td></tr>
         #endfor
-        </table>
-        <a class="btn btn-primary" href="/profile/callsign/add">Add Callsign</a>
-        </td>
-        </tr>
         #endif
         #for(credential in credentials):
         #if(credential.authProvider == "credentials-auth"):
-        <tr><th>Change Password:</th><td><a class="btn btn-primary" href="/credentials/change">Change Password</a></td></tr>
+        <tr><th colspan="2">Change Password:</th><td><a class="btn btn-primary" href="/credentials/change">Change Password</a></td></tr>
         #else:
-        <tr><th>SSO ID (#(credential.authProvider))</th><td>#(credential.loginIdentifier)</td></tr>
+        <tr><th colspan="2">SSO ID (#(credential.authProvider))</th><td>#(credential.loginIdentifier)</td></tr>
         #endif
         #endfor
         <form action="/profile/delete/" method="post">
-        <tr><th>Account deletion:<br>
+        <tr><th colspan="2">Account deletion:<br>
         <input class="form-check-input" type="checkbox" id="confirm-deletion" name="confirm" required> <label class="form-check-label" for="confirm-deletion">I want to delete my account and all uploaded QSO data.</label>
         </th><td>
          <br>
@@ -45,17 +40,20 @@
         </td></tr>
         </form>
       </table>
+      </div>
 
       <h3>Awards</h3>
       #if(count(awards)==0):
       <p>No awards yet. Keep logging QSOs.</p>
       #else:
+      <div class="table-responsive">
       <table class="table">
         <tr><th>Award</th><th>Issued (UTC)</th><th>State</th></tr>
         #for(award in awards):
-        <tr><td>#(award.name)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td><td>#if(award.state == "waiting-to-render"):Queued#elseif(award.state == "rendering"):Rendering#else:<a href="/#(award.filename)" target="_blank" >Download</a>#endif</td></tr>
+        <tr><td>#(award.name)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td><td>#if(award.state == "waiting-to-render"):Queued#elseif(award.state == "rendering"):Rendering#else:<a href="/#(award.filename)" target="_blank" download="" class="btn btn-primary" >Download</a>#endif</td></tr>
         #endfor
       </table>
+      </div>
       #endif
 
       <h3>Adif</h3>
@@ -83,12 +81,14 @@
       <h3>#(qsoGroup.title) #count(qsoGroup.qsos)</h3>
       <form action="" method="get">
       <input type="hidden" name="callback" value="#(formPath)">
+      <div class="table-responsive">
       <table class="table">
         <tr><th>Date/Time (UTC)</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
     #for(qso in qsoGroup.qsos):
         <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><td>#if(qsoGroup.editable):<input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)">#endif</td></tr>
     #endfor
       </table>
+      </div>
       </form>
     #endif
     #endfor
