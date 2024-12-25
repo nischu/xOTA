@@ -20,6 +20,7 @@ struct Seed38C3Data: AsyncMigration {
 			Reference(title: "T-32", website: "https://38c3.c3nav.de/l/tota-t-32/"),
 			Reference(title: "T-41", website: "https://38c3.c3nav.de/l/tota-t-41/"),
 			Reference(title: "T-91", website: "https://38c3.c3nav.de/l/tota-t-91/"),
+			Reference(title: "T-92", website: "https://38c3.c3nav.de/l/tota-t-92/"),
 		]
 
 		for reference in references {
