@@ -116,6 +116,13 @@
             Graph.graphData({ nodes, links})
         };
 
+        #if(width > 0):
+        Graph.width(#(width));
+        #endif
+        #if(height > 0):
+        Graph.height(#(height));
+        #endif
+
         // Set to true to add qsos with a delay to see how it looks when new ones are added live.
         const addWithDelay = false;
 
