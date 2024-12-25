@@ -10,16 +10,22 @@
     <h1>#(user.callsign.callsign)</h1>
       #if(count(awards) > 0):
       <h3>Awards</h3>
-      <table class="table">
-        <tr><th>Name</th><th>Issued (UTC)</th></tr>
+        <div class="d-flex flex-wrap">
         #for(award in awards):
-        #if(isCurrentUser && award.state == "issued"):
-        <tr><td><a href="/#(award.filename)" target="_blank">#(award.name)</a></td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td></tr>
-        #else:
-        <tr><td>#(award.name)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td></tr>
-        #endif
+          <div class="card" style="max-width: 18rem; margin: 10px">
+            <img class="card-img-top" src="/awards/#(award.kind).jpg" alt="Thumbnail of award '#(award.name)'">
+            <div class="card-body">
+              <h5 class="card-title">#(award.name)</h5>
+              <p class="card-text"><small class="text-muted">Granted #date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</small></p>
+              #if(isCurrentUser && award.state == "issued"):
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+               <a href="/#(award.filename)" class="btn btn-primary" download="" target="_blank">Download</a>
+              </div>
+              #endif
+            </div>
+          </div>
         #endfor
-      </table>
+        </div>
       #endif
 
     #if(count(activated) > 0):
