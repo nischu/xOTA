@@ -31,7 +31,7 @@
     <h3><a id="ground-rules">Ground rules:</a></h3>
     <ul>
       <li>Only operate on frequencies you are licensed to operate on. With a radio licensed for the use on the given frequency.</li>
-      <li>Always respect the band plans.</li>
+      <li>Always respect the <a href="https://www.darc.de/funkbetrieb/bandplan/#c160114" targt="_blank">band</a> <a href="https://www.iaru-r1.org/on-the-air/band-plans/" target="_blank">plans</a>.</li>
       <li>Within those rules, all bands and modes are acceptable.</li>
       <li>Don't be rude, don't unncessarily block restrooms when others need to use them and always respect the privacy of other restroom users.</li>
       <li>It's not required to activate from within a restroom. A radius of a few meters from the doors (in either direction) is fine.</li>
@@ -59,9 +59,10 @@
       <li>Unlicensed operators can change the logging mode and enter a training callsign on the logging page.</li>
       <li>Reminder: It's illegal to use callsigns without permission. Please stay with your trainer.</li>
     </ul>
-    <h3><a id="foreign">Foreign radio amateurs welcome:</a></h3>
+    <h3><a id="international">International radio amateurs welcome:</a></h3>
       <p>Thanks to <a href="https://docdb.cept.org/download/4541" target="_blank">CEPT Recommendation T/R 61-01</a> and <a href="https://docdb.cept.org/download/1855" target="_blank">ECC Recommendation ECC/REC/(05)06</a>, radio amateurs from many countries around the world can operate in Germany.<br>
       If you own a CEPT license, you can use the prefix “DL/” in front of your home callsign, if you own a CEPT Novice license, you can use the prefix “DO/”. If you want to know exactly on which band you are allowed to operate with which power, you can <a href="https://files.darc.de/index.php/s/CKT38kZP6miK7xf/download/Cept_Laenderliste.pdf" target="_blank">look it up here</a>.<br>
+      Please be aware that we are in IARU region 1. Especailly the <a href="https://www.iaru-r1.org/wp-content/uploads/2020/12/VHF-Bandplan.pdf" target="_blank">VHF</a> and <a href="https://www.iaru-r1.org/wp-content/uploads/2021/03/UHF-Bandplan.pdf" target="_blank">UHF</a> band plans may be different than in your home country.<br>
       In addition to the <a href="https://www.cept.org/cept/membership-and-observers" target="_blank">CEPT countries</a>, non-CEPT countries can also participate in the reciprocal license agreement:  4X 🇮🇱, K 🇺🇸, OA 🇵🇪, PJ2 🇨🇼, PJ4-PJ6 🇧🇶, PJ7 🇸🇽, VE 🇨🇦, VK 🇦🇺, ZL 🇳🇿, ZS 🇿🇦.</p>
 
     <h3><a id="unlicensed">Unlicensed operators:</a></h3>
