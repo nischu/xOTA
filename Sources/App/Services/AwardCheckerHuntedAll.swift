@@ -1,7 +1,7 @@
 import Vapor
 
 struct AwardCheckerHuntedAll: AwardChecker {
-	let awardKind: Award.AwardKind = "hunted"
+	let awardKind: Award.AwardKind = "hunted-all"
 
 	func generateAwards(for user: UserModel, app: Application) async throws -> [Award] {
 		let userId = try user.requireID()

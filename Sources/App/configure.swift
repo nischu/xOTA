@@ -116,10 +116,24 @@ public func configure(_ app: Application) async throws {
 	// General Awards:
 	app.awardCheckers.append(AwardCheckerActivatedAll())
 	app.awardCheckers.append(AwardCheckerHuntedAll())
+	app.awardCheckers.append(AwardCheckerTrainer())
+	app.awardCheckers.append(AwardCheckerTrainee())
 
 	// 38C3 specific:
 	app.awardCheckers.append(AwardCheckerBasementConnection())
 	app.awardCheckers.append(AwardCheckerInHouseDX())
+	app.awardCheckers.append(AwardCheckerActivatedLevel(level: 9))
+	app.awardCheckers.append(AwardCheckerActivatedLevel(level: 0))
+	app.awardCheckers.append(AwardCheckerActivatedLevel(level: 1))
+	app.awardCheckers.append(AwardCheckerActivatedLevel(level: 2))
+	app.awardCheckers.append(AwardCheckerActivatedLevel(level: 3))
+	app.awardCheckers.append(AwardCheckerActivatedLevel(level: 4))
+	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 9))
+	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 0))
+	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 1))
+	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 2))
+	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 3))
+	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 4))
 
 	// register routes
 	try routes(app)

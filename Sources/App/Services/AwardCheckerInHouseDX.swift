@@ -5,7 +5,7 @@ struct AwardCheckerInHouseDX: AwardChecker {
 	let awardKind: Award.AwardKind = "in-house-dx"
 
 	func generateAwards(for user: UserModel, app: Application) async throws -> [Award] {
-		if try await AwardHelperRef2Ref().hasRef2Ref(for: user, app: app, refNameA: "T-41", refNameB: "T-92") {
+		if try await AwardQueryHelper().hasRef2Ref(for: user, app: app, refNameA: "T-41", refNameB: "T-92") {
 			return try await [addAward(for: user, app: app)]
 		} else {
 			return []
@@ -13,7 +13,7 @@ struct AwardCheckerInHouseDX: AwardChecker {
 	}
 
 	dynamic func title(namingTheme: NamingTheme) -> String {
-		return "In-house DX-er (T2T between T-41 and T-92)"
+		return "In-house DX (T2T between T-41 and T-92)"
 	}
 
 	func fileName(callsign: String, namingTheme: NamingTheme) -> String {

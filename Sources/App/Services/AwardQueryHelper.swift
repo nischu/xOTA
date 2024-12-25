@@ -1,7 +1,7 @@
+import Fluent
 import Vapor
 
-struct AwardHelperRef2Ref {
-	let awardKind: Award.AwardKind = "activated"
+struct AwardQueryHelper {
 
 	func hasRef2Ref(for user: UserModel, app: Application, refNameA: String, refNameB: String) async throws -> Bool {
 		let userId = try user.requireID()
@@ -12,7 +12,7 @@ struct AwardHelperRef2Ref {
 		}).all(\.$id)
 
 		guard referenceIds.count == 2 else {
-			app.logger.warning("AwardHelperRef2Ref only only found \(referenceIds.count) for reference names '\(refNameA)' and '\(refNameB)'.")
+			app.logger.warning("AwardQueryHelper only only found \(referenceIds.count) for reference names '\(refNameA)' and '\(refNameB)'.")
 			return false
 		}
 
@@ -39,5 +39,29 @@ struct AwardHelperRef2Ref {
 		return qsosCount > 0
 	}
 
+	func hunted(for user: UserModel, app: Application, referenceIds: [Reference.IDValue]) async throws -> Bool {
+		let userId = try user.requireID()
+		let qsoReferenceIds = try await QSO.query(on: app.db)
+			.group(.or) { builder in
+				builder
+					.filter(\.$hunter.$id, .equal, userId)
+					.filter(\.$contactedOperatorUser.$id, .equal, userId)
+			}
+			.filter(\.$huntedReference.$id ~~ referenceIds)
+			.unique()
+			.all(\.$huntedReference.$id)
+		return Set(referenceIds) == Set(qsoReferenceIds)
+	}
+
+	func activated(for user: UserModel, app: Application, referenceIds: [Reference.IDValue]) async throws -> Bool {
+		let userId = try user.requireID()
+		let qsoReferenceIds = try await QSO.query(on: app.db)
+			.filter(\.$activator.$id, .equal, userId)
+			.filter(\.$reference.$id ~~ referenceIds)
+			.unique()
+			.all(\.$reference.$id)
+
+		return Set(referenceIds) == Set(qsoReferenceIds)
+	}
 
 }
