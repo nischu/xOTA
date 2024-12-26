@@ -59,6 +59,9 @@
           })
           .onBackgroundClick(event => {
             Graph.zoomToFit(100, #(margin));
+          })
+          .onEngineStop(() => {
+            Graph.zoomToFit(100, #(margin));
           });
 
         let linkMap = new Map();
