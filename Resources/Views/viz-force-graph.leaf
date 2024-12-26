@@ -6,10 +6,18 @@
     <!--<script src="//unpkg.com/force-graph"></script>-->
     <script src="/js/force-graph.min.js"></script>
     <title>Contact Graph</title>
+    #if(refresh > 0):
+    <meta http-equiv="refresh" content="#(refresh)">
+    #endif
   </head>
   <body>
     #if(showNav):
     #extend("include_navbar")
+    #endif
+    #if(showTitle):
+      <div style="position: absolute; top: 10; left: 10; z-index: 100;">
+        <h1 style="color:#B2AAFF">TOTA Connections<br>➡ 38c3.totawatch.de</h1>
+      </div>
     #endif
       <div id="graph"></div>
       <p id="status" style="margin-top:-35px; margin-left:15px; color:#B2AAFF;" >Connecting…</p>
