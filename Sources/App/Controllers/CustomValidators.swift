@@ -63,7 +63,7 @@ extension Validator where T == String {
 
 	public static var relaxedCallsign: Validator<T> {
 		.init { data in
-			(.count(3...10) && .characterSet(.alphanumerics.union(CharacterSet(charactersIn: "/")))).validate(data)
+			(.count(3...20) && .characterSet(.alphanumerics.union(CharacterSet(charactersIn: "/")))).validate(data)
 		}
 	}
 
