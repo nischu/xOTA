@@ -145,7 +145,7 @@
         };
 
         const fetchPage = (page) => {
-          fetch('/api/qso/?per=100&page='+page).then(res => res.json()).then(qsoFetch => {
+          fetch('/api/qso/?per=200&page='+page).then(res => res.json()).then(qsoFetch => {
             let qsos = qsoFetch.items;
             let delay = 0;
             qsos.forEach(q => {
@@ -164,10 +164,11 @@
                 zoom();
               }, 1000);
             }
-            let metadata = qsoFetch.metadata;
-            if (metadata.total > metadata.page * metadata.per) {
-              fetchPage(metadata.page+1);
-            }
+// HACK: Commented out to only fetch the first page of 200 QSOs.
+//            let metadata = qsoFetch.metadata;
+//            if (metadata.total > metadata.page * metadata.per) {
+//              fetchPage(metadata.page+1);
+//            }
         });
       };
       fetchPage(1);
