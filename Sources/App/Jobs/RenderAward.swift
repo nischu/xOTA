@@ -47,14 +47,14 @@ struct RenderAward: AsyncJob {
 		let scriptURL = URL(fileURLWithPath: "awards/award.sh", relativeTo: currentDirectory)
 		let renderPath = Self.renderPath(for: filename)
 
+		var env = ProcessInfo.processInfo.environment
+		env["AWARD_DATE"] = formatter.string(from: award.issueDate)
 		let process = Process()
 		let pipe = Pipe()
 		process.executableURL = scriptURL
 		process.standardOutput = pipe.fileHandleForWriting
 		process.standardError = pipe.fileHandleForWriting
-		process.environment = [
-			"AWARD_DATE": formatter.string(from: award.issueDate)
-		]
+		process.environment = env
 		process.arguments = [
 			userCallsign,
 			award.kind,
