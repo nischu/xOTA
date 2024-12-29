@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   #extend("include_head")
-  <title>Admin</title>
+  <title>Admin Users</title>
 </head>
 
 <body>

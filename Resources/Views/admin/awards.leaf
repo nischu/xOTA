@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  #extend("include_head")
+  <title>Admin Awards</title>
+</head>
+
+<body>
+  #extend("include_navbar")
+  #extend("admin/include_admin_navbar")
+
+      <form action="/admin/awards/schedule/" method="POST">
+      <label for="userId">Choose User:</label>
+      <select id="userId" name="userId">
+        <option value="">--Please choose an option--</option>
+        #for(user in users):
+          <option value="#(user.id)">#(user.callsign.callsign)</option>
+        #endfor
+      </select>
+      <input class="btn btn-primary" type="submit" value="Schedule Check" />
+      </form>
+      <table class="table">
+        <tr><th>Awards</th><th></th></tr>
+    #for(award in awards):
+        <tr><td>#(award.name)</td><td>#(award.kind)</td><td>#(award.dateIssued)</td><td>#(award.state)</td><td>#(award.filename)</td></tr>
+    #endfor
+      </table>
+</body>
+</html>

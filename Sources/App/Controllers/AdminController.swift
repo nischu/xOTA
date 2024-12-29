@@ -27,6 +27,10 @@ struct AdminController: RouteCollection {
 		authedAdmin.get("user", "edit", ":userId", use: editUser).description("admin only")
 		authedAdmin.post("user", "edit", ":userId", use: updateUser).description("admin only")
 
+		// Awards
+		authedAdmin.get("awards", use: awards(req:)).description("admin only")
+		authedAdmin.post("awards", "schedule", use: dispatchAwardCheck).description("admin only")
+
 	}
 
 	func references(req: Request) async throws -> View {
@@ -222,6 +226,37 @@ struct AdminController: RouteCollection {
 			message = "Nothing changed."
 		}
 		return try await req.view.render("admin/user_edit", UserContent(user: user, credentials:credentials, error: nil, success: message, actionPath: actionPath(for: user), common: req.commonContent))
+	}
+
+	// MARK: - Award
+
+	func awards(req: Request) async throws -> View {
+		struct AwardsContent: Codable {
+			let awards: [Award]
+			let users: [UserModel]
+			let common: CommonContent
+		}
+		let awards = try await Award.query(on: req.db).with(\.$user).all()
+		let users = try await UserModel.query(on: req.db).with(\.$callsign).all()
+
+		return try await req.view.render("admin/awards", AwardsContent(awards: awards, users: users, common: req.commonContent))
+	}
+
+	func dispatchAwardCheck(req: Request) async throws -> Response{
+		struct AwardCheckForm: Codable {
+			let userId: UserModel.IDValue
+		}
+
+		let formContent = try req.content.decode(AwardCheckForm.self)
+
+		guard let user = try await UserModel.query(on:req.db).filter(\.$id == formContent.userId).with(\.$callsign).first() else {
+			throw Abort(.notFound)
+		}
+
+
+		try await req.application.queues.queue.dispatch(CheckAwardElegibilityUser.self, CheckAwardElegibilityUserInfo(userId: user.requireID()))
+
+		return req.redirect(to: "/admin/awards/")
 	}
 
 }
