@@ -47,9 +47,9 @@ struct AwardQueryHelper {
 					.filter(\.$hunter.$id, .equal, userId)
 					.filter(\.$contactedOperatorUser.$id, .equal, userId)
 			}
-			.filter(\.$huntedReference.$id ~~ referenceIds)
+			.filter(\.$reference.$id ~~ referenceIds)
 			.unique()
-			.all(\.$huntedReference.$id)
+			.all(\.$reference.$id)
 		return Set(referenceIds) == Set(qsoReferenceIds)
 	}
 
