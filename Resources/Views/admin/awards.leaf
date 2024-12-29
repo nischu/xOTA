@@ -19,10 +19,25 @@
       </select>
       <input class="btn btn-primary" type="submit" value="Schedule Check" />
       </form>
+
+      <form action="/admin/awards/rerender-kind/" method="POST">
+      <label for="kind">Award Kind:</label>
+      <select id="kind" name="kind">
+        <option value="">--Please choose an option--</option>
+        #for(kind in kinds):
+          <option value="#(kind)">#(kind)</option>
+        #endfor
+      </select>
+      <input class="btn btn-primary" type="submit" value="Re-render all of kind" />
+      </form>
+
       <table class="table">
-        <tr><th>Awards</th><th></th></tr>
+        <tr><th>Title</th><th>Kind</th><th>Date</th><th>State</th><th>Path</th></tr>
     #for(award in awards):
-        <tr><td>#(award.name)</td><td>#(award.kind)</td><td>#(award.dateIssued)</td><td>#(award.state)</td><td>#(award.filename)</td></tr>
+        <form action="/admin/awards/render" method="POST">
+        <tr><td>#(award.name)</td><td>#(award.kind)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(award.state)</td><td><a href="/#(award.filename)" target="_blank">#(award.filename)</a></td><td><input class="btn btn-primary" type="submit" value="Rerender" /></td></tr>
+        <input type="hidden" id="awardId" name="awardId" value="#(award.id)" />
+        </form>
     #endfor
       </table>
 </body>

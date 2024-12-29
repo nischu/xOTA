@@ -13,6 +13,12 @@ struct RenderAward: AsyncJob {
 		"Public/\(filename)"
 	}
 
+	var formatter = {
+		let formatter = DateFormatter()
+		formatter.dateFormat = "yyyy-MM-dd"
+		return formatter
+	}()
+
 	func dequeue(_ context: QueueContext, _ payload: Payload) async throws {
 		let db = context.application.db
 		guard let award = try await Award.query(on: db)
@@ -27,8 +33,14 @@ struct RenderAward: AsyncJob {
 		}
 
 		let userCallsign = award.user.callsign.callsign
-		let filename = try "rendered-awards/\(award.requireID().uuidString)/\(award.filename ?? userCallsign).pdf"
-		award.filename = filename
+		let renderPathPrefix = try "rendered-awards/\(award.requireID().uuidString)/"
+		let filename: String
+		if let _filename = award.filename, _filename.hasPrefix(renderPathPrefix) {
+			filename = _filename
+		} else {
+			filename = "\(renderPathPrefix)\(award.filename ?? userCallsign).pdf"
+			award.filename = filename
+		}
 		award.state = .rendering
 		try await award.save(on: db)
 		let currentDirectory = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
@@ -40,6 +52,9 @@ struct RenderAward: AsyncJob {
 		process.executableURL = scriptURL
 		process.standardOutput = pipe.fileHandleForWriting
 		process.standardError = pipe.fileHandleForWriting
+		process.environment = [
+			"AWARD_DATE": formatter.string(from: award.issueDate)
+		]
 		process.arguments = [
 			userCallsign,
 			award.kind,

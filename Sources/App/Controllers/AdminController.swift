@@ -28,9 +28,11 @@ struct AdminController: RouteCollection {
 		authedAdmin.post("user", "edit", ":userId", use: updateUser).description("admin only")
 
 		// Awards
-		authedAdmin.get("awards", use: awards(req:)).description("admin only")
-		authedAdmin.post("awards", "schedule", use: dispatchAwardCheck).description("admin only")
-
+		let awards = authedAdmin.grouped("awards")
+		awards.get(use: awards(req:)).description("admin only")
+		awards.post("schedule", use: dispatchAwardCheck).description("admin only")
+		awards.post("render", use: dispatchRender).description("admin only")
+		awards.post("rerender-kind", use: dispatchRenderAll).description("admin only")
 	}
 
 	func references(req: Request) async throws -> View {
@@ -234,15 +236,16 @@ struct AdminController: RouteCollection {
 		struct AwardsContent: Codable {
 			let awards: [Award]
 			let users: [UserModel]
+			let kinds: [String]
 			let common: CommonContent
 		}
 		let awards = try await Award.query(on: req.db).with(\.$user).all()
 		let users = try await UserModel.query(on: req.db).with(\.$callsign).all()
-
-		return try await req.view.render("admin/awards", AwardsContent(awards: awards, users: users, common: req.commonContent))
+		let kinds = req.application.awardCheckers.map(\.awardKind)
+		return try await req.view.render("admin/awards", AwardsContent(awards: awards, users: users, kinds: kinds, common: req.commonContent))
 	}
 
-	func dispatchAwardCheck(req: Request) async throws -> Response{
+	func dispatchAwardCheck(req: Request) async throws -> Response {
 		struct AwardCheckForm: Codable {
 			let userId: UserModel.IDValue
 		}
@@ -258,5 +261,42 @@ struct AdminController: RouteCollection {
 
 		return req.redirect(to: "/admin/awards/")
 	}
+
+	func dispatchRender(req: Request) async throws -> Response {
+		struct AwardForm: Codable {
+			let awardId: Award.IDValue
+		}
+
+		let formContent = try req.content.decode(AwardForm.self)
+
+		guard let award = try await Award.find(formContent.awardId, on: req.db) else {
+			throw Abort(.notFound)
+		}
+
+		award.state = .waitingToRender
+		try await award.save(on: req.db)
+
+		try await req.application.queues.queue.dispatch(RenderAward.self, AwardInfo(awardId: award.requireID()))
+
+		return req.redirect(to: "/admin/awards/")
+	}
+
+	func dispatchRenderAll(req: Request) async throws -> Response {
+		struct AwardForm: Codable {
+			let kind: String
+		}
+
+		let formContent = try req.content.decode(AwardForm.self)
+
+		let awards = try await Award.query(on: req.db).filter(\.$kind == formContent.kind).all()
+		for award in awards {
+			award.state = .waitingToRender
+			try await award.save(on: req.db)
+			try await req.application.queues.queue.dispatch(RenderAward.self, AwardInfo(awardId: award.requireID()))
+		}
+
+		return req.redirect(to: "/admin/awards/")
+	}
+
 
 }
