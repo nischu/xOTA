@@ -80,6 +80,26 @@
     </tbody>
     </table>
 
+    #if(count(awards) > 0):
+    <h3>Awards</h3>
+      <div class="d-flex flex-wrap">
+      #for(award in awards):
+        <div class="card" style="max-width: 18rem; margin: 10px">
+          <img class="card-img-top" src="/awards/#(award.kind).jpg" alt="Thumbnail of award '#(award.name)'">
+          <div class="card-body">
+            <h5 class="card-title">#(award.name)</h5>
+            <p class="card-text"><small class="text-muted">Times issued: #(award.count)</small></p>
+            #if(isCurrentUser && award.state == "issued"):
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+             <a href="/#(award.filename)" class="btn btn-primary" download="" target="_blank">Download</a>
+            </div>
+            #endif
+          </div>
+        </div>
+      #endfor
+      </div>
+    #endif
+
     <h1>QSO Graph (#count(graphQSOs))</h1>
     <canvas id="qsosGraph"></canvas>
 

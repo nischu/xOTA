@@ -22,6 +22,7 @@ struct StatsController: RouteCollection {
 			var activators: StatsTable
 			var hunters: StatsTable
 			var graphQSOs: [StatsGraphQSOs]
+			let awards: [StatsAward]
 			var common: CommonContent
 		}
 
@@ -118,8 +119,22 @@ struct StatsController: RouteCollection {
 
 		let activators = StatsContent.StatsTable(columnNames: ["Activator", "All"] + referenceNames, htmlRows: activatorsHtmlRows)
 		let hunters = StatsContent.StatsTable(columnNames: ["Hunter", "All"] + referenceNames, htmlRows: hunterHtmlRows)
+
+		struct StatsAward: Codable {
+			let name: String
+			let kind: String
+			let count: Int
+		}
+		let awardRows: [any SQLRow]
+		if let sql = req.db as? SQLDatabase {
+			awardRows = try await sql.raw(SQLQueryString("select name, kind, count(*) AS count FROM awards WHERE state = 'issued' GROUP BY kind ORDER BY count DESC;")).all()
+		} else {
+			awardRows = []
+		}
+		let awards = try awardRows.map { try $0.decode(model: StatsAward.self) }
+
 		let graphQSOs = try await graphQSOs(req: req)
-		let statsContent = StatsContent(references: references, ref2ref: ref2ref, activators:activators, hunters:hunters, graphQSOs: graphQSOs, common: req.commonContent)
+		let statsContent = StatsContent(references: references, ref2ref: ref2ref, activators:activators, hunters:hunters, graphQSOs: graphQSOs, awards: awards, common: req.commonContent)
 
 		return try await req.view.render("stats", statsContent)
 	}
