@@ -144,6 +144,8 @@
         }
       });
     </script>
+
+    <p><small class="text-muted">Updated at #date(date, "yyyy-MM-dd HH:mm:ss", "GMT") UTC.</small></p>
     </div>
   </body>
 </html>

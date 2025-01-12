@@ -12,19 +12,41 @@ struct StatsController: RouteCollection {
 	}
 
 	func stats(req: Request) async throws -> View {
-		struct StatsContent: Codable, CommonContentProviding {
-			struct StatsTable: Codable {
-				var columnNames: [String]
-				var htmlRows: [String]
-			}
-			var references: StatsTable
-			var ref2ref: StatsTable
-			var activators: StatsTable
-			var hunters: StatsTable
-			var graphQSOs: [StatsGraphQSOs]
-			let awards: [StatsAward]
-			var common: CommonContent
+
+		let cacheKey = "stats-content"
+		let cacheExpiry: CacheExpirationTime = .minutes(5)
+		var statsContent = try await req.cache.get(cacheKey, as: StatsContent.self)
+		// Update common content since it can be specific to this request.
+		statsContent?.common = req.commonContent
+		if statsContent == nil {
+			statsContent = try await self.statsContent(req: req)
+			try await req.cache.set(cacheKey, to: statsContent, expiresIn: cacheExpiry)
 		}
+
+		return try await req.view.render("stats", statsContent)
+	}
+
+	struct StatsContent: Codable, CommonContentProviding {
+		struct StatsTable: Codable {
+			var columnNames: [String]
+			var htmlRows: [String]
+		}
+		struct Award: Codable {
+			let name: String
+			let kind: String
+			let count: Int
+		}
+		var references: StatsTable
+		var ref2ref: StatsTable
+		var activators: StatsTable
+		var hunters: StatsTable
+		var graphQSOs: [StatsGraphQSOs]
+		let awards: [Award]
+		let date: Date
+		var common: CommonContent
+	}
+
+	func statsContent(req: Request) async throws -> StatsContent {
 
 		let modes = try await QSO.query(on: req.db).field(\.$mode).unique().sort(\.$mode).all(\.$mode).map(\.rawValue)
 
@@ -120,23 +142,18 @@ struct StatsController: RouteCollection {
 		let activators = StatsContent.StatsTable(columnNames: ["Activator", "All"] + referenceNames, htmlRows: activatorsHtmlRows)
 		let hunters = StatsContent.StatsTable(columnNames: ["Hunter", "All"] + referenceNames, htmlRows: hunterHtmlRows)
 
-		struct StatsAward: Codable {
-			let name: String
-			let kind: String
-			let count: Int
-		}
+
 		let awardRows: [any SQLRow]
 		if let sql = req.db as? SQLDatabase {
 			awardRows = try await sql.raw(SQLQueryString("select name, kind, count(*) AS count FROM awards WHERE state = 'issued' GROUP BY kind ORDER BY count DESC;")).all()
 		} else {
 			awardRows = []
 		}
-		let awards = try awardRows.map { try $0.decode(model: StatsAward.self) }
+		let awards = try awardRows.map { try $0.decode(model: StatsContent.Award.self) }
 
 		let graphQSOs = try await graphQSOs(req: req)
-		let statsContent = StatsContent(references: references, ref2ref: ref2ref, activators:activators, hunters:hunters, graphQSOs: graphQSOs, awards: awards, common: req.commonContent)
-
-		return try await req.view.render("stats", statsContent)
+		let statsContent = StatsContent(references: references, ref2ref: ref2ref, activators:activators, hunters:hunters, graphQSOs: graphQSOs, awards: awards, date:Date(), common: req.commonContent)
+		return statsContent
 	}
 
 	struct StatsGraphQSOs: Codable {
