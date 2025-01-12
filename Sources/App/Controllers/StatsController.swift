@@ -76,16 +76,22 @@ struct StatsController: RouteCollection {
 
 		let ref2ref = StatsContent.StatsTable(columnNames: ["Activated\\Hunted"] + referenceNames, htmlRows: references2referenceHtmlRows)
 
-		func userRows(callsignColumn: String, userIDColumn: String) async throws -> [any SQLRow] {
+		func userRows(callsignColumn: String, operatorColumn: String, userIdColumn: String, operatorIdColumn: String? = nil) async throws -> [any SQLRow] {
 			let userRows: [any SQLRow]
 			if let sql = req.db as? SQLDatabase {
 				// The underlying database driver is SQL.
 
-				let queryStart = "select qsos.\(callsignColumn) AS 'call',"
+				let queryStart = "SELECT (CASE WHEN qsos.\(operatorColumn) NOT NULL THEN qsos.\(operatorColumn) ELSE qsos.\(callsignColumn) END) AS 'call',"
 				let queryReferences = referenceNames.reduce("") { previous, refTitle in
 					previous + "count(case when ref.title = '\(refTitle)' then ref.title end) AS '\(refTitle)',"
 				}
-				let queryEnd = "count(*) AS sum FROM qsos LEFT JOIN 'references' AS ref ON qsos.reference_id = ref.id GROUP BY qsos.\(userIDColumn) ORDER BY sum DESC;"
+
+				let groupBy = if let operatorIdColumn {
+					"(CASE WHEN qsos.\(operatorIdColumn) NOT NULL THEN qsos.\(operatorIdColumn) ELSE qsos.\(userIdColumn) END)"
+				} else {
+					"qsos.\(userIdColumn)"
+				}
+				let queryEnd = "count(*) AS sum FROM qsos LEFT JOIN 'references' AS ref ON qsos.reference_id = ref.id GROUP BY \(groupBy) ORDER BY sum DESC;"
 
 				userRows = try await sql.raw(SQLQueryString(queryStart + queryReferences + queryEnd)).all()
 			} else {
@@ -104,10 +110,10 @@ struct StatsController: RouteCollection {
 			}
 		}
 
-		let activatorSQLRows = try await userRows(callsignColumn: "station_callsign", userIDColumn: "activator_id")
+		let activatorSQLRows = try await userRows(callsignColumn: "station_callsign", operatorColumn: "operator", userIdColumn: "activator_id")
 		let activatorsHtmlRows = try await userHtmlRow(for: activatorSQLRows)
 
-		let hunterSQLRows = try await userRows(callsignColumn: "call", userIDColumn: "hunter_id")
+		let hunterSQLRows = try await userRows(callsignColumn: "call", operatorColumn: "contacted_operator", userIdColumn: "hunter_id", operatorIdColumn: "contacted_operator_user_id")
 		let hunterHtmlRows = try await userHtmlRow(for: hunterSQLRows)
 
 		let activators = StatsContent.StatsTable(columnNames: ["Activator", "All"] + referenceNames, htmlRows: activatorsHtmlRows)
