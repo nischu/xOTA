@@ -46,10 +46,6 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(CreateAward())
 	app.migrations.add(CreateUserCredential())
 	app.migrations.add(CreateSpot())
-	// TODO: can be removed before the next OSS release
-	app.migrations.add(MigrateMissingHunters())
-	app.migrations.add(ModifyQsoAddModificationDate())
-	app.migrations.add(MigrateUserCredentials())
 
 #if DEBUG
 	app.migrations.add(SeedSampleData())
