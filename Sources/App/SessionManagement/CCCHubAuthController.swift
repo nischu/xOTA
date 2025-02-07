@@ -23,10 +23,12 @@ struct CCCHubAuthController: RouteCollection {
 		try routes.register(collection: baseSSOAuthController)
 
 		let authCallbackPath = try Environment.get("CCCHUB_AUTH_CALLBACK").value(or: ImperialError.missingEnvVar("CCCHUB_AUTH_CALLBACK"))
+		let cccHubScope = try Environment.get("CCCHUB_SCOPE").value(or: ImperialError.missingEnvVar("CCCHUB_SCOPE"))
+		let cccHubMeAPIEndpoint = try Environment.get("CCCHUB_ME_API").value(or: ImperialError.missingEnvVar("CCCHUB_ME_API"))
 
 		// Setup OAuth with CCC Hub
-		try routes.oAuth(from: CCCHub.self, authenticate: Self.authStartSSOPath, callback: authCallbackPath, scope: [ "38c3_attendee" ]) { (request, token) in
-			return request.client.get(URI(stringLiteral: "https://api.events.ccc.de/congress/2024/me"), headers: HTTPHeaders([("Authorization", "Bearer \(token)")])).flatMap { response in
+		try routes.oAuth(from: CCCHub.self, authenticate: Self.authStartSSOPath, callback: authCallbackPath, scope: [ cccHubScope ]) { (request, token) in
+			return request.client.get(URI(stringLiteral: cccHubMeAPIEndpoint), headers: HTTPHeaders([("Authorization", "Bearer \(token)")])).flatMap { response in
 
 				guard let authenticated = try? response.content.get(Bool.self, at: ["authenticated"]),
 					  let username = try? response.content.get(String.self, at: ["username"]),
