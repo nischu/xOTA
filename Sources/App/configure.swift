@@ -24,7 +24,9 @@ public func configure(_ app: Application) async throws {
 	} else {
 		let userPassEnabled = (Environment.get("USER_PASS_ENABLED") as? NSString)?.boolValue ?? false
 		let darcSSO = Environment.get("DARC_SSO_AUTH_CALLBACK") != nil
-		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: true, darcSSOEnabled:darcSSO, userPassEnabled: userPassEnabled)
+		let cccHub = Environment.get("CCCHUB_AUTH_CALLBACK") != nil
+		assert(userPassEnabled || darcSSO || cccHub, "Expected on authentification mechanismn to be enabled")
+		app.authentificationConfiguration = AuthentificationConfiguration(cccHUBEnabled: cccHub, darcSSOEnabled:darcSSO, userPassEnabled: userPassEnabled)
 	}
 
 	app.views.use(.leaf)
