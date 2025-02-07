@@ -18,6 +18,7 @@ struct AwardCheckScheduler: AsyncJob {
 		let db = context.application.db
 
 		let nextCheckSinceDate = Date()
+		// TODO: reset date if new award type was added.
 		let sinceDate = payload.checkSinceDate
 		let qsos: [QSO] = try await QSO.query(on: db)
 			.filter(\.$modificationDate, .greaterThanOrEqual, sinceDate)

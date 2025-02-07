@@ -102,14 +102,27 @@ public func configure(_ app: Application) async throws {
 	// Queues configuration
 	app.queues.configuration.refreshInterval = .seconds(10)
 	app.queues.configuration.workerCount = 1 // serial queue processing
+
+	app.queues.schedule(UpdateSpots()).minutely().at(13)
+	try app.queues.startScheduledJobs()
+
+	if (Environment.get("AWARDS_ENABLED") as? NSString)?.boolValue ?? false {
+		// MARK: Setup Awards.
+		// This assumes a render tool is available at awards/award.sh.
+		// See RenderAward.swift
+		try await configureAwards(app)
+	}
+
+	// register routes
+	try routes(app)
+}
+
+func configureAwards(_ app: Application) async throws {
 	app.queues.add(RenderAward())
 	app.queues.add(DeleteAwardData())
 	app.queues.add(CheckAwardElegibilityUser())
 	app.queues.add(AwardCheckScheduler())
 	try app.queues.startInProcessJobs(on: .default)
-
-	app.queues.schedule(UpdateSpots()).minutely().at(13)
-	try app.queues.startScheduledJobs()
 
 	app.lifecycle.use(AwardCheckSchedulerLifecycle())
 
@@ -135,8 +148,6 @@ public func configure(_ app: Application) async throws {
 	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 3))
 	app.awardCheckers.append(AwardCheckerHuntedLevel(level: 4))
 
-	// register routes
-	try routes(app)
 }
 
 extension Environment {
