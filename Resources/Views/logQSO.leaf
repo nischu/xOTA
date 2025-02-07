@@ -28,7 +28,7 @@
   #endif
 
   <label class="form-label" for="callsign">Callsign</label>
-  <input class="form-control" type="text" list="knowncallsigns" id="callsign" name="callsign" value="#(qso.callsign)" minlength=3 maxlength=10 required>
+  <input class="form-control" type="text" list="knowncallsigns" id="callsign" name="callsign" value="#(qso.callsign)" minlength=3 maxlength=20 required>
   <datalist id="knowncallsigns">
   #for(knownCallsign in knownCallsigns):
     <option value="#(knownCallsign)"></option>
@@ -47,11 +47,30 @@
   <input class="form-check-input" type="radio" id="radioButtonManual" name="dateTimeSource" value="manual" #if(qso.dateTimeSource == "manual"): checked #endif> 
   #endif
 
-  <input class="form-control" type="datetime-local" id="manualDate" name="manualDate" step=1 #if(qso.dateTimeSource == "manual"): value="#(qso.manualDate)" #endif > 
+  <input class="form-control" type="datetime-local" id="manualDate" name="manualDate" step=1 min="2023-12-25T00:00:00" #if(qso.dateTimeSource == "manual"): value="#(qso.manualDate)" #endif max="2023-12-31T00:00:00" > 
 
+  #if(user.callsign.kind == "licensed"):
   <label class="form-label" for="freq">Frequency (kHz)</label>
-  <input class="form-control" type="number" id="freq" name="freq" value="#(qso.freq)" inputmode="numeric" required>
-
+  <input class="form-control" type="number" list="channels" id="freq" name="freq" value="#(qso.freq)" inputmode="numeric" required>
+  <datalist id="channels">
+  #for(channelGroup in channelGroups):
+    #for(channel in channelGroup.channels):
+      <option value="#(channel.frequency)"#if(channel.frequency == qso.freq): selected#endif>#(channel.name) (#(channelGroup.licensedComment))</option>
+    #endfor
+  #endfor
+  </datalist>
+  #else:
+  <label class="form-label" for="freq">Channel</label>
+  <select class="form-control" name="freq" id="freq" required>
+  #for(channelGroup in channelGroups):
+    <optgroup label="#(channelGroup.name)">
+    #for(channel in channelGroup.channels):
+      <option value="#(channel.frequency)"#if(channel.frequency == qso.freq): selected#endif>#(channel.name)</option>
+    #endfor
+    </optgroup>
+  #endfor
+  </select>
+  #endif
   <label class="form-label" for="mode">Mode</label>
   <select class="form-select" id="mode" name="mode">
     #for(mode in modes):

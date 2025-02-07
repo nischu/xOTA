@@ -43,7 +43,14 @@ extension Validator where T == String {
 			return ValidatorResults.Callsign(isValidCallsign: true)
 		}
 	}
+	public static var relaxedCallsign: Validator<T> {
+		.init { data in
+			(.count(3...10) && .characterSet(.alphanumerics)).validate(data)
+		}
+	}
+
 }
+
 
 // MARK: - Date
 

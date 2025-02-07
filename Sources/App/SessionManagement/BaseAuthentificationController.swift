@@ -56,7 +56,7 @@ struct BaseAuthentificationController: RouteCollection {
 
 			static func validations(_ validations: inout Validations) {
 				validations.add("accountType", as: RegisterAccountType?.self, is: !.nil, customFailureDescription: "You need to select an account type.")
-				validations.add("callsign", as: String.self, is: .count(3...10) && .characterSet(.alphanumerics))
+				validations.add("callsign", as: String.self, is: .relaxedCallsign)
 			}
 		}
 
