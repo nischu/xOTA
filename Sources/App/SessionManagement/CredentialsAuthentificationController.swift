@@ -69,14 +69,9 @@ struct CredentialsAuthentificationController: RouteCollection {
 			return viewResponse
 		}
 
-		let newUserModel = UserModel(callsign: normalizedCallSign)
-		newUserModel.hashedPassword = try Bcrypt.hash(registerContent.password)
-		try await newUserModel.save(on: req.db)
-
-		// TODO: update existing QSOs to add the newly created hunter if needed.
-
-		req.auth.login(newUserModel)
-		return req.redirect(to: "/")
+		return try await BaseAuthentificationController.createUser(on: req, callsign: normalizedCallSign) { newUserModel in
+			newUserModel.hashedPassword = try Bcrypt.hash(registerContent.password)
+		}
 	}
 
 	func login(req: Request) async throws -> View {

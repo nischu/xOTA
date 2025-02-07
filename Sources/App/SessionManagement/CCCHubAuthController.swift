@@ -42,19 +42,11 @@ struct CCCHubAuthController: RouteCollection {
 						guard let callsign = request.session.data[Self.registerCallSignKey] else {
 							return request.eventLoop.future(request.redirect(to: "/register"))
 						}
-						let newUserModel = UserModel(callsign: callsign)
-						newUserModel.ccchubUser = username
-						// TODO: update existing QSOs to add the newly created hunter if needed.
-//						return request.db.transaction { db in
-						return newUserModel.save(on: request.db).map {
-//							return newUserModel.save(on: db).flatMapThrowing {
-//								let newModelId = try newUserModel.requireID()
-//								let future: EventLoopFuture<Void> = QSO.query(on: db).set(\.$hunter.$id, to: newModelId).filter(\.$call, .equal, callsign).filter(\.$hunter.$id, .equal, nil).update()
-//								db.eventLoop.f
-//							}
-						}.map {
-							request.auth.login(newUserModel)
-							return request.eventLoop.future(request.redirect(to: "/"))
+
+						return request.eventLoop.makeFutureWithTask {
+							return try await BaseAuthentificationController.createUser(on: request, callsign: callsign) { newUserModel in
+								newUserModel.ccchubUser = username
+							}
 						}
 					}
 				}
@@ -66,7 +58,7 @@ struct CCCHubAuthController: RouteCollection {
 		}
 		
 		grouped.post("register") { req async throws -> Response in
-			struct CCCRegisterContent: RegisterContent {
+			struct CCCRegisterContent: BaseAuthentificationController.RegisterContent {
 				var callsign: String
 				var acceptTerms: String
 			}

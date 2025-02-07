@@ -22,11 +22,6 @@ extension Application {
 }
 
 
-protocol RegisterContent: Content {
-    var callsign: String { get }
-    var acceptTerms: String { get }
-}
-
 struct BaseAuthentificationController: RouteCollection {
 
 
@@ -40,6 +35,11 @@ struct BaseAuthentificationController: RouteCollection {
 	enum ValidationResponse {
 		case success(normalizedCall: String)
 		case error(_ error: String)
+	}
+
+	protocol RegisterContent: Content {
+		var callsign: String { get }
+		var acceptTerms: String { get }
 	}
 
 	static func commonRegistrationValidation(req: Request) async throws -> ValidationResponse {
@@ -67,6 +67,17 @@ struct BaseAuthentificationController: RouteCollection {
 			return .error("Callsign already registered.")
 		}
 		return .success(normalizedCall: normalizedCallsign)
+	}
+
+	static func createUser(on req: Request, callsign: String, additionalModifications: (UserModel) throws -> ()) async throws -> Response {
+		let newUserModel = UserModel(callsign: callsign)
+		try additionalModifications(newUserModel)
+		try await newUserModel.save(on: req.db)
+
+		// TODO: update existing QSOs to add the newly created hunter if needed.
+
+		req.auth.login(newUserModel)
+		return req.redirect(to: "/")
 	}
 
 	func boot(routes: RoutesBuilder) throws {
