@@ -1,4 +1,3 @@
-<!doctype html>
 <html>
   <head>
     #extend("include_head")
@@ -12,28 +11,40 @@
     #if(showNav):
     #extend("include_navbar")
     #endif
-    <!--<div class="container">-->
       <div id="graph"></div>
-      <p id="status" style="margin-top:-35px; margin-left:15px;" >Connecting…</p>
-    <!--</div>-->
+      <p id="status" style="margin-top:-35px; margin-left:15px; color:#B2AAFF;" >Connecting…</p>
       <script>
+        const operatorColor = '#261A66';
+        const operatorTextColor = '#FEF2FF';
+        const toiletColor = '#FF5053';
+        const toiletTextColor = '#190B2F';
+        const lineColor = '#B2AAFF'
+        const qsoColor = lineColor;
+        const activateColor = lineColor;
+        const huntColor = lineColor;
+        const trainColor = lineColor;
+        const r2rColor = lineColor;
+        const labelFont = 'space-mono';
+
         const Graph = new ForceGraph(document.getElementById('graph'))
-          .nodeAutoColorBy('kind')
-          .linkAutoColorBy('kind')
-          .linkWidth(link => Math.log2(link.width)+1 )
+          .linkWidth(link => Math.log2(link.width)+2 )
           .nodeCanvasObject((node, ctx, globalScale) => {
             const label = node.id;
-            const fontSize = 12/globalScale;
-            ctx.font = `${fontSize}px Sans-Serif`;
+            const fontSize = 24/globalScale;
+            ctx.font = `${fontSize}px ${labelFont}`;
             const textWidth = ctx.measureText(label).width;
             const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // default
+            if(node.kind == "c") ctx.fillStyle = operatorColor;  // operator
+            if(node.kind == "r") ctx.fillStyle = toiletColor; // toilet
             ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = node.color;
+            //ctx.fillStyle = node.color;
+            if(node.kind == "c") ctx.fillStyle = operatorTextColor;  // operator
+            if(node.kind == "r") ctx.fillStyle = toiletTextColor; // toilet
             ctx.fillText(label, node.x, node.y);
 
             node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
@@ -41,7 +52,7 @@
           .nodePointerAreaPaint((node, color, ctx) => {
             ctx.fillStyle = color;
             const bckgDimensions = node.__bckgDimensions;
-            bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+            bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2,     ...bckgDimensions);
           });
 
         let linkMap = new Map();
@@ -49,7 +60,7 @@
         let knownNodes = new Set();
 
         const addLink = (link) => {
-            if (link.source === undefined || link.source.length === 0 || link.target === undefined || link.target.length === 0) { return; }
+            if (link.source === undefined || link.source.length === 0 || link.target === undefined ||     link.target.length === 0) { return; }
             let key = link.source+link.target+link.kind;
             let value = linkMap.get(key);
             if (value == undefined) {
@@ -71,7 +82,7 @@
         }
 
         // Node kinds are c = callsign and r = reference
-        // Link kinds are: qso (c -> c), train (c -> c), hunt (c -> r), activate (c -> r), r2r (reference to reference)
+        // Link kinds are: qso (c -> c), train (c -> c), hunt (c -> r), activate (c -> r), r2r (reference to     reference)
         const addQSO = (q) => {
             addNode(q.reference, "r");
             addNode(q.station_callsign, "c");
@@ -80,22 +91,22 @@
             addNode(q.contactedOperator, "c");
             addNode(q.hunted_reference, "r");
 
-            addLink({ source: q.station_callsign, target: q.call, kind: "qso" });
-            addLink({ source: q.station_callsign, target: q.contactedOperator, kind: "qso" });
-            addLink({ source: q.station_callsign, target: q.reference, kind: "activate" });
-            addLink({ source: q.station_callsign, target: q.hunted_reference, kind: "hunt" });
+            addLink({ source: q.station_callsign, target: q.call, kind: "qso", color: qsoColor });
+            addLink({ source: q.station_callsign, target: q.contactedOperator, kind: "qso", color: qsoColor  });
+            addLink({ source: q.station_callsign, target: q.reference, kind: "activate", color: activateColor      });
+            addLink({ source: q.station_callsign, target: q.hunted_reference, kind: "hunt", color: huntColor  });
 
             // Training QSOs
-            addLink({ source: q.operator, target: q.call, kind: "qso" });
-            addLink({ source: q.operator, target: q.contactedOperator, kind: "qso" });
-            addLink({ source: q.operator, target: q.reference, kind: "activate" });
-            addLink({ source: q.operator, target: q.hunted_reference, kind: "hunt" });
-            addLink({ source: q.station_callsign, target: q.operator, kind: "train" });
+            addLink({ source: q.operator, target: q.call, kind: "qso", color: qsoColor });
+            addLink({ source: q.operator, target: q.contactedOperator, kind: "qso", color: qsoColor });
+            addLink({ source: q.operator, target: q.reference, kind: "activate", color: activateColor });
+            addLink({ source: q.operator, target: q.hunted_reference, kind: "hunt", color: huntColor });
+            addLink({ source: q.station_callsign, target: q.operator, kind: "train", color: trainColor });
 
-            addLink({ source: q.call, target: q.reference, kind: "hunt" });
-            addLink({ source: q.contactedOperator, target: q.reference, kind: "hunt" });
+            addLink({ source: q.call, target: q.reference, kind: "hunt", color: huntColor });
+            addLink({ source: q.contactedOperator, target: q.reference, kind: "hunt", color: huntColor });
 
-            addLink({ source: q.reference, target: q.hunted_reference, kind: "r2r" });
+            addLink({ source: q.reference, target: q.hunted_reference, kind: "r2r", color: r2rColor });
 
 
             let links = Array.from(linkMap.values())
