@@ -48,7 +48,7 @@ struct ADIFGenerator: CustomStringConvertible {
 
 	var adifVersion: String = "3.1.4"
 	var programmId: String = "xOTA"
-	var programVersion: String = "2023.totawatch.de"
+	var programVersion: String = "totawatch.de"
 	var createdDate: Date = Date()
 
 	var qsos: [ADIFGeneratorQSO]

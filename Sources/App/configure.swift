@@ -16,7 +16,8 @@ public func configure(_ app: Application) async throws {
 		adifSIG: "TOTA",
 		referenceSlug: "t",
 		referenceSingular: "Toilet",
-		referencePlural: "Toilets")
+		referencePlural: "Toilets",
+		activityHostname: "38c3.totawatch.de")
 
 
 	if app.environment == .testing {

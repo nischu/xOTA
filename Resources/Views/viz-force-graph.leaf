@@ -1,7 +1,7 @@
 <html>
   <head>
     #extend("include_head")
-    <style> body { margin: 0; } </style>
+    <style> body { margin: 0; background-color:#0F000A} </style>
     <!-- https://github.com/vasturiano/force-graph -->
     <!--<script src="//unpkg.com/force-graph"></script>-->
     <script src="/js/force-graph.min.js"></script>
@@ -16,7 +16,7 @@
     #endif
     #if(showTitle):
       <div style="position: absolute; top: 10; left: 10; z-index: 100;">
-        <h1 style="color:#B2AAFF">TOTA Connections<br>➡ 38c3.totawatch.de</h1>
+        <h1 style="color:#B2AAFF">TOTA Connections<br>➡ #(hostname)</h1>
       </div>
     #endif
       <div id="graph"></div>

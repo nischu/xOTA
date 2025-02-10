@@ -16,6 +16,7 @@ struct VisualizationController: RouteCollection {
 			var margin: Int
 			var refresh: Int?
 			var showTitle: Bool
+			var hostname: String?
 			var common: CommonContent
 		}
 		let showNav = try req.query.get(Bool?.self, at: "hideNav") != true
@@ -28,6 +29,6 @@ struct VisualizationController: RouteCollection {
 		}
 		let showTitle = try req.query.get(Bool?.self, at: "showTitle") ?? false
 
-		return try await req.view.render("viz-force-graph", Context(showNav:showNav, width: width, height: height, margin: margin, refresh: refresh, showTitle: showTitle, common: req.commonContent))
+		return try await req.view.render("viz-force-graph", Context(showNav:showNav, width: width, height: height, margin: margin, refresh: refresh, showTitle: showTitle, hostname: req.application.namingTheme.activityHostname, common: req.commonContent))
 	}
 }

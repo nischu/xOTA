@@ -31,9 +31,10 @@ struct NamingTheme: Codable {
 	let referenceSlug: String
 	let referenceSingular: String
 	let referencePlural: String
+	let activityHostname: String?
 
 	static var `default`: NamingTheme {
-		return NamingTheme(activityName:"xOTA", adifSIG: "xOTA", referenceSlug: "reference", referenceSingular: "Reference", referencePlural: "References")
+		return NamingTheme(activityName:"xOTA", adifSIG: "xOTA", referenceSlug: "reference", referenceSingular: "Reference", referencePlural: "References", activityHostname: nil)
 	}
 	var referenceSlugPathComponent: PathComponent {
 		PathComponent(stringLiteral: referenceSlug)
