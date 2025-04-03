@@ -129,6 +129,7 @@ struct QSOController: RouteCollection {
 		var formTitle: String
 		var user: UserModel
 		var error: String?
+		var successMessage: String?
 		var formPath: String
 		var urlQuery: String?
 		var loggingMode: LoggingMode
@@ -323,6 +324,7 @@ struct QSOController: RouteCollection {
 			.get()
 
 		var errorMessage: String? = nil
+		var successMessage: String? = nil
 
 		if reference == nil {
 			errorMessage = "Reference not found."
@@ -446,16 +448,16 @@ struct QSOController: RouteCollection {
 						return req.redirect(to: callback)
 					}
 				case .spot:
-					errorMessage = "Successfully spotted."
+					successMessage = "Successfully spotted."
 				}
-				if errorMessage == nil {
+				if errorMessage == nil && successMessage == nil {
 					let operatorAddition = (contactedOperator?.isEmpty == false) ? " operator \(contactedOperator!)" : ""
-					errorMessage = "Successfully saved your QSO with \(hunterCall)\(operatorAddition)."
+					successMessage = "Successfully saved your QSO with \(hunterCall)\(operatorAddition)."
 				}
 			}
 		}
 
-		return try await req.view.render("logQSO", LogQSOContext(editing:updateMode == .edit, formTitle:title, user:authedUser, error:errorMessage, formPath:req.url.path, urlQuery: req.url.query, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:nextForm, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent)).encodeResponse(for: req)
+		return try await req.view.render("logQSO", LogQSOContext(editing:updateMode == .edit, formTitle:title, user:authedUser, error:errorMessage, successMessage: successMessage, formPath:req.url.path, urlQuery: req.url.query, loggingMode: loggingMode, trainingCallsign: trainingCallsign, qso:nextForm, knownCallsigns: knownCallsigns(req: req), knownReferences: knownReferences(req: req), common: req.commonContent)).encodeResponse(for: req)
 	}
 
 	func postDelete(req: Request) async throws -> Response {

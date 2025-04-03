@@ -17,7 +17,14 @@
   <h1>#(formTitle)</h1>
   <form style="max-width: 350px" action="#(formPath)?#(urlQuery)" method="post">
   #if(error):
-    <p>#(error)</p>
+    <div class="alert alert-danger" role="alert">
+      #(error)
+    </div>
+  #endif
+  #if(successMessage):
+    <div class="alert alert-success" role="alert">
+      #(successMessage)
+    </div>
   #endif
   #if(user.callsign.kind == "unlicensed" && !editing && loggingMode == "training"):
   <p>Using training callsign #(trainingCallsign).</p>
