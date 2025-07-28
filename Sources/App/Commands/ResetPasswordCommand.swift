@@ -11,27 +11,41 @@ final class ResetPasswordCommand: AsyncCommand {
 
 	func run(using context: ConsoleKitCommands.CommandContext, signature: Signature) async throws {
 
-		guard let callsign = signature.callsign, !callsign.isEmpty
+		guard let callsign = normalizedCallsignOptional(signature.callsign), !callsign.isEmpty
 		else {
 			context.console.error("No callsign specified.")
 			throw Error.missingArgument
 		}
 
 		let db = context.application.db
-		guard let userCredential = try await UserCredential.query(on: db)
-			.join(Callsign.self, on: \UserCredential.$user.$id == \Callsign.$user.$id)
-			.filter(Callsign.self, \.$callsign == callsign)
-			.filter(UserCredential.self, \.$authProvider == CredentialsAuthentificationController.authProviderIdentifier)
-			.first()
-			.get()
+		guard let userId = try await UserModel.userFor(callsign: callsign, on: db).get()?.id
 		else {
 			context.console.error("'\(callsign)' does not exist.")
 			throw Error.unknownUser
 		}
 
+		var userCredential = try await UserCredential.query(on: db)
+			.filter(UserCredential.self, \.$loginIdentifier == callsign)
+			.filter(\.$authProvider == CredentialsAuthentificationController.authProviderIdentifier)
+			.first()
+
+		let addCredentials = signature.add && userCredential == nil
+		if addCredentials {
+			userCredential = UserCredential(userId: userId, authProvider: CredentialsAuthentificationController.authProviderIdentifier, loginIdentifier: callsign, additionalStorage: nil)
+		}
+
+		guard let userCredential else {
+			context.console.error("'\(callsign)' does not use password auth. Use --add flag to add a password.")
+			throw Error.noPassword
+		}
+
 		userCredential.additionalStorage = try Bcrypt.hash(signature.password)
 		try await userCredential.save(on: db)
-		print("Chaned password for \(signature.callsign!)")
+		if addCredentials {
+			print("Added password for \(signature.callsign!)")
+		} else {
+			print("Updated password for \(signature.callsign!)")
+		}
 	}
 	
 	public var help: String {
@@ -45,6 +59,9 @@ final class ResetPasswordCommand: AsyncCommand {
 		@Argument(name: "password")
 		var password: String
 
+		@Flag(name: "add")
+		var add: Bool
+
 		public init() { }
 	}
 
@@ -52,7 +69,7 @@ final class ResetPasswordCommand: AsyncCommand {
 	public enum Error: Swift.Error {
 		case missingArgument
 		case unknownUser
-		case alreadyAdmin
+		case noPassword
 	}
 
 
