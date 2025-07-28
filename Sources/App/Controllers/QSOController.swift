@@ -172,6 +172,14 @@ struct QSOController: RouteCollection {
 	}()
 
 	func postLog(req: Request) async throws -> Response {
+		// If the form selected a different reference than the one in the URL, return a temporary redirect.
+		// The client should then do the same POST to the new URL.
+		if let urlRef = req.parameters.get("referenceId"),
+		   let formRef = try req.content.get(String?.self, at: "reference"),
+		   formRef != urlRef {
+			let path = req.url.path.replacingOccurrences(of: urlRef, with: formRef)
+			return req.redirect(to: path, redirectType: .temporary)
+		}
 
 		let reference = try await ReferenceController(namingTheme: namingTheme).specific(req: req)
 		let title = "Log QSO at \(reference.title)"

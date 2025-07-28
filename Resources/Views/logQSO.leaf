@@ -29,14 +29,14 @@
   #if(user.callsign.kind == "unlicensed" && !editing && loggingMode == "training"):
   <p>Using training callsign #(trainingCallsign).</p>
   #endif
-
   #if(editing):
   <label class="form-label" for="reference">Activated #(common.namingTheme.referenceSingular):</label>
-  <input class="form-control" type="text" list="knownreferences" id="reference" name="reference" value="#(qso.reference)" >
-  #else:
-  <input class="form-control" type="hidden" name="reference" value="#(qso.reference)">
   #endif
-
+  <select class="form-select" id="reference" name="reference">
+    #for(knownReference in knownReferences):
+    <option value="#(knownReference)" #if(knownReference == qso.reference): selected #endif>#(knownReference)</option>
+    #endfor
+  </select>
   <label class="form-label" for="callsign">Callsign</label>
   <input class="form-control" type="text" list="knowncallsigns" id="callsign" name="callsign" value="#(qso.callsign)" minlength=3 maxlength=20 required>
 
