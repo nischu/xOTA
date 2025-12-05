@@ -1,6 +1,6 @@
 import Vapor
 
-// 38C3 Specific award: In-house DX-er T2T between T-41 and T-92 in CCH
+// 39C3 Specific award: In-house DX-er T2T between T-41 and T-92 in CCH
 struct AwardCheckerInHouseDX: AwardChecker {
 	let awardKind: Award.AwardKind = "in-house-dx"
 

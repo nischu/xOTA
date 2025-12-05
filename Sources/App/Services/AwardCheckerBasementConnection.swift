@@ -1,6 +1,6 @@
 import Vapor
 
-// 38C3 specific award between references T-91 and T-92 which are both in the basement of CCH.
+// 39C3 specific award between references T-91 and T-92 which are both in the basement of CCH.
 struct AwardCheckerBasementConnection: AwardChecker {
 	let awardKind: Award.AwardKind = "basement-connection"
 

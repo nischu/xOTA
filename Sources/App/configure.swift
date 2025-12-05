@@ -12,12 +12,12 @@ public func configure(_ app: Application) async throws {
 	
 	// TODO: read from config
 	app.namingTheme = NamingTheme(
-		activityName: "TOTA at 38C3",
+		activityName: "TOTA at 39C3",
 		adifSIG: "TOTA",
 		referenceSlug: "t",
 		referenceSingular: "Toilet",
 		referencePlural: "Toilets",
-		activityHostname: "38c3.totawatch.de")
+		activityHostname: "39c3.totawatch.de")
 
 
 	if app.environment == .testing {
@@ -51,7 +51,7 @@ public func configure(_ app: Application) async throws {
 #if DEBUG
 	app.migrations.add(SeedSampleData())
 #else
-	app.migrations.add(Seed38C3Data())
+	app.migrations.add(Seed39C3Data())
 #endif
 
 	// Session handling
@@ -131,7 +131,7 @@ func configureAwards(_ app: Application) async throws {
 	app.awardCheckers.append(AwardCheckerTrainer())
 	app.awardCheckers.append(AwardCheckerTrainee())
 
-	// 38C3 specific:
+	// 39C3 specific:
 	app.awardCheckers.append(AwardCheckerBasementConnection())
 	app.awardCheckers.append(AwardCheckerInHouseDX())
 	app.awardCheckers.append(AwardCheckerActivatedLevel(level: 9))
