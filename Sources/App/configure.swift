@@ -12,7 +12,7 @@ public func configure(_ app: Application) async throws {
 	
 	// TODO: read from config
 	app.namingTheme = NamingTheme(
-		activityName: "TOTA at 39C3",
+		activityName: "TOTA at  ",
 		adifSIG: "TOTA",
 		referenceSlug: "t",
 		referenceSingular: "Toilet",

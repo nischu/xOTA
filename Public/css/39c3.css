@@ -1,0 +1,165 @@
+@font-face {
+	font-family: 'KarioDuplexVar';
+	src: URL('/fonts/Kario39C3Var-Roman.ttf') format('truetype');
+	src: URL('/fonts/Kario39C3VarWEB-Roman.woff') format('woff');
+	src: URL('/fonts/Kario39C3VarWEB-Roman.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSansCond';
+	src: URL('/fonts/OfficerSansCondWeb-Regular.woff') format('woff');
+	src: URL('/fonts/OfficerSansCondWeb-Regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSansCond';
+	font-weight: bold;
+	font-style: italic;
+	src: URL('/fonts/OfficerSansCondWeb-BoldItalic.woff') format('woff');
+	src: URL('/fonts/OfficerSansCondWeb-BoldItalic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSansCond';
+	font-weight: bold;
+	src: URL('/fonts/OfficerSansCondWeb-Bold.woff') format('woff');
+	src: URL('/fonts/OfficerSansCondWeb-Bold.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSansCond';
+	font-style: italic;
+	src: URL('/fonts/OfficerSansCondWeb-RegularItalic.woff') format('woff');
+	src: URL('/fonts/OfficerSansCondWeb-RegularItalic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSans';
+	src: URL('/fonts/OfficerSansWeb-Regular.woff') format('woff');
+	src: URL('/fonts/OfficerSansWeb-Regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSans';
+	font-weight: bold;
+	font-style: italic;
+	src: URL('/fonts/OfficerSansWeb-BoldItalic.woff') format('woff');
+	src: URL('/fonts/OfficerSansWeb-BoldItalic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSans';
+	font-weight: bold;
+	src: URL('/fonts/OfficerSansWeb-Bold.woff') format('woff');
+	src: URL('/fonts/OfficerSansWeb-Bold.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'OfficerSans';
+	font-style: italic;
+	src: URL('/fonts/OfficerSansWeb-RegularItalic.woff') format('woff');
+	src: URL('/fonts/OfficerSansWeb-RegularItalic.woff2') format('woff2');
+}
+
+:root {
+	--color-dark: #141414;
+	--color-dark-rgb: 20, 20, 20;
+	--color-neutral: #faf5f5;
+	--color-primary: #00ff00;
+	--color-primary-rgb: 0, 255, 0;
+	--color-secondary: #9673ff;
+	--color-additional-01: #ff3719;
+	--color-additional-02: #66f2ff;
+
+	--color-primary-tint-01: #009900;
+	--color-primary-tint-02: #00be00;
+	--color-primary-tint-02-rgb: 0, 190, 0;
+	--color-primary-tint-03: #00d300;
+	--color-primary-tint-04: #00ea00;
+	--color-primary-tint-05: #a3ff90;
+	--color-primary-tint-06: #ccffbe;
+	--color-primary-tint-07: #ebffe5;
+
+	--color-secondary-tint-01: #4d2eed;
+	--color-secondary-tint-02: #5c33f4;
+	--color-secondary-tint-03: #7952fe;
+	--color-secondary-tint-04: #b69dfe;
+	--color-secondary-tint-05: #d4c4fe;
+	--color-secondary-tint-06: #efe7ff;
+
+	--bs-font-sans-serif: 'OfficerSans';
+	--bs-body-bg: var(--color-dark);
+	--bs-body-color: var(--color-neutral);
+	--bs-secondary-color: var(--color-secondary);
+	--bs-heading-color: var(--color-secondary);
+	--bs-emphasis-color: var(--color-primary);
+	--bs-emphasis-color-rgb: var(--color-primary-rgb);
+
+	--bs-link-color: var(--color-primary);
+	--bs-link-color-rgb: var(--color-primary-rgb);
+	--bs-link-hover-color: var(--color-primary-tint-02);
+	--bs-link-hover-color-rgb: var(--color-primary-tint-02-rgb);
+
+	--bs-tertiary-bg: var(--color-dark);
+	--bs-tertiary-bg-rgb: var(--color-dark-rgb);
+	/** TODO:
+	 - Button text colors black
+	 - Spot me button secondary color?
+	 - Success and failure alert notifications into color scheme.
+	 - Menu button color
+	 - table contents color
+	 - QSO graph color
+	 - Menu highlight current menu
+	 */
+}
+
+.btn-primary {
+	--bs-btn-color: var(--color-neutral);
+	--bs-btn-bg: var(--color-primary);
+	--bs-btn-border-color: var(--color-primary);
+	--bs-btn-hover-color: var(--color-neutral);
+	--bs-btn-hover-bg: var(--color-primary-tint-03);
+	--bs-btn-hover-border-color: var(--color-primary);
+	--bs-btn-focus-shadow-rgb: var(--color-primary-tint-02-rgb);
+	--bs-btn-active-color: var(--color-neutral);
+	--bs-btn-active-bg: var(--color-primary);
+	--bs-btn-active-border-color: var(--color-primary-tint-01);
+	--bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+	--bs-btn-disabled-color: var(--color-neutral);
+	--bs-btn-disabled-bg: var(--color-primary);
+	--bs-btn-disabled-border-color: var(--color-primary);
+}
+
+.btn-danger {
+  --bs-btn-color: var(--color-neutral);
+  --bs-btn-bg: var(--color-additional-01);
+  --bs-btn-border-color: var(--color-additional-01);
+  --bs-btn-hover-color: var(--color-neutral);
+  --bs-btn-hover-bg: #bb2d3b;
+  --bs-btn-hover-border-color: #b02a37;
+  --bs-btn-focus-shadow-rgb: 225, 83, 97;
+  --bs-btn-active-color: var(--color-neutral);
+  --bs-btn-active-bg: #b02a37;
+  --bs-btn-active-border-color: #a52834;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: var(--color-neutral);
+  --bs-btn-disabled-bg: #dc3545;
+  --bs-btn-disabled-border-color: #dc3545;
+}
+
+
+.navbar {
+	font-family: 'KarioDuplexVar';
+}
+
+h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1 {
+	font-family: 'KarioDuplexVar';
+}
+
+@keyframes font_weight_wave {
+	from {
+		font-weight: 10;
+	} to {
+		font-weight: 100;
+	}
+}
