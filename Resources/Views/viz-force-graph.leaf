@@ -128,11 +128,17 @@ p#anim8 span:nth-child(2n+2) { animation-delay:  0.0s; }
 </style>
 
 <style>
-.h3, h3 {
-  margin-top:-35px;
-  margin-left:15px;
+.status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
   background-color: rgba(0,0,0,0);
   color: var(--color-neutral);
+}
+.hostname {
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 </style>
     <!-- https://github.com/vasturiano/force-graph -->
@@ -151,13 +157,14 @@ p#anim8 span:nth-child(2n+2) { animation-delay:  0.0s; }
       <div style="position: absolute; top: 10; left: 10; z-index: -100;">
         <h1>
         <p id="anim1" class="anim1">
-           <span>T</span><span>O</span><span>T</span><span>A</span> <span>C</span><span>o</span><span>n</span><span>n</span><span>e</span><span>c</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span><br/> ➡ #(hostname)
+           <span>T</span><span>O</span><span>T</span><span>A</span> <span>C</span><span>o</span><span>n</span><span>n</span><span>e</span><span>c</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span> <span></span><br/>
         </p></h1>
       </div>
+      <h3 class="hostname"> ➡ #(hostname)</h3>
     #endif
       </div>
       <div id="graph"></div>
-      <h3 id="status">Connecting…</h3>
+      <h3 id="status" class="status">Connecting…</h3>
       <script>
         const operatorColor = '#00ff00';
         const operatorTextColor = '#141414';
