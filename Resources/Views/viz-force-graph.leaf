@@ -1,7 +1,140 @@
 <html>
   <head>
     #extend("include_head")
-    <style> body { margin: 0; background-color:#0F000A} </style>
+    <style> body { margin: 0; background-color:#141414} </style>
+    <style> @font-face {
+	font-family: 'KarioDuplexVar';
+	src: URL('/fonts/Kario39C3VarWEB-Roman.woff') format('woff');
+	src: URL('/fonts/Kario39C3VarWEB-Roman.woff2') format('woff2');
+}
+
+@keyframes font_weight_wave {
+  from {
+    font-weight: 10;
+  }
+  to {
+    font-weight: 100;
+  }
+}
+
+p {
+  font-family: KarioDuplexVar;
+  font-size: 52pt;
+  font-weight: 10;
+  font-kerning: none;
+}
+
+.black {
+  background-color: black;
+  color: white;
+  width: 100%;
+  min-height: 4em;
+}
+
+p#anim1 span, p#anim1_5 span, p#anim2 span, p#anim3 span, p#anim4 span, p#anim5 span, p#anim6 span, p#anim7 span, p#anim8 span, p#anim9 span, p#anim10 span, p#anim11 span {
+  animation: font_weight_wave 3s ease-in-out 0s infinite alternate both;
+}
+
+#anim10 :not(:first-child) {
+  font-size: 48pt;
+  display: inline-block;
+  margin-top: .8em;
+  transform: scale(1, 2);
+}
+#anim10 span:first-child {
+  font-size: 36pt;
+  font-height: 150%;
+  margin-bottom: 0.1em;
+  display: inline-block;
+  transform: scale(1, 2.5);
+}
+
+p#anim1 span:nth-child(1) { animation-delay: -0.1s; }
+p#anim1 span:nth-child(2) { animation-delay: -0.2s; }
+p#anim1 span:nth-child(3) { animation-delay: -0.3s; }
+p#anim1 span:nth-child(4) { animation-delay: -0.4s; }
+p#anim1 span:nth-child(5) { animation-delay: -0.5s; }
+p#anim1 span:nth-child(6) { animation-delay: -0.6s; }
+p#anim1 span:nth-child(7) { animation-delay: -0.7s; }
+p#anim1 span:nth-child(8) { animation-delay: -0.8s; }
+p#anim1 span:nth-child(9) { animation-delay: -0.9s; }
+p#anim1 span:nth-child(10) { animation-delay: -1.0s; }
+p#anim1 span:nth-child(11) { animation-delay: -1.1s; }
+p#anim1 span:nth-child(12) { animation-delay: -1.2s; }
+p#anim1 span:nth-child(13) { animation-delay: -1.3s; }
+p#anim1 span:nth-child(14) { animation-delay: -1.4s; }
+p#anim1 span:nth-child(15) { animation-delay: -1.5s; }
+p#anim1 span:nth-child(16) { animation-delay: -1.6s; }
+p#anim1 span:nth-child(17) { animation-delay: -1.7s; }
+p#anim1 span:nth-child(18) { animation-delay: -1.8s; }
+p#anim1 span:nth-child(19) { animation-delay: -1.9s; }
+p#anim1 span:nth-child(20) { animation-delay: -2.0s; }
+p#anim1 span:nth-child(21) { animation-delay: -2.1s; }
+p#anim1 span:nth-child(22) { animation-delay: -2.2s; }
+p#anim1 span:nth-child(23) { animation-delay: -2.3s; }
+p#anim1 span:nth-child(24) { animation-delay: -2.4s; }
+p#anim1 span:nth-child(25) { animation-delay: -2.5s; }
+p#anim1 span:nth-child(26) { animation-delay: -2.6s; }
+p#anim1 span:nth-child(27) { animation-delay: -2.7s; }
+p#anim1 span:nth-child(28) { animation-delay: -2.8s; }
+p#anim1 span:nth-child(29) { animation-delay: -2.9s; }
+p#anim1 span:nth-child(30) { animation-delay: -3.0s; }
+p#anim1 span:nth-child(31) { animation-delay: -3.1s; }
+p#anim1 span:nth-child(32) { animation-delay: -3.2s; }
+p#anim1 span:nth-child(33) { animation-delay: -3.3s; }
+p#anim1 span:nth-child(34) { animation-delay: -3.4s; }
+p#anim1 span:nth-child(35) { animation-delay: -3.5s; }
+p#anim1 span:nth-child(36) { animation-delay: -3.6s; }
+p#anim1 span:nth-child(37) { animation-delay: -3.7s; }
+p#anim1 span:nth-child(38) { animation-delay: -3.8s; }
+
+p#anim10 span:nth-child(2) { animation-delay: -0.2s; }
+p#anim10 span:nth-child(3) { animation-delay: -0.3s; }
+p#anim10 span:nth-child(4) { animation-delay: -0.4s; }
+p#anim10 span:nth-child(5) { animation-delay: -0.5s; }
+p#anim10 span:nth-child(6) { animation-delay: -0.6s; }
+p#anim10 span:nth-child(7) { animation-delay: -0.7s; }
+p#anim10 span:nth-child(8) { animation-delay: -0.8s; }
+p#anim10 span:nth-child(9) { animation-delay: -0.9s; }
+p#anim10 span:nth-child(10) { animation-delay: -1.0s; }
+p#anim10 span:nth-child(11) { animation-delay: -1.1s; }
+p#anim10 span:nth-child(12) { animation-delay: -1.2s; }
+p#anim10 span:nth-child(13) { animation-delay: -1.3s; }
+p#anim10 span:nth-child(14) { animation-delay: -1.4s; }
+
+p#anim6 span:nth-child(1) { animation-delay: -0.5s; }
+p#anim6 span:nth-child(2) { animation-delay: -1.0s; }
+p#anim6 span:nth-child(3) { animation-delay: -1.5s; }
+p#anim6 span:nth-child(4) { animation-delay: -2.0s; }
+p#anim6 span:nth-child(5) { animation-delay: -2.5s; }
+p#anim6 span:nth-child(6) { animation-delay: -3.0s; }
+p#anim6 span:nth-child(7) { animation-delay: -3.5s; }
+p#anim6 span:nth-child(8) { animation-delay: -4.0s; }
+p#anim6 span:nth-child(9) { animation-delay: -4.5s; }
+p#anim6 span:nth-child(10) { animation-delay: -5.0s; }
+p#anim6 span:nth-child(11) { animation-delay: -5.5s; }
+p#anim6 span:nth-child(12) { animation-delay: -6.0s; }
+p#anim6 span:nth-child(13) { animation-delay: -6.5s; }
+p#anim6 span:nth-child(14) { animation-delay: -7.0s; }
+p#anim6 span:nth-child(15) { animation-delay: -7.5s; }
+p#anim6 span:nth-child(16) { animation-delay: -8.0s; }
+
+p#anim7 span:nth-child(odd) { animation-delay: -3.0s; }
+p#anim7 span:nth-child(even) { animation-delay: 0.0s; }
+
+p#anim8 span:nth-child(2n)   { animation-delay: -3.0s; }
+p#anim8 span:nth-child(2n+1) { animation-delay: -1.5s; }
+p#anim8 span:nth-child(2n+2) { animation-delay:  0.0s; }
+</style>
+
+<style>
+.h3, h3 {
+  margin-top:-35px;
+  margin-left:15px;
+  background-color: rgba(0,0,0,0);
+  color: var(--color-neutral);
+}
+</style>
     <!-- https://github.com/vasturiano/force-graph -->
     <!--<script src="//unpkg.com/force-graph"></script>-->
     <script src="/js/force-graph.min.js"></script>
@@ -15,24 +148,28 @@
     #extend("include_navbar")
     #endif
     #if(showTitle):
-      <div style="position: absolute; top: 10; left: 10; z-index: 100;">
-        <h1 style="color:#B2AAFF">TOTA Connections<br>➡ #(hostname)</h1>
+      <div style="position: absolute; top: 10; left: 10; z-index: -100;">
+        <h1>
+        <p id="anim1" class="anim1">
+           <span>T</span><span>O</span><span>T</span><span>A</span> <span>C</span><span>o</span><span>n</span><span>n</span><span>e</span><span>c</span><span>t</span><span>i</span><span>o</span><span>n</span><span>s</span><br/> ➡ #(hostname)
+        </p></h1>
       </div>
     #endif
+      </div>
       <div id="graph"></div>
-      <p id="status" style="margin-top:-35px; margin-left:15px; color:#B2AAFF;" >Connecting…</p>
+      <h3 id="status">Connecting…</h3>
       <script>
-        const operatorColor = '#261A66';
-        const operatorTextColor = '#FEF2FF';
-        const toiletColor = '#FF5053';
-        const toiletTextColor = '#190B2F';
-        const lineColor = '#B2AAFF'
+        const operatorColor = '#00ff00';
+        const operatorTextColor = '#141414';
+        const toiletColor = '#9673ff';
+        const toiletTextColor = '#141414';
+        const lineColor = '#faf5f5'
         const qsoColor = lineColor;
         const activateColor = lineColor;
         const huntColor = lineColor;
         const trainColor = lineColor;
         const r2rColor = lineColor;
-        const labelFont = 'space-mono';
+        const labelFont = 'KarioDuplexVar';
         const defaultFontSize = 24;
         const smallFontSize = 12;
         const smallSizeWidthLimit = 800;

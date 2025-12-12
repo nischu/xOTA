@@ -90,7 +90,7 @@
 	--bs-font-sans-serif: 'OfficerSans';
 	--bs-body-bg: var(--color-dark);
 	--bs-body-color: var(--color-neutral);
-	--bs-secondary-color: var(--color-secondary);
+	--bs-secondary-color: var(--color-neutral);
 	--bs-heading-color: var(--color-secondary);
 	--bs-emphasis-color: var(--color-primary);
 	--bs-emphasis-color-rgb: var(--color-primary-rgb);
@@ -103,46 +103,47 @@
 	--bs-tertiary-bg: var(--color-dark);
 	--bs-tertiary-bg-rgb: var(--color-dark-rgb);
 	/** TODO:
-	 - Button text colors black
 	 - Spot me button secondary color?
 	 - Success and failure alert notifications into color scheme.
-	 - Menu button color
-	 - table contents color
-	 - QSO graph color
-	 - Menu highlight current menu
+	 --bs-success-text-emphasis:
+	 --bs-success-bg-subtle:
+	 --bs-success-border-subtle:
+	 --bs-success-text-emphasis:
+	 - Navbar highlight current menu
 	 */
+
 }
 
 .btn-primary {
-	--bs-btn-color: var(--color-neutral);
+	--bs-btn-color: var(--color-dark);
 	--bs-btn-bg: var(--color-primary);
 	--bs-btn-border-color: var(--color-primary);
-	--bs-btn-hover-color: var(--color-neutral);
+	--bs-btn-hover-color: var(--color-dark);
 	--bs-btn-hover-bg: var(--color-primary-tint-03);
 	--bs-btn-hover-border-color: var(--color-primary);
 	--bs-btn-focus-shadow-rgb: var(--color-primary-tint-02-rgb);
-	--bs-btn-active-color: var(--color-neutral);
+	--bs-btn-active-color: var(--color-dark);
 	--bs-btn-active-bg: var(--color-primary);
 	--bs-btn-active-border-color: var(--color-primary-tint-01);
 	--bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-	--bs-btn-disabled-color: var(--color-neutral);
+	--bs-btn-disabled-color: var(--color-dark);
 	--bs-btn-disabled-bg: var(--color-primary);
 	--bs-btn-disabled-border-color: var(--color-primary);
 }
 
 .btn-danger {
-  --bs-btn-color: var(--color-neutral);
+  --bs-btn-color: var(--color-dark);
   --bs-btn-bg: var(--color-additional-01);
   --bs-btn-border-color: var(--color-additional-01);
-  --bs-btn-hover-color: var(--color-neutral);
+  --bs-btn-hover-color: var(--color-dark);
   --bs-btn-hover-bg: #bb2d3b;
   --bs-btn-hover-border-color: #b02a37;
   --bs-btn-focus-shadow-rgb: 225, 83, 97;
-  --bs-btn-active-color: var(--color-neutral);
+  --bs-btn-active-color: var(--color-dark);
   --bs-btn-active-bg: #b02a37;
   --bs-btn-active-border-color: #a52834;
   --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-  --bs-btn-disabled-color: var(--color-neutral);
+  --bs-btn-disabled-color: var(--color-dark);
   --bs-btn-disabled-bg: #dc3545;
   --bs-btn-disabled-border-color: #dc3545;
 }
@@ -150,10 +151,19 @@
 
 .navbar {
 	font-family: 'KarioDuplexVar';
+	--bs-navbar-toggler-border-color: var(--bs-emphasis-color);
+	--bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 255, 0, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.table {
+	--bs-table-striped-color: var(--color-neutral);
+	--bs-table-color: var(--color-neutral);
 }
 
 h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1 {
 	font-family: 'KarioDuplexVar';
+	color: var(--color-dark);
+	background-color: var(--color-secondary);
 }
 
 @keyframes font_weight_wave {

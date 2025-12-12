@@ -8,12 +8,17 @@
     #extend("include_navbar")
     <div class="container">
     <div>
-        <canvas id="myChart"></canvas>
+        <canvas id="qsosGraph"></canvas>
     </div>
 <script src="/js/chart.umd.min.js"></script>
 <script src="/js/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
-  const ctx = document.getElementById('myChart');
+  const ctx = document.getElementById('qsosGraph');
+  let style = window.window.getComputedStyle(ctx);
+  let bodyColor = style.getPropertyValue('--bs-body-color');
+  let lineColor = style.getPropertyValue('--bs-emphasis-color');
+  Chart.defaults.color = bodyColor;
+  Chart.defaults.borderColor = bodyColor;
 
   new Chart(ctx, {
     type: 'line',
@@ -21,6 +26,8 @@
       datasets: [{
         label: '# of QSOs',
         data: [#for(qso in qsos):{y: #(qso.count), x: "#(qso.date)"}#if(!isLast):,#endif#endfor],
+        backgroundColor: lineColor,
+        borderColor: lineColor,
         borderWidth: 1
       }]
     },
