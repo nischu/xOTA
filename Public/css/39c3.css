@@ -82,6 +82,7 @@
 
 	--color-secondary-tint-01: #4d2eed;
 	--color-secondary-tint-02: #5c33f4;
+	--color-secondary-tint-02-rgb: 92, 51, 244;
 	--color-secondary-tint-03: #7952fe;
 	--color-secondary-tint-04: #b69dfe;
 	--color-secondary-tint-05: #d4c4fe;
@@ -102,22 +103,32 @@
 
 	--bs-tertiary-bg: var(--color-dark);
 	--bs-tertiary-bg-rgb: var(--color-dark-rgb);
-	/** TODO:
-	 - Spot me button secondary color?
-	 - Success and failure alert notifications into color scheme.
-	 --bs-success-text-emphasis:
-	 --bs-success-bg-subtle:
-	 --bs-success-border-subtle:
-	 --bs-success-text-emphasis:
-	 - Navbar highlight current menu
-	 */
 
+	--bs-success-text-emphasis: var(--color-dark);
+	--bs-success-bg-subtle: var(--color-primary-tint-05);
+	--bs-success-border-subtle: var(--color-primary-tint-04);
+	--bs-success-text-emphasis: var(--color-dark);
+
+	--bs-warning-text-emphasis: var(--color-dark);
+	--bs-warning-bg-subtle: var(--color-secondary-tint-05);
+	--bs-warning-border-subtle: var(--color-secondary-tint-06);
+	--bs-warning-text-emphasis: var(--color-dark);
+
+	--bs-danger-text-emphasis: var(--color-dark);
+	--bs-danger-bg-subtle: var(--color-additional-01);
+	--bs-danger-border-subtle: var(--color-additional-01);
+	--bs-danger-text-emphasis: var(--color-dark);
+
+	--bs-info-text-emphasis: var(--color-dark);
+	--bs-info-bg-subtle: var(--color-additional-02);
+	--bs-info-border-subtle: var(--color-additional-02);
+	--bs-info-text-emphasis: var(--color-dark);
 }
 
 .btn-primary {
 	--bs-btn-color: var(--color-dark);
-	--bs-btn-bg: var(--color-primary);
-	--bs-btn-border-color: var(--color-primary);
+	--bs-btn-bg: var(--color-primary-tint-05);
+	--bs-btn-border-color: var(--color-primary-tint-06);
 	--bs-btn-hover-color: var(--color-dark);
 	--bs-btn-hover-bg: var(--color-primary-tint-03);
 	--bs-btn-hover-border-color: var(--color-primary);
@@ -130,6 +141,24 @@
 	--bs-btn-disabled-bg: var(--color-primary);
 	--bs-btn-disabled-border-color: var(--color-primary);
 }
+
+.btn-secondary {
+	--bs-btn-color: var(--color-dark);
+	--bs-btn-bg: var(--color-secondary-tint-05);
+	--bs-btn-border-color: var(--color-secondary-tint-06);
+	--bs-btn-hover-color: var(--color-dark);
+	--bs-btn-hover-bg: var(--color-secondary-tint-03);
+	--bs-btn-hover-border-color: var(--color-secondary);
+	--bs-btn-focus-shadow-rgb: var(--color-secondary-tint-02-rgb);
+	--bs-btn-active-color: var(--color-dark);
+	--bs-btn-active-bg: var(--color-secondary);
+	--bs-btn-active-border-color: var(--color-secondary-tint-01);
+	--bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+	--bs-btn-disabled-color: var(--color-dark);
+	--bs-btn-disabled-bg: var(--color-secondary);
+	--bs-btn-disabled-border-color: var(--color-secondary);
+}
+
 
 .btn-danger {
   --bs-btn-color: var(--color-dark);

@@ -9,6 +9,10 @@ struct AdminController: RouteCollection {
 
 	func boot(routes: RoutesBuilder) throws {
 
+		routes.grouped("admin").get("styles") { req in
+			return try await req.view.render("admin/styles", ["common": req.commonContent])
+		}
+
 		let authedAdmin = routes.grouped(authMiddleware).grouped("admin")
 		authedAdmin.get { req in
 			return try await req.view.render("admin/index", ["common": req.commonContent])
@@ -192,7 +196,7 @@ struct AdminController: RouteCollection {
 			var changed = false
 			let credentialID = try credential.requireID().uuidString
 			if let provider = formContent.authProvider[credentialID],
-				provider != credential.authProvider {
+			   provider != credential.authProvider {
 				credential.authProvider = provider
 				changed = true
 				message += "updated auth provider, "
@@ -297,6 +301,4 @@ struct AdminController: RouteCollection {
 
 		return req.redirect(to: "/admin/awards/")
 	}
-
-
 }

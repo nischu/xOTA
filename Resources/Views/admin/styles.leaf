@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  #extend("include_head")
+  <title>Styles Sample</title>
+</head>
+<body>
+  #extend("include_navbar")
+  <h1>Header</h1>
+  <p>Paragraph Text with a <a href="">link</a>.</p>
+    <table class="table table-striped">
+      <thead class="sticky-top">
+        <tr>
+          <th>Table Head 1</th><th>Table Head 2</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Row 1, Item 1</td><td>Row 1, Item 2<td><tr>
+        <tr><td>Row 2, Item 1</td><td>Row 2, Item 2<td><tr>
+      </tbody>
+    </table>
+  </head>
+  </table>
+  <div class="alert alert-warning" role="alert">
+    Alert Warning
+  </div>
+  <div class="alert alert-success" role="alert">
+    Alert Success
+  </div>
+  <div class="alert alert-danger" role="alert">
+    Alert Danger!
+  </div>
+  <div class="alert alert-info" role="alert">
+    Alert Info
+  </div>
+
+  <p><a class="btn btn-primary" type="button" href="">Button Primary</a></p>
+  <p><a class="btn btn-danger" type="button" href="">Button Danger</a></p>
+  <p><a class="btn btn-secondary" type="button" href="">Button Secondary (spot button)</a></p>
+
+
+</body>
+</html>
