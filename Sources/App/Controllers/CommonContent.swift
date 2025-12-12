@@ -3,7 +3,8 @@ import Vapor
 extension Request {
 	var commonContent: CommonContent {
 		let hasUser = auth.has(UserModel.self)
-		return CommonContent(hasUser: hasUser, namingTheme: application.namingTheme, loggingDisabled: CommonContent.loggingDisabled, devInstance: CommonContent.devInstance)
+		let firstPathEntry = String(self.url.path.dropFirst().prefix(while: { $0 != "/"}))
+		return CommonContent(hasUser: hasUser, namingTheme: application.namingTheme, loggingDisabled: CommonContent.loggingDisabled, devInstance: CommonContent.devInstance, firstPathEntry: firstPathEntry)
 	}
 }
 
@@ -18,6 +19,7 @@ struct CommonContent: Codable {
 	static var devInstance: Bool {
 		return Environment.get("DEV") != nil
 	}
+	let firstPathEntry: String
 }
 
 protocol CommonContentProviding {
