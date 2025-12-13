@@ -67,6 +67,11 @@
   <label class="form-label" for="freq">Frequency (kHz)</label>
   <input class="form-control" type="number" list="channels" id="freq" name="freq" value="#(qso.freq)" inputmode="numeric" required>
   <datalist id="channels">
+  #for(channelGroup in amateurChannelGroups):
+    #for(channel in channelGroup.channels):
+      <option value="#(channel.frequency)"#if(channel.frequency == qso.freq): selected#endif>#(channel.name) (#(channelGroup.licensedComment))</option>
+    #endfor
+  #endfor
   #for(channelGroup in channelGroups):
     #for(channel in channelGroup.channels):
       <option value="#(channel.frequency)"#if(channel.frequency == qso.freq): selected#endif>#(channel.name) (#(channelGroup.licensedComment))</option>

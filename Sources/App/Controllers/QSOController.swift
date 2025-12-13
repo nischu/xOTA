@@ -139,6 +139,7 @@ struct QSOController: RouteCollection {
 		var knownCallsigns: [String]
 		var knownReferences: [String]
 		var channelGroups: [RadioChannelGroup] = QSOController.licenseFreeChannels()
+		var amateurChannelGroups: [RadioChannelGroup] = QSOController.amateurQRGs()
 		let common: CommonContent
 	}
 
@@ -783,6 +784,16 @@ struct QSOController: RouteCollection {
 			.init(name: "PMR", channels: pmr, licensedComment: "PMR Radio only, please."),
 			.init(name: "Freenet", channels: freenet, licensedComment: "Freenet Radio only, please."),
 			.init(name: "CB", channels: cb, licensedComment: "CB Radio only, please."),
+		]
+	}
+
+	static func amateurQRGs() -> [RadioChannelGroup] {
+		let activityCenters: [RadioChannel] = [
+			.init(name: "FM", frequency: 430_200),
+			.init(name: "CW", frequency: 432_032),
+		]
+		return [
+			.init(name: "Amateur", channels:activityCenters, licensedComment: "Activity Center")
 		]
 	}
 }
