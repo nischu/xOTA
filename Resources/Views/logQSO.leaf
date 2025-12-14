@@ -41,7 +41,7 @@
   <input class="form-control" type="text" list="knowncallsigns" id="callsign" name="callsign" value="#(qso.callsign)" minlength=3 maxlength=20 required>
 
   #if(user.callsign.kind == "licensed" || loggingMode == "training"):
-  <label class="form-label" for="contactedOperator">Contacted Operator</label>
+  <label class="form-label" for="contactedOperator">Contacted Operator (Trainee Name)</label>
   <input class="form-control" type="text" list="knowncallsigns" id="contactedOperator" name="contactedOperator" value="#(qso.contactedOperator)" minlength=3 maxlength=20>
   #endif
 
