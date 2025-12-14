@@ -666,6 +666,7 @@ struct QSOController: RouteCollection {
 	struct RadioChannel: Codable {
 		var name: String
 		var frequency: Int // kHz
+		var mode: QSO.Mode? = nil
 	}
 
 	static func licenseFreeChannels() -> [RadioChannelGroup] {
@@ -789,8 +790,9 @@ struct QSOController: RouteCollection {
 
 	static func amateurQRGs() -> [RadioChannelGroup] {
 		let activityCenters: [RadioChannel] = [
-			.init(name: "FM", frequency: 430_200),
-			.init(name: "CW", frequency: 432_032),
+			.init(name: "FM", frequency: 430_200, mode: .FM),
+			.init(name: "SSTV", frequency: 430_200, mode: .SSTV),
+			.init(name: "CW", frequency: 432_032, mode: .CW),
 		]
 		return [
 			.init(name: "Amateur", channels:activityCenters, licensedComment: "Activity Center")

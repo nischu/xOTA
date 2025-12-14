@@ -15,7 +15,7 @@
   #extend("include_navbar")
   <div class="container">
   <h1>#(formTitle)</h1>
-  <form style="max-width: 350px" action="#(formPath)?#(urlQuery)" method="post">
+  <form id="qso-form" style="max-width: 350px" action="#(formPath)?#(urlQuery)" method="post">
   #if(error):
     <div class="alert alert-danger" role="alert">
       #(error)
@@ -62,6 +62,27 @@
   #endif
 
   <input class="form-control" type="datetime-local" id="manualDate" name="manualDate" step=1 #if(qso.dateTimeSource == "manual"): value="#(qso.manualDate)" #endif>
+
+  #if(user.callsign.kind == "licensed" || loggingMode == "training"):
+  <div id="activity-center-section" style="display: none">
+    <script>
+      document.getElementById("activity-center-section").style.display = "block";
+      function setActivityCenter(freq, mode) {
+          let qsoForm = document.forms["qso-form"];
+          qsoForm.elements["freq"].value = freq;
+          qsoForm.elements["mode"].value = mode;
+      }
+    </script>
+    <label class="form-label" style="display: block; width: 100%;">Activity Center (quick selection)</label>
+      <div class="input-group" id="activity-center-input-group">
+        #for(channelGroup in amateurChannelGroups):
+          #for(channel in channelGroup.channels):
+        <input type="button" class="form-control btn btn-secondary" value="#(channel.name)" onclick="setActivityCenter('#(channel.frequency)', '#(channel.mode)')">
+          #endfor
+        #endfor
+      </div>
+  </div>
+  #endif
 
   #if(user.callsign.kind == "licensed" || loggingMode == "training"):
   <label class="form-label" for="freq">Frequency (kHz)</label>
