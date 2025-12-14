@@ -59,16 +59,3 @@ extension Application {
 		}
 	}
 }
-
-
-import LeafKit
-
-struct URLEncodeHostAllowedTag: LeafTag {
-	func render(_ ctx: LeafContext) throws -> LeafData {
-		guard let str = ctx.parameters.first?.string else {
-			throw "unable to URL escape unexpected data"
-		}
-		return .string(str.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
-	}
-}
-

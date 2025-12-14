@@ -33,14 +33,19 @@ func routes(_ app: Application) throws {
 		try app.register(collection: BaseAuthentificationController(configuration: app.authentificationConfiguration))
 	}
 
-	app.get("rules") {req async throws in
-		return try await req.view.render("rules", ["common": req.commonContent])
+	app.get("rules") { req async throws -> View in
+
+		struct Context: Codable, CommonContentProviding {
+			let common: CommonContent
+			let activityCenters: [QSOController.RadioChannelGroup]
+		}
+		return try await req.view.render("rules", Context(common: req.commonContent, activityCenters: QSOController.amateurQRGs()))
 	}
 
 
 	app.get("impressum") { req async throws -> View in
 
-		struct Context: Content {
+		struct Context: Content, CommonContentProviding {
 			let authConfig: AuthentificationConfiguration
 			let common: CommonContent
 		}

@@ -32,6 +32,7 @@ public func configure(_ app: Application) async throws {
 
 	app.views.use(.leaf)
 	app.leaf.tags["urlEncode"] = URLEncodeHostAllowedTag()
+	app.leaf.tags["frequencyFormat"] = FrequencyFormatterTag()
 
 	if app.environment == .testing {
 		app.databases.use(.sqlite(.memory), as: .sqlite)

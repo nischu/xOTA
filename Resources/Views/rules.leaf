@@ -25,8 +25,11 @@
     </p>
     <h3><a id="centers">Activity centers:</a></h3>
     <ul>
-      <li>FM: 430.200MHz</li>
-      <li>CW: 432.032MHz</li>
+      #for(channelGroup in activityCenters):
+        #for(channel in channelGroup.channels):
+       <li>#(channel.name): #frequencyFormat(channel.frequency)</li>
+        #endfor
+      #endfor
       <li>DMR: Brandmeister TG26223</li>
     </ul>
     <h3><a id="ground-rules">Ground rules:</a></h3>
