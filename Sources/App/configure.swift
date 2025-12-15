@@ -55,6 +55,9 @@ public func configure(_ app: Application) async throws {
 	app.migrations.add(Seed39C3Data())
 #endif
 
+	// Temporary for development
+	app.migrations.add(ReferenceAddEmbedMapURLs())
+
 	// Session handling
 	app.migrations.add(SessionRecord.migration)
 

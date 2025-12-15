@@ -6,6 +6,7 @@ struct CreateReference: AsyncMigration {
 			.id()
 			.field("title", .string, .required)
 			.field("website", .string, .required)
+			.field("embed_map", .string)
 			.create()
 	}
 

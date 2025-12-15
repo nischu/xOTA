@@ -11,9 +11,9 @@
 
       <form action="" method="get">
       <table class="table">
-        <tr><th>Title</th><th>Website</th><th></th></tr>
+        <tr><th>Title</th><th>Website</th><th>Map</th><th></th></tr>
     #for(ref in references):
-        <tr><td>#(ref.title)</td><td>#(ref.website)</td><td><input class="btn btn-primary" type="submit" value="Edit" formaction="/admin/#(common.namingTheme.referenceSlug)/edit/#(ref.id)"></td></tr>
+        <tr><td>#(ref.title)</td><td>#(ref.website)</td><td>#(ref.embedMap)</td><td><input class="btn btn-primary" type="submit" value="Edit" formaction="/admin/#(common.namingTheme.referenceSlug)/edit/#(ref.id)"></td></tr>
     #endfor
       </table>
       </form>

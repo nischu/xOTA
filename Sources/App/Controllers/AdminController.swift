@@ -96,6 +96,7 @@ struct AdminController: RouteCollection {
 		struct FormContent: Codable {
 			let title: String
 			let website: String
+			let embedMap: String?
 		}
 
 		let formContent = try req.content.decode(FormContent.self)
@@ -115,6 +116,7 @@ struct AdminController: RouteCollection {
 		// TODO: verify there isn't a duplicate title.
 		reference.title = formContent.title
 		reference.website = formContent.website
+		reference.embedMap = (formContent.embedMap?.isEmpty ?? true) ? nil : formContent.embedMap
 
 		try await reference.save(on: req.db)
 		return try await req.view.render("admin/reference_edit", ReferenceContent(reference: reference, error: nil, success: successMessage, actionPath: try editPath(for: reference), actionName: "Save", deletePath: try editPath(for: reference, action: .delete), common: req.commonContent))

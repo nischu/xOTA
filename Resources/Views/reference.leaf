@@ -13,7 +13,20 @@
         <tr><th>Name</th><td>#(reference.title)</td></tr>
         <tr><th>Location</th><td><a href=#(reference.website) target="_blank">#(reference.website)</a></td></tr>
       </table>
+      #if(reference.embedMap):
+      <script>
+        function loadMapFrame() {
+          let mapFrame = document.getElementById("map-frame");
+          mapFrame.src = mapFrame.getAttribute("data-src");;
+          mapFrame.style.display = "block";
+          document.getElementById("load-map-button").style.display = "none";
+
+        }
+      </script>
+      <iframe id="map-frame" max-width="100%" style="width:400px; aspect-ratio: 1/1; resize: both; display: none" data-src="#(reference.embedMap)" src="about:blank"></iframe>
+      <button id="load-map-button" class="btn btn-secondary" onclick="loadMapFrame()">Load map</button>
       </p>
+      #endif
     #if(common.hasUser):
       <p><a class="btn btn-primary" href="/t/#(reference.title)/log">Log your QSOs!</a></p>
     #endif

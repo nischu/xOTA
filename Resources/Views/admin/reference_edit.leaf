@@ -25,6 +25,7 @@
     <input class="form-control" type="text" id="title" name="title" value="#(reference.title)">
     <label class="form-label" for="website">Website:</label>
     <input class="form-control" type="text" id="website" name="website" value="#(reference.website)">
+    <input class="form-control" type="text" id="embedMap" name="embedMap" value="#(reference.embedMap)">
     <input class="form-control btn btn-primary" type="submit" value="#(actionName)" >
   </form>
 
