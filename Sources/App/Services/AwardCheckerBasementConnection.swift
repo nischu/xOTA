@@ -4,9 +4,9 @@ import Vapor
 struct AwardCheckerBasementConnection: AwardChecker {
 	let awardKind: Award.AwardKind = "basement-connection"
 
-	func generateAwards(for user: UserModel, app: Application) async throws -> [Award] {
-		if try await AwardQueryHelper().hasRef2Ref(for: user, app: app, refNameA: "T-91", refNameB: "T-92") {
-			return try await [addAward(for: user, app: app)]
+	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
+		if try await AwardQueryHelper().hasRef2Ref(for: user, app: app, refNameA: "T-91", refNameB: "T-92", mode: mode) {
+			return try await [addAward(for: user, app: app, endorsement: endorsement(for: mode))]
 		} else {
 			return []
 		}

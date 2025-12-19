@@ -57,6 +57,7 @@ public func configure(_ app: Application) async throws {
 
 	// Temporary for development
 	app.migrations.add(ReferenceAddEmbedMapURLs())
+	app.migrations.add(AwardAddEndorsement())
 
 	// Session handling
 	app.migrations.add(SessionRecord.migration)

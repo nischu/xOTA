@@ -25,8 +25,10 @@ struct AwardCheckScheduler: AsyncJob {
 			.field(\.$activator.$id)
 			.field(\.$hunter.$id)
 			.field(\.$contactedOperatorUser.$id)
+			.field(\.$mode)
 			.all()
 		var userIds: Set<UserModel.IDValue> = []
+		var modes: Set<QSO.Mode> = []
 		for qso in qsos {
 			userIds.insert(qso.$activator.id)
 			if let id = qso.$hunter.id {
@@ -35,10 +37,12 @@ struct AwardCheckScheduler: AsyncJob {
 			if let id = qso.$contactedOperatorUser.id {
 				userIds.insert(id)
 			}
+			modes.insert(qso.mode)
 		}
 		let queue = context.application.queues.queue
+		let modesArray:[QSO.Mode] = Swift.Array(modes)
 		for userId in userIds {
-			try await queue.dispatch(CheckAwardElegibilityUser.self, .init(userId: userId))
+			try await queue.dispatch(CheckAwardElegibilityUser.self, .init(userId: userId, modes: modesArray))
 		}
 
 		context.logger.trace("AwardCheckScheduler found \(qsos.count) QSOs since \(sinceDate) and queued checks for \(userIds.count) users.")

@@ -32,10 +32,10 @@
       </form>
 
       <table class="table">
-        <tr><th>Title</th><th>Kind</th><th>Date</th><th>State</th><th>Path</th></tr>
+        <tr><th>Title</th><th>Kind</th><th>Date</th><th>Endorsement</th><th>State</th><th>Path</th></tr>
     #for(award in awards):
         <form action="/admin/awards/render" method="POST">
-        <tr><td>#(award.name)</td><td>#(award.kind)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(award.state)</td><td><a href="/#(award.filename)" target="_blank">#(award.filename)</a></td><td><input class="btn btn-primary" type="submit" value="Rerender" /></td></tr>
+        <tr><td>#(award.name)</td><td>#(award.kind)</td><td>#date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(award.endorsement)</td><td>#(award.state)</td><td><a href="/#(award.filename)" target="_blank">#(award.filename)</a></td><td><input class="btn btn-primary" type="submit" value="Rerender" /></td></tr>
         <input type="hidden" id="awardId" name="awardId" value="#(award.id)" />
         </form>
     #endfor

@@ -10,16 +10,16 @@ struct AwardCheckerActivatedLevel: AwardChecker {
 	let level: Int
 	let awardKind: Award.AwardKind
 
-	func generateAwards(for user: UserModel, app: Application) async throws -> [Award] {
+	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		let referencesIds = try await Reference
 			.query(on: app.db)
 			.filter(\.$title =~ "T-\(level)")
 			.all(\.$id)
 
-		guard try await AwardQueryHelper().activated(for: user, app: app, referenceIds: referencesIds) else {
+		guard try await AwardQueryHelper().activated(for: user, app: app, referenceIds: referencesIds, mode: mode) else {
 			return []
 		}
-		return try await [addAward(for: user, app: app)]
+		return try await [addAward(for: user, app: app, endorsement: endorsement(for: mode))]
 	}
 
 	func title(namingTheme: NamingTheme) -> String {

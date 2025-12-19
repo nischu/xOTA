@@ -3,7 +3,7 @@ import Vapor
 
 struct AwardQueryHelper {
 
-	func hasRef2Ref(for user: UserModel, app: Application, refNameA: String, refNameB: String) async throws -> Bool {
+	func hasRef2Ref(for user: UserModel, app: Application, refNameA: String, refNameB: String, mode: QSO.Mode?) async throws -> Bool {
 		let userId = try user.requireID()
 		let referenceIds = try await Reference.query(on: app.db).group(.or, { query in
 			query
@@ -33,13 +33,14 @@ struct AwardQueryHelper {
 							.filter(\.$huntedReference.$id, .equal, referenceIds[0])
 					}
 			}
+			.filterModeIfNonNil(mode)
 			.count()
 		// Currently we only check if any activator QSO is logged connecting both references.
 		// Ideally we'd match up two Ref2Ref QSOs and only issue the award if the other station confirmed the Ref2Ref.
 		return qsosCount > 0
 	}
 
-	func hunted(for user: UserModel, app: Application, referenceIds: [Reference.IDValue]) async throws -> Bool {
+	func hunted(for user: UserModel, app: Application, referenceIds: [Reference.IDValue], mode: QSO.Mode?) async throws -> Bool {
 		let userId = try user.requireID()
 		let qsoReferenceIds = try await QSO.query(on: app.db)
 			.group(.or) { builder in
@@ -48,20 +49,34 @@ struct AwardQueryHelper {
 					.filter(\.$contactedOperatorUser.$id, .equal, userId)
 			}
 			.filter(\.$reference.$id ~~ referenceIds)
+			.filterModeIfNonNil(mode)
 			.unique()
 			.all(\.$reference.$id)
 		return Set(referenceIds) == Set(qsoReferenceIds)
 	}
 
-	func activated(for user: UserModel, app: Application, referenceIds: [Reference.IDValue]) async throws -> Bool {
+	func activated(for user: UserModel, app: Application, referenceIds: [Reference.IDValue], mode: QSO.Mode? = nil) async throws -> Bool {
 		let userId = try user.requireID()
 		let qsoReferenceIds = try await QSO.query(on: app.db)
 			.filter(\.$activator.$id, .equal, userId)
 			.filter(\.$reference.$id ~~ referenceIds)
+			.filterModeIfNonNil(mode)
 			.unique()
 			.all(\.$reference.$id)
 
 		return Set(referenceIds) == Set(qsoReferenceIds)
 	}
 
+}
+
+extension QueryBuilder where Model == QSO {
+
+	@discardableResult
+	func filterModeIfNonNil(_ mode: QSO.Mode?) -> Self {
+		if let mode {
+			return self.filter(\.$mode, .equal, mode)
+		} else {
+			return self
+		}
+	}
 }

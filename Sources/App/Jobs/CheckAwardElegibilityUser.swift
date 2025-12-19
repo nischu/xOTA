@@ -4,6 +4,7 @@ import Queues
 
 struct CheckAwardElegibilityUserInfo: Codable {
 	let userId: UserModel.IDValue
+	let modes: [QSO.Mode]
 }
 
 struct CheckAwardElegibilityUser: AsyncJob {
@@ -18,16 +19,20 @@ struct CheckAwardElegibilityUser: AsyncJob {
 		}
 
 		for checker in app.awardCheckers {
+			let existingAwards = try await Award.awardsQuery(for: userId, on: app.db).filter(\.$kind, .equal, checker.awardKind).all()
 			context.logger.trace("CheckAwardElegibilityUser for userId \(userId), checker \(checker.awardKind) running.")
-			if try await Award.awardsQuery(for: userId, on: app.db).filter(\.$kind, .equal, checker.awardKind).first() != nil {
-				context.logger.trace("CheckAwardElegibilityUser for userId \(userId) already has award \(checker.awardKind).")
-				continue
+			for mode in payload.modes + [nil] {
+				let potentialEndorsement = checker.endorsement(for: mode)
+				guard existingAwards.first(where: { $0.endorsement == potentialEndorsement }) == nil else {
+					context.logger.trace("CheckAwardElegibilityUser for userId \(userId) already has award \(checker.awardKind) with endorsement: \(potentialEndorsement ?? "<nil>").")
+					continue
+				}
+				let awards = try await checker.generateAwards(for: user, mode: mode, app: app)
+				for award in awards {
+					try await app.queues.queue.dispatch(RenderAward.self, .init(awardId: award.requireID()))
+				}
+				context.logger.trace("CheckAwardElegibilityUser for userId \(userId), mode:  \(mode?.rawValue ?? "<nil>") generated \(awards.count) awards.")
 			}
-			let awards = try await checker.generateAwards(for: user, app: app)
-			for award in awards {
-				try await app.queues.queue.dispatch(RenderAward.self, .init(awardId: award.requireID()))
-			}
-			context.logger.trace("CheckAwardElegibilityUser for userId \(userId) generated \(awards.count) awards.")
 		}
 	}
 

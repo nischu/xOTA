@@ -35,6 +35,7 @@ struct StatsController: RouteCollection {
 			let name: String
 			let kind: String
 			let count: Int
+			let endorsement: String?
 		}
 		var references: StatsTable
 		var ref2ref: StatsTable
@@ -145,7 +146,7 @@ struct StatsController: RouteCollection {
 
 		let awardRows: [any SQLRow]
 		if let sql = req.db as? SQLDatabase {
-			awardRows = try await sql.raw(SQLQueryString("select name, kind, count(*) AS count FROM awards WHERE state = 'issued' GROUP BY kind ORDER BY count DESC;")).all()
+			awardRows = try await sql.raw(SQLQueryString("select name, kind, endorsement, count(*) AS count FROM awards WHERE state = 'issued' GROUP BY kind, endorsement ORDER BY count, kind, endorsement DESC;")).all()
 		} else {
 			awardRows = []
 		}

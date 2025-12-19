@@ -15,7 +15,7 @@
           <div class="card" style="max-width: 18rem; margin: 10px">
             <img class="card-img-top" src="/awards/#(award.kind).jpg" alt="Thumbnail of award '#(award.name)'">
             <div class="card-body">
-              <h5 class="card-title">#(award.name)</h5>
+              <h5 class="card-title">#(award.name)#if(award.endorsement):<br>#(award.endorsement)#endif</h5>
               <p class="card-text"><small class="text-muted">Granted #date(award.issueDate, "yyyy-MM-dd HH:mm", "GMT")</small></p>
               #if(isCurrentUser && award.state == "issued"):
               <div class="d-grid gap-2 d-md-flex justify-content-md-end">

@@ -49,6 +49,7 @@ struct RenderAward: AsyncJob {
 
 		var env = ProcessInfo.processInfo.environment
 		env["AWARD_DATE"] = formatter.string(from: award.issueDate)
+		env["ENDORSEMENT"] = award.endorsement ?? ""
 		let process = Process()
 		let pipe = Pipe()
 		process.executableURL = scriptURL

@@ -24,6 +24,9 @@ final class Award: Model, Content, @unchecked Sendable {
 	@Field(key: "kind")
 	var kind: AwardKind
 
+	@Field(key: "endorsement")
+	var endorsement: String?
+
 	@Field(key: "date_issued")
 	var issueDate: Date
 
@@ -36,11 +39,12 @@ final class Award: Model, Content, @unchecked Sendable {
 	init() { }
 
 	init(id: Award.IDValue? = nil,
-		 userId: UserModel.IDValue, kind: AwardKind, name: String) {
+		 userId: UserModel.IDValue, kind: AwardKind, name: String, endorsement: String?) {
 		self.id = id
 		self.name = name
 		self.$user.id = userId
 		self.kind = kind
+		self.endorsement = endorsement
 		self.issueDate = Date()
 		self.state = .waitingToRender
 	}

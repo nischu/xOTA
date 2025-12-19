@@ -263,7 +263,7 @@ struct AdminController: RouteCollection {
 		}
 
 
-		try await req.application.queues.queue.dispatch(CheckAwardElegibilityUser.self, CheckAwardElegibilityUserInfo(userId: user.requireID()))
+		try await req.application.queues.queue.dispatch(CheckAwardElegibilityUser.self, CheckAwardElegibilityUserInfo(userId: user.requireID(), modes: QSO.Mode.allCases))
 
 		return req.redirect(to: "/admin/awards/")
 	}

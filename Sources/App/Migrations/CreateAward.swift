@@ -16,6 +16,7 @@ struct CreateAward: AsyncMigration {
 			.field("state", state, .required)
 			.field("date_issued", .datetime, .required)
 			.field("filename", .string)
+			.field("endorsement", .string)
 			.foreignKey("user_id", references: UserModel.schema, .id, onDelete: .cascade)
 			.unique(on: "id")
 			.create()
