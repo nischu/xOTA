@@ -37,7 +37,7 @@ struct UserDeletionTests {
 
 			let user = try #require(await UserModel.userFor(callsign: "DL2TEST", on: app.db).get())
 			// Generate fake test award.
-			let award = try Award(userId: user.requireID(), kind: "test-award", name: "TestAward Name")
+			let award = try Award(userId: user.requireID(), kind: "test-award", name: "TestAward Name", endorsement: nil)
 			award.state = .rendering
 			try await award.save(on: app.db)
 			let awardId = try award.requireID()
