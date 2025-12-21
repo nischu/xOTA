@@ -19,11 +19,12 @@ struct CheckAwardElegibilityUser: AsyncJob {
 		}
 
 		for checker in app.awardCheckers {
-			let existingAwards = try await Award.awardsQuery(for: userId, on: app.db).filter(\.$kind, .equal, checker.awardKind).all()
+			var existingAwards = try await Award.awardsQuery(for: userId, on: app.db).filter(\.$kind, .equal, checker.awardKind).all()
 			context.logger.trace("CheckAwardElegibilityUser for userId \(userId), checker \(checker.awardKind) running.")
 			for mode in payload.modes + [nil] {
 				let potentialEndorsement = checker.endorsement(for: mode)
-				guard existingAwards.first(where: { $0.endorsement == potentialEndorsement }) == nil else {
+				// If a mode specific award was already issued, don't issue a mode agnostic awards or the same award again.
+				guard existingAwards.first(where: { potentialEndorsement == nil || $0.endorsement == potentialEndorsement }) == nil else {
 					context.logger.trace("CheckAwardElegibilityUser for userId \(userId) already has award \(checker.awardKind) with endorsement: \(potentialEndorsement ?? "<nil>").")
 					continue
 				}
@@ -31,6 +32,7 @@ struct CheckAwardElegibilityUser: AsyncJob {
 				for award in awards {
 					try await app.queues.queue.dispatch(RenderAward.self, .init(awardId: award.requireID()))
 				}
+				existingAwards.append(contentsOf: awards)
 				context.logger.trace("CheckAwardElegibilityUser for userId \(userId), mode:  \(mode?.rawValue ?? "<nil>") generated \(awards.count) awards.")
 			}
 		}

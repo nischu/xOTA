@@ -62,7 +62,9 @@ public func configure(_ app: Application) async throws {
 
 	// Queues
 	app.migrations.add(JobMetadataMigrate())
-	app.queues.use(.fluent(.sqlite))
+	if app.environment != .testing {
+		app.queues.use(.fluent(.sqlite))
+	}
 
 #if DEBUG
 	let secureCookie = false
@@ -106,7 +108,7 @@ public func configure(_ app: Application) async throws {
 	app.queues.schedule(UpdateSpots()).minutely().at(13)
 	try app.queues.startScheduledJobs()
 
-	if (Environment.get("AWARDS_ENABLED") as? NSString)?.boolValue ?? false {
+	if (Environment.get("AWARDS_ENABLED") as? NSString)?.boolValue ?? false || app.environment == .testing {
 		// MARK: Setup Awards.
 		// This assumes a render tool is available at awards/award.sh.
 		// See RenderAward.swift
