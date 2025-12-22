@@ -88,6 +88,55 @@ struct AwardTests: AppQueueTests {
 		}
 	}
 
+
+	@Test("Test Ceramic and Porcelain Hunter")
+	func ceramicAndPorcelainHunterMixedMode() async throws {
+		try await withApp { app in
+			let db = app.db
+			let hunterCall = "DH1TEST"
+			let user = try await UserModel.createUser(
+				with: hunterCall,
+				kind: .licensed,
+				on: db
+			)
+
+			for i in 0...9 {
+				let activatorCall = "DA\(i)TEST"
+				_ = try await UserModel.createUser(with: activatorCall, kind: .licensed, on: db)
+				let mode: QSO.Mode = i == 0 ? .SSB : .FM
+				try await addQSO(on: db, stationCall: activatorCall, reference: "T-01", call: hunterCall, mode: mode)
+			}
+
+			#expect(try await Award.query(on: db).count() == 0)
+
+			try await performAwardChecks(in: app)
+
+			let awards = try await Award.query(on: db).all()
+			#expect(awards.count == 1, "Expected 1 award, but got \(awards)")
+			let award = try #require(awards.first)
+			#expect(award.$user.id == user.id)
+			#expect(award.kind == "ceramic-hunter")
+			#expect(award.endorsement == nil)
+
+
+			for i in 0...9 {
+				let activatorCall = "DB\(i)TEST"
+				_ = try await UserModel.createUser(with: activatorCall, kind: .licensed, on: db)
+				let mode: QSO.Mode = i == 0 ? .SSB : .CW
+				try await addQSO(on: db, stationCall: activatorCall, reference: "T-01", call: hunterCall, mode: mode)
+			}
+
+			try await performAwardChecks(in: app)
+
+			let awards2 = try await Award.query(on: db).all()
+			#expect(awards2.count == 2, "Expected 2 awards, but got \(awards2)")
+			let award2 = try #require(awards2.first(where: { award.id != $0.id }))
+			#expect(award2.$user.id == user.id)
+			#expect(award2.kind == "porcelain-hunter")
+			#expect(award2.endorsement == nil)
+		}
+	}
+
 	// MARK: – Helpers
 
 	func performAwardChecks(in app: Application) async throws {
