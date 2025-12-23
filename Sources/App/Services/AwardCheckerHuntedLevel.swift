@@ -9,6 +9,7 @@ struct AwardCheckerHuntedLevel: AwardChecker {
 
 	let level: Int
 	let awardKind: Award.AwardKind
+	let hasModeSpecificEndorsements: Bool = true
 
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		let referencesIds = try await Reference

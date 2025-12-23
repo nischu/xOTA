@@ -10,6 +10,7 @@ struct AwardCheckerHuntedUniqueOPs: AwardChecker {
 	let uniqueOpsNeeded: Int
 	let awardKind: Award.AwardKind
 	let awardTitle: String
+	let hasModeSpecificEndorsements: Bool = true
 
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		let userId = try user.requireID()

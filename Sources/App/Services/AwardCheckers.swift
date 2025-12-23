@@ -2,7 +2,11 @@ import Vapor
 
 protocol AwardChecker {
 	var awardKind: Award.AwardKind { get }
+	// Signify if the award can be re-issued for a specific mode. E.g. Activated all in CW.
+	var hasModeSpecificEndorsements: Bool { get }
+	// Check if the user is elegible for the given awards. And generate them if needed.
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award]
+	
 	func title(namingTheme: NamingTheme) -> String
 	func fileName(callsign: String, namingTheme: NamingTheme) -> String
 }

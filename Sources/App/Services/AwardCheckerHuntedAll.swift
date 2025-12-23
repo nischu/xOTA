@@ -2,6 +2,7 @@ import Vapor
 
 struct AwardCheckerHuntedAll: AwardChecker {
 	let awardKind: Award.AwardKind = "hunted-all"
+	let hasModeSpecificEndorsements: Bool = true
 
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		let userId = try user.requireID()

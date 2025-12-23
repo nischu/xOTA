@@ -135,6 +135,7 @@ func configureAwards(_ app: Application) async throws {
 	app.awardCheckers.append(AwardCheckerTrainee())
 	app.awardCheckers.append(AwardCheckerHuntedUniqueOPs(uniqueOpsNeeded: 10, kind: "ceramic-hunter", title: "Ceramic Hunter: 10 OPs"))
 	app.awardCheckers.append(AwardCheckerHuntedUniqueOPs(uniqueOpsNeeded: 20, kind: "porcelain-hunter", title: "Porcelain Hunter: 20 OPs"))
+	app.awardCheckers.append(AwardCheckerActivatedAllMultiMode(modeCount: 3, title: "Tri-Mode Completionist"))
 
 	// 39C3 specific:
 	app.awardCheckers.append(AwardCheckerBasementConnection())

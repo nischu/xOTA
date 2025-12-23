@@ -1,7 +1,10 @@
 import Vapor
 
 struct AwardCheckerActivatedAll: AwardChecker {
-	let awardKind: Award.AwardKind = "activated-all"
+	static let awardKind: Award.AwardKind = "activated-all"
+	let awardKind: Award.AwardKind = Self.awardKind
+
+	let hasModeSpecificEndorsements: Bool = true
 
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		let referencesIds = try await Reference.query(on: app.db).all(\.$id)

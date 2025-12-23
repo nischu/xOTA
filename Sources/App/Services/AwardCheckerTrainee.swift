@@ -3,6 +3,7 @@ import Vapor
 
 struct AwardCheckerTrainee: AwardChecker {
 	let awardKind: Award.AwardKind = "trainee"
+	let hasModeSpecificEndorsements: Bool = true
 
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		let qsosCount = try await QSO.query(on: app.db)

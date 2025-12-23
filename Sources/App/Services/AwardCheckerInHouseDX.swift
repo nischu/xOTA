@@ -3,6 +3,7 @@ import Vapor
 // 39C3 Specific award: In-house DX-er T2T between T-41 and T-92 in CCH
 struct AwardCheckerInHouseDX: AwardChecker {
 	let awardKind: Award.AwardKind = "in-house-dx"
+	let hasModeSpecificEndorsements: Bool = true
 
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		if try await AwardQueryHelper().hasRef2Ref(for: user, app: app, refNameA: "T-41", refNameB: "T-92", mode: mode) {

@@ -137,6 +137,43 @@ struct AwardTests: AppQueueTests {
 		}
 	}
 
+	@Test("Tri mode activated all award")
+	func testTriModeCompletionistActivatorAward() async throws {
+		try await withApp { app in
+			let db = app.db
+			let activatorCall = "DA1TEST"
+			let user = try await UserModel.createUser(
+				with: activatorCall,
+				kind: .licensed,
+				on: db
+			)
+			for reference in try await Reference.query(on: db).all(\.$title) {
+				let hunterCall = "DH1TEST"
+				for mode: QSO.Mode in [.FM, .CW, .SSTV] {
+					try await addQSO(on: db, stationCall: activatorCall, reference: reference, call: hunterCall, mode: mode)
+				}
+			}
+
+			#expect(try await Award.query(on: db).count() == 0)
+
+			try await performAwardChecks(in: app)
+
+			let awardCount = try await Award.query(on: db).count()
+
+
+			#expect(awardCount == (6+1)*3+1, "Expected Activated All for all 6 levels + 1 overall  * 3 modes + trimode")
+
+			let awards = try await Award.query(on: db).filter(\.$kind, .equal, "activated-all-multi-mode-3").all()
+			#expect(awards.count == 1, "Expected 1 award, but got \(awards)")
+			let award = try #require(awards.first)
+			#expect(award.$user.id == user.id)
+			#expect(award.kind == "activated-all-multi-mode-3")
+			#expect(award.name == "Tri-Mode Completionist")
+			#expect(award.endorsement == "Modes: CW, FM, SSTV")
+		}
+
+	}
+
 	// MARK: – Helpers
 
 	func performAwardChecks(in app: Application) async throws {
