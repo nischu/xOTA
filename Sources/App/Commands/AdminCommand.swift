@@ -44,7 +44,11 @@ final class MakeAdminCommand: AsyncCommand {
 			}
 			let adminRole = UserRoleModel(role: .admin)
 			try await user.$specialRoles.create(adminRole, on: db)
-			context.console.success("Successfully made '\(callsign)' admin.")
+			if let userRole = try await UserRoleModel.query(on: db).filter(\.$user.$id, .equal, user.requireID()).filter(\.$role, .equal, .admin).first() {
+				context.console.success("Successfully made '\(callsign)' admin.")
+			} else {
+				context.console.error("Failed to save admin role for '\(callsign)'")
+			}
 		}
 	}
 	
