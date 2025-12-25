@@ -137,6 +137,7 @@ func configureAwards(_ app: Application) async throws {
 	app.awardCheckers.append(AwardCheckerHuntedUniqueOPs(uniqueOpsNeeded: 20, kind: "porcelain-hunter", title: "Porcelain Hunter: 20 OPs"))
 	app.awardCheckers.append(AwardCheckerActivatedAllMultiMode(modeCount: 3, title: "Tri-Mode Completionist"))
 	app.awardCheckers.append(AwardCheckerActivatorQSOLimit(awardKind: "activator-50-qso", requiredQsoCount: 50, awardTitle: "Polyuria Activator"))
+	app.awardCheckers.append(AwardCheckerActivatorSameRefQSOLimit(awardKind: "activator-same-ref-20-qso", requiredQsoCount: 20, awardTitle: "Diaarhea Activator"))
 
 	// 39C3 specific:
 	app.awardCheckers.append(AwardCheckerBasementConnection())

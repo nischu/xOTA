@@ -171,7 +171,6 @@ struct AwardTests: AppQueueTests {
 			#expect(award.name == "Tri-Mode Completionist")
 			#expect(award.endorsement == "Modes: CW, FM, SSTV")
 		}
-
 	}
 
 	@Test("Activator 50 QSO award")
@@ -210,6 +209,61 @@ struct AwardTests: AppQueueTests {
 			#expect(award.endorsement == "Mode: FM")
 		}
 	}
+
+	@Test("Activator 20 QSO same ref award")
+	func testActivatorSameRef20QSO() async throws {
+		try await withApp { app in
+			let db = app.db
+			let activatorCall = "DA1TEST"
+			let user = try await UserModel.createUser(
+				with: activatorCall,
+				kind: .licensed,
+				on: db
+			)
+
+			let requiredQSOCount = 20
+			let hunterCall = "DH1TEST"
+			let reference = "T-01"
+			for _ in 0..<requiredQSOCount-1 {
+				try await addQSO(on: db, stationCall: activatorCall, reference: reference, call: hunterCall, mode: .FM)
+			}
+			// Add a QSO at a different reference, the award shouldn't be issued yet.
+			try await addQSO(on: db, stationCall: activatorCall, reference: "T-02", call: hunterCall, mode: .FM)
+
+			#expect(try await Award.query(on: db).count() == 0)
+
+			try await performAwardChecks(in: app)
+
+			#expect(try await Award.query(on: db).count() == 0)
+			// Add another QSO to achieve the required count
+			try await addQSO(on: db, stationCall: activatorCall, reference: reference, call: hunterCall, mode: .CW)
+
+			try await performAwardChecks(in: app)
+
+			#expect(try await Award.query(on: db).count() == 1)
+
+			let awards = try await Award.query(on: db).filter(\.$kind, .equal, "activator-same-ref-20-qso").all()
+			#expect(awards.count == 1, "Expected 1 award, but got \(awards)")
+			let award = try #require(awards.first)
+			#expect(award.$user.id == user.id)
+			#expect(award.kind == "activator-same-ref-20-qso")
+			#expect(award.name == "Diaarhea Activator")
+			#expect(award.endorsement == "T-01")
+
+			try await addQSO(on: db, stationCall: activatorCall, reference: reference, call: hunterCall, mode: .FM)
+
+			try await performAwardChecks(in: app)
+
+			let awards2 = try await Award.query(on: db).all()
+			#expect(awards2.count == 2, "Expected 2 awards, but got \(awards2)")
+			let award2 = try #require(awards2.first(where: { award.id != $0.id }))
+			#expect(award2.$user.id == user.id)
+			#expect(award2.kind == "activator-same-ref-20-qso")
+			#expect(award.name == "Diaarhea Activator")
+			#expect(award2.endorsement == "T-01 Mode: FM")
+		}
+	}
+
 
 	// MARK: – Helpers
 
