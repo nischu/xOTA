@@ -46,7 +46,7 @@ struct AwardCheckerActivatorSameRefQSOLimit: AwardChecker {
 				.filter(\.$user.$id, .equal, user.requireID())
 				.all(\.$endorsement))
 			let endorsementsToIssue = referenceQSOCounts.map { reference in
-				String([reference.title, endorsement(for: mode)].compactMap(\.self).joined(by: " "))
+				String([reference.title, endorsement(for: mode)].compactMap({$0}).joined(by: " "))
 			}
 				.filter { !existingAwardEndorsements.contains($0) }
 
