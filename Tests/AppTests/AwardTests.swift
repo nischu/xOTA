@@ -158,10 +158,10 @@ struct AwardTests: AppQueueTests {
 
 			try await performAwardChecks(in: app)
 
-			let awardCount = try await Award.query(on: db).count()
+			let allAwards = try await Award.query(on: db).all()
+			let awardCount = allAwards.count
 
-
-			#expect(awardCount == (6+1)*3+1, "Expected Activated All for all 6 levels + 1 overall  * 3 modes + trimode")
+			#expect(awardCount == (6+1)*3+1+1, "Expected Activated All for all 6 levels + 1 overall  * 3 modes + 50 QSO + trimode  \(allAwards)")
 
 			let awards = try await Award.query(on: db).filter(\.$kind, .equal, "activated-all-multi-mode-3").all()
 			#expect(awards.count == 1, "Expected 1 award, but got \(awards)")
@@ -172,6 +172,43 @@ struct AwardTests: AppQueueTests {
 			#expect(award.endorsement == "Modes: CW, FM, SSTV")
 		}
 
+	}
+
+	@Test("Activator 50 QSO award")
+	func testActivatorQSOAward50() async throws {
+		try await withApp { app in
+			let db = app.db
+			let activatorCall = "DA1TEST"
+			let user = try await UserModel.createUser(
+				with: activatorCall,
+				kind: .licensed,
+				on: db
+			)
+
+			let requiredQSOCount = 50
+			// Spread the QSO over references.
+			let references = try await Reference.query(on: db).all(\.$title)
+			for i in 0..<requiredQSOCount {
+				let hunterCall = "DH1TEST"
+				let reference = references[i%references.count]
+				try await addQSO(on: db, stationCall: activatorCall, reference: reference, call: hunterCall, mode: .FM)
+			}
+
+			#expect(try await Award.query(on: db).count() == 0)
+
+			try await performAwardChecks(in: app)
+
+			let awardCount = try await Award.query(on: db).count()
+			#expect(awardCount == (6+1)+1, "Expected Activated All for all 6 levels + 1 overall + activator 50 QSO award")
+
+			let awards = try await Award.query(on: db).filter(\.$kind, .equal, "activator-50-qso").all()
+			#expect(awards.count == 1, "Expected 1 award, but got \(awards)")
+			let award = try #require(awards.first)
+			#expect(award.$user.id == user.id)
+			#expect(award.kind == "activator-50-qso")
+			#expect(award.name == "Polyuria Activator")
+			#expect(award.endorsement == "Mode: FM")
+		}
 	}
 
 	// MARK: – Helpers
