@@ -690,12 +690,12 @@ struct QSOController: RouteCollection {
 		]
 
 		let freenet: [RadioChannel] = [
-			.init(name:"Freenet 1", frequency: 149_0250),
-			.init(name:"Freenet 2", frequency: 149_0375),
-			.init(name:"Freenet 3", frequency: 149_0500),
-			.init(name:"Freenet 4", frequency: 149_0875),
-			.init(name:"Freenet 5", frequency: 149_1000),
-			.init(name:"Freenet 6", frequency: 149_1125),
+			.init(name:"Freenet 1", frequency: 149_025/*0*/),
+			.init(name:"Freenet 2", frequency: 149_037/*5*/),
+			.init(name:"Freenet 3", frequency: 149_050/*0*/),
+			.init(name:"Freenet 4", frequency: 149_087/*5*/),
+			.init(name:"Freenet 5", frequency: 149_100/*0*/),
+			.init(name:"Freenet 6", frequency: 149_112/*5*/),
 		]
 
 		let cb: [RadioChannel] = [
