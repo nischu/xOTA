@@ -173,6 +173,64 @@ struct AwardTests: AppQueueTests {
 		}
 	}
 
+	@Test("Tri band activated all award")
+	func testTriBandCompletionistActivatorAward() async throws {
+		try await withApp { app in
+			let db = app.db
+			let activatorCall = "DA1TEST"
+			let user = try await UserModel.createUser(
+				with: activatorCall,
+				kind: .licensed,
+				on: db
+			)
+			for reference in try await Reference.query(on: db).all(\.$title) {
+				let hunterCall = "DH1TEST"
+				for freq in [145_500, 430_200, 1297_500] {
+					let mode: QSO.Mode = reference == "T-01" && freq == 145_500 ? .CW : .FM
+					try await addQSO(on: db, stationCall: activatorCall, reference: reference, call: hunterCall, mode: mode, freq: freq)
+				}
+			}
+
+			#expect(try await Award.query(on: db).count() == 0)
+
+			try await performAwardChecks(in: app)
+
+			let allAwards = try await Award.query(on: db).all()
+			let awardCount = allAwards.count
+
+			#expect(awardCount == (6+1)+1+1, "Expected Activated All for all 6 levels + 1 overall + 50 QSO + tri bands  \(allAwards)")
+
+			let awards = try await Award.query(on: db).filter(\.$kind, .equal, "activated-all-multi-band-3").all()
+			#expect(awards.count == 1, "Expected 1 award, but got \(awards)")
+			let award = try #require(awards.first)
+			#expect(award.$user.id == user.id)
+			#expect(award.kind == "activated-all-multi-band-3")
+			#expect(award.name == "WC: Wideband Completionist")
+			#expect(award.endorsement == "Bands: 2 m, 70 cm, 23 cm")
+
+			// Add missing QSO for a mode specific tri-band award
+			try await addQSO(on: db, stationCall: activatorCall, reference: "T-01", call: "DH1TEST", mode: .FM, freq: 145_500)
+
+			try await performAwardChecks(in: app)
+
+			let awards2 = try await Award.query(on: db).filter(\.$kind, .equal, "activated-all-multi-band-3").all()
+			#expect(awards2.count == 2, "Expected 2 awards, but got \(awards2)")
+			let award2 = try #require(awards2.first(where: { award.id != $0.id }))
+			#expect(award2.$user.id == user.id)
+			#expect(award2.kind == "activated-all-multi-band-3")
+			#expect(award2.name == "WC: Wideband Completionist")
+			#expect(award2.endorsement == "Bands: 2 m, 70 cm, 23 cm Mode: FM")
+
+			// Add another QSO for the user
+			try await addQSO(on: db, stationCall: activatorCall, reference: "T-01", call: "DH1TEST", mode: .FM, freq: 145_500)
+
+			try await performAwardChecks(in: app)
+			let awards3 = try await Award.query(on: db).filter(\.$kind, .equal, "activated-all-multi-band-3").all()
+			#expect(awards3.count == 2, "Did not expect another award, but got \(awards3)")
+		}
+	}
+
+
 	@Test("Activator 50 QSO award")
 	func testActivatorQSOAward50() async throws {
 		try await withApp { app in
@@ -298,56 +356,5 @@ struct AwardTests: AppQueueTests {
 			].contains(id)
 		}
 	}
-
-	func addQSO(
-		on db: any Database,
-		stationCall: String,
-		reference refName: String,
-		call: String,
-		huntedReference huntedRefName: String? = nil,
-		mode: QSO.Mode,
-		freq: Int = 430_200,
-		rstSent: String = "59",
-		rstRcvt: String = "59"
-	) async throws {
-
-		let reference = try #require(
-			await Reference.query(on: db).filter(\.$title, .equal, refName)
-				.first()
-		)
-		let user = try #require(
-			try await Callsign.callsign(stationCall, on: db).with(\.$user)
-				.first()?.user
-		)
-
-		let hunter = try await Callsign.callsign(call, on: db).with(\.$user)
-				.first()?.user
-
-		let huntedReference: Reference? = if let huntedRefName {
-			try await Reference.query(on: db).filter(\.$title, .equal, huntedRefName).first()
-		} else {
-			nil
-		}
-
-		try await QSO(
-			id: nil,
-			activator: user,
-			activatorTrainer: nil,
-			hunter: hunter,
-			reference: reference,
-			huntedReference: huntedReference,
-			date: Date(),
-			call: call,
-			stationCallSign: "DL2TEST",
-			operator: nil,
-			contactedOperator: nil,
-			contactedOperatorUser: nil,
-			freq: 430_200,
-			mode: mode,
-			rstSent: "59",
-			rstRcvt: "59"
-		).save(on: db)
-	}
-
 
 }

@@ -26,7 +26,7 @@ struct CheckAwardElegibilityUser: AsyncJob {
 				for mode in payload.modes + [nil] {
 					let potentialEndorsement = checker.endorsement(for: mode)
 					// If a mode specific award was already issued, don't issue a mode agnostic awards or the same award again.
-					guard existingAwards.first(where: { potentialEndorsement == nil || $0.endorsement == potentialEndorsement }) == nil else {
+					guard existingAwards.first(where: { potentialEndorsement == nil || $0.endorsement?.contains(potentialEndorsement!) ?? false }) == nil else {
 						context.logger.trace("CheckAwardElegibilityUser for userId \(userId) already has award \(checker.awardKind) with endorsement: \(potentialEndorsement ?? "<nil>").")
 						continue
 					}
