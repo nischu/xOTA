@@ -100,7 +100,19 @@ struct AwardTests: AppQueueTests {
 				on: db
 			)
 
-			for i in 0...9 {
+			let activatorCall = "DA0TEST"
+			_ = try await UserModel.createUser(with: activatorCall, kind: .licensed, on: db)
+			for _ in 0...9 {
+				try await addQSO(on: db, stationCall: activatorCall, reference: "T-01", call: hunterCall, mode: .SSB)
+			}
+
+			#expect(try await Award.query(on: db).count() == 0)
+
+			try await performAwardChecks(in: app)
+
+			#expect(try await Award.query(on: db).count() == 0, "with 10 hunter QSOs from a single activator the award shouldn't be issued yet.")
+
+			for i in 1...9 {
 				let activatorCall = "DA\(i)TEST"
 				_ = try await UserModel.createUser(with: activatorCall, kind: .licensed, on: db)
 				let mode: QSO.Mode = i == 0 ? .SSB : .FM

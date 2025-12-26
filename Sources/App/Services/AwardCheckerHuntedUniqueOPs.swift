@@ -14,7 +14,7 @@ struct AwardCheckerHuntedUniqueOPs: AwardChecker {
 
 	func generateAwards(for user: UserModel, mode: QSO.Mode?, app: Application) async throws -> [Award] {
 		let userId = try user.requireID()
-		let distincedHuntedActivatorsCount = try await QSO.query(on: app.db)
+		let distinctHuntedActivatorCount = try await QSO.query(on: app.db)
 			.group(.or) { builder in
 				builder
 					.filter(\.$hunter.$id, .equal, userId)
@@ -22,9 +22,10 @@ struct AwardCheckerHuntedUniqueOPs: AwardChecker {
 			}
 			.field(\.$activator.$id)
 			.filterModeIfNonNil(mode)
-			.count()
+			.unique()
+			.count(\.$activator.$id)
 
-		guard distincedHuntedActivatorsCount >= uniqueOpsNeeded else {
+		guard distinctHuntedActivatorCount >= uniqueOpsNeeded else {
 			return []
 		}
 		return try await [addAward(for: user, app: app, endorsement: endorsement(for: mode))]
