@@ -83,9 +83,9 @@
       <input type="hidden" name="callback" value="#(formPath)">
       <div class="table-responsive">
       <table class="table">
-        <tr><th>Date/Time (UTC)</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th></th></tr>
+        <tr><th>Date/Time (UTC)</th><th>Station Callsign</th><th>Operator</th><th>Call</th><th>Contacted OP</th><th>QRG (kHz)</th><th>Mode</th><th>RST Sent</th><th>RST Received</th><th>Activated Ref</th><th>Hunted Ref</th><th></th></tr>
     #for(qso in qsoGroup.qsos):
-        <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><td>#if(qsoGroup.editable):<input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)">#endif</td></tr>
+        <tr><td>#date(qso.date, "yyyy-MM-dd HH:mm", "GMT")</td><td>#(qso.stationCallSign)</td><td>#(qso.operator)</td><td>#(qso.call)</td><td>#(qso.contactedOperator)</td><td>#(qso.freq)</td><td>#(qso.mode)</td><td>#(qso.rstSent)</td><td>#(qso.rstRcvt)</td><td>#(qso.reference.title)</td><td>#(qso.huntedReference.title)</td><td>#if(qsoGroup.editable):<input class="btn btn-primary" type="submit" value="Edit" formaction="/qso/edit/#(qso.id)">#endif</td></tr>
     #endfor
       </table>
       </div>

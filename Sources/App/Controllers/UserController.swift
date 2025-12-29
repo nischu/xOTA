@@ -68,9 +68,9 @@ struct UserController: RouteCollection {
 		let userId = try user.requireID()
 		let credentials = try await UserCredential.query(on: req.db).filter(\.$user.$id == userId).all()
 		let trainingCalls = try await user.$callsigns.query(on: req.db).filter(\.$kind == .training).all()
-		let activatorQSOs = try await user.$activatorQsos.query(on: req.db).sort(\.$date, .descending).all()
-		let hunterQSOs = try await QSO.query(on: req.db).group(.or, { $0.filter(\.$hunter.$id == userId).filter(\.$contactedOperatorUser.$id == userId) }).sort(\.$date, .descending).all()
-		let trainingQSOs = try await QSO.query(on: req.db).filter(\.$activatorTrainer.$id == userId).sort(\.$date, .descending).all()
+		let activatorQSOs = try await user.$activatorQsos.query(on: req.db).with(\.$reference).with(\.$huntedReference).sort(\.$date, .descending).all()
+		let hunterQSOs = try await QSO.query(on: req.db).with(\.$reference).with(\.$huntedReference).group(.or, { $0.filter(\.$hunter.$id == userId).filter(\.$contactedOperatorUser.$id == userId) }).sort(\.$date, .descending).all()
+		let trainingQSOs = try await QSO.query(on: req.db).with(\.$reference).with(\.$huntedReference).filter(\.$activatorTrainer.$id == userId).sort(\.$date, .descending).all()
 		let qsoGroups: [UserContent.QSOGoup] = [
 			.init(title: "Activator QSOs", qsos: activatorQSOs, editable: true, visible: true),
 			.init(title: "Hunter QSOs", qsos: hunterQSOs, editable: false, visible: true),
