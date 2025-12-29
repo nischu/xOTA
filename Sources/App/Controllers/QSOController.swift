@@ -111,7 +111,7 @@ struct QSOController: RouteCollection {
 			let rstPattern = "[0-5][0-9][0-9]?"
 			validations.add("rst_sent", as: String.self, is:.pattern(rstPattern), customFailureDescription: "is not a valid RST sent value.")
 			validations.add("rst_rcvd", as: String.self, is:.pattern(rstPattern), customFailureDescription: "is not a valid RST received value.")
-			validations.add("freq", as: Int.self, is: .range(3500...1300000), customFailureDescription: "not a valid frequency in kHz.")
+			validations.add("freq", as: Int.self, is: .range(1_810...24_250_000), customFailureDescription: "not a valid frequency in kHz. (160 m to 1.2 cm band)")
 		}
 
 		mutating func resetForNextQSO() {
