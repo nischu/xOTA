@@ -119,9 +119,9 @@
   </select>
 
   <label class="form-label" for="rst_sent"><a href="https://en.wikipedia.org/wiki/R-S-T_system" target="_blank">RST</a> sent</label>
-  <input class="form-control" type="number" id="rst_sent" name="rst_sent" value="#(qso.rst_sent)" inputmode="numeric" min=11 max=599 required>
+  <input class="form-control" type="number" id="rst_sent" name="rst_sent" value="#(qso.rst_sent)" inputmode="numeric" min=-24 max=599 required>
   <label class="form-label" for="rst_rcvd"><a href="https://en.wikipedia.org/wiki/R-S-T_system" target="_blank">RST</a> received</label>
-  <input class="form-control" type="number" id="rst_rcvd" name="rst_rcvd" value="#(qso.rst_rcvd)" inputmode="numeric" min=11 max=599 required>
+  <input class="form-control" type="number" id="rst_rcvd" name="rst_rcvd" value="#(qso.rst_rcvd)" inputmode="numeric" min=-24 max=599 required>
 
   <label class="form-label" for="huntedReference">Hunted #(common.namingTheme.referenceSingular) (optional):</label>
   <input class="form-control" type="text" list="knownreferences" id="huntedReference" name="huntedReference" value="#(qso.huntedReference)" >
