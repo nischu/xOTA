@@ -13,9 +13,10 @@ struct StatsController: RouteCollection {
 
 	func stats(req: Request) async throws -> View {
 
+		let skipCache = (try? req.query.get(Bool.self, at: "no-cache")) ?? false
 		let cacheKey = "stats-content"
 		let cacheExpiry: CacheExpirationTime = .minutes(5)
-		var statsContent = try await req.cache.get(cacheKey, as: StatsContent.self)
+		var statsContent = skipCache ? nil : try await req.cache.get(cacheKey, as: StatsContent.self)
 		// Update common content since it can be specific to this request.
 		statsContent?.common = req.commonContent
 		if statsContent == nil {
@@ -105,7 +106,12 @@ struct StatsController: RouteCollection {
 			if let sql = req.db as? SQLDatabase {
 				// The underlying database driver is SQL.
 
-				let queryStart = "SELECT (CASE WHEN qsos.\(operatorColumn) NOT NULL THEN qsos.\(operatorColumn) ELSE qsos.\(callsignColumn) END) AS 'call',"
+				let queryStart = if let operatorIdColumn {
+					// For hunter queries we don't want to use the operator name for licensed operators, in cases where the activator accidentally entered the name.
+					"SELECT (CASE WHEN (qsos.\(operatorColumn) NOT NULL AND qsos.\(operatorIdColumn) NOT NULL) THEN qsos.\(operatorColumn) ELSE qsos.\(callsignColumn) END) AS 'call',"
+				} else {
+					"SELECT (CASE WHEN qsos.\(operatorColumn) NOT NULL THEN qsos.\(operatorColumn) ELSE qsos.\(callsignColumn) END) AS 'call',"
+				}
 				let queryReferences = referenceNames.reduce("") { previous, refTitle in
 					previous + "count(case when ref.title = '\(refTitle)' then ref.title end) AS '\(refTitle)',"
 				}
