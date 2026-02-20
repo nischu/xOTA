@@ -19,7 +19,7 @@ struct AwardCheckerActivatedAllMultiBand: AwardChecker {
 		// Check if all reference IDs were activated.
 		guard refsAndBands.count == referencesIds.count else { return [] }
 
-		let allBandsSorted = AwardQueryHelper.bandDefinitions().map(\.name)
+		let allBandsSorted = QSO.bandDefinitions().map(\.name)
 		var activatedBands: Set<String> = Set(allBandsSorted)
 		for (_, bands) in refsAndBands {
 			activatedBands.formIntersection(bands)
