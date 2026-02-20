@@ -12,15 +12,19 @@
             <li class="nav-item"><a class="nav-link" href="https://39c3.c3nav.de/l/tota" target="_blank">Map</a></li>
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == common.namingTheme.referenceSlug):active#endif" href="/#(common.namingTheme.referenceSlug)/">#(common.namingTheme.referencePlural)</a></li>
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "user"):active#endif" href="/user/">Users</a></li>
+            #if(!common.archive):
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "spot"):active#endif" href="/spot/">Spots</a></li>
+            #endif
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "stats"):active#endif" href="/stats/">Stats</a></li>
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "rules"):active#endif" href="/rules/">Rules</a></li>
+            #if(!common.archive):
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "impressum"):active#endif" href="/impressum/">Impressum</a></li>
             #if(!common.hasUser):
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "register"):active#endif" href="/register/">Register</a></li>
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "login"):active#endif" href="/login">Login</a></li>
             #else:
             <li class="nav-item"><a class="nav-link #if(common.firstPathEntry == "profile"):active#endif" href="/profile/">Profile</a></li>
+            #endif
             #endif
           </ul>
         </div><!--/.nav-collapse -->

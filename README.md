@@ -149,3 +149,8 @@ mkdir -p "$(dirname "$OUT_FILE")"
 cp -f "$WORKING_DIR/award.pdf" "$OUT_FILE"
 
 ```
+
+### Archive
+
+To archive the statistics, you can enable the archive mode by adding `ARCHIVE=1` to the environment.
+Then you can use `wget` like this to create a local archive: `wget -D39c3.totawatch.de -r -E -k -p https://39c3.totawatch.de`.

@@ -1,0 +1,11 @@
+#if(common.archive):
+<p></p>
+<div class="alert alert-secondary" role="alert">
+Thank you for the very active participation in TOTA@39C3. These are the aggregated stats from the event.<br>
+We hope to host TOTA again at a coming Chaos event.
+</div>
+#elseif(common.loggingDisabled):
+<div class="alert alert-success" role="alert">
+Thank you for the very active participation in this year's TOTA!<br>Logging has been disabled. The server will be shut down in early January 2026. Please download your QSO data as ADIF files and your awards from your profile page.
+</div>
+#endif

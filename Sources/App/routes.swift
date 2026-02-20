@@ -3,7 +3,11 @@ import Vapor
 
 func routes(_ app: Application) throws {
 	app.get { req async throws in
-		return req.redirect(to: "/rules/")
+		if CommonContent.archive {
+			return req.redirect(to: "/stats/")
+		} else {
+			return req.redirect(to: "/rules/")
+		}
 	}
 
 	let authMiddleware: [Middleware] = [

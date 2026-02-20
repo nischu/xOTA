@@ -4,7 +4,7 @@ extension Request {
 	var commonContent: CommonContent {
 		let hasUser = auth.has(UserModel.self)
 		let firstPathEntry = String(self.url.path.dropFirst().prefix(while: { $0 != "/"}))
-		return CommonContent(hasUser: hasUser, namingTheme: application.namingTheme, loggingDisabled: CommonContent.loggingDisabled, devInstance: CommonContent.devInstance, firstPathEntry: firstPathEntry)
+		return CommonContent(hasUser: hasUser, namingTheme: application.namingTheme, loggingDisabled: CommonContent.loggingDisabled, devInstance: CommonContent.devInstance, firstPathEntry: firstPathEntry, archive: CommonContent.archive)
 	}
 }
 
@@ -20,6 +20,10 @@ struct CommonContent: Codable {
 		return Environment.get("DEV") != nil
 	}
 	let firstPathEntry: String
+	let archive: Bool
+	static var archive: Bool {
+		return Environment.get("ARCHIVE") != nil
+	}
 }
 
 protocol CommonContentProviding {
